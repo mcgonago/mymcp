@@ -156,39 +156,19 @@ Paste the below JSON configuration (replace with your actual path):
 
 ### Testing the Agent
 
-#### Invoke the GitHub Cursor Agent on PR-402
+#### Invoke the GitHub Cursor Agent on PR-501
 
-I tested my GitHub Cursor agent on [PR-402: Allow customize http vhost config using HttpdCustomization.CustomConfigSecret](https://github.com/openstack-k8s-operators/horizon-operator/pull/402)
+I tested my GitHub Cursor agent on [PR-510: Make httpd Timeout Configurable](https://github.com/openstack-k8s-operators/horizon-operator/pull/510)
 
 At the Cursor prompt, enter:
 
 ```
-@github-reviewer-agent Review the PR at https://github.com/openstack-k8s-operators/horizon-operator/pull/402 How do I test this?
+@github-reviewer-agent describe the changes for https://github.com/openstack-k8s-operators/horizon-operator/pull/510
 ```
 
-![Review PR-402](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402.png)
-
-## Cursor Review of PR-402
-
-I'll help you review the PR and understand how to test it. Let me start by examining the PR details and then look at the codebase to understand the testing approach.
-
-### PR #402 Review Summary
-
-Based on my research, **PR #402** in the *openstack-k8s-operators/horizon-operator* repository introduces **custom HTTPD virtual host configuration capabilities** to the Horizon Operator. This allows users to customize the HTTPD configuration by referencing a Kubernetes Secret containing their custom configuration.
-
-### Key Changes in PR #402
-
-The PR adds:
-- A new *HttpdCustomization* field in the Horizon Custom Resource
-- Support for referencing a Kubernetes Secret containing custom HTTPD configuration
-- Integration of custom configuration into the Horizon pod's HTTPD setup
-
-## How to Test PR #402
-
-Here's a comprehensive testing approach:
+![Review PR-510](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_510.png)
 
 ### Environment Setup
-
 Ensure you have an OpenShift cluster with OpenStack operators.
 
 Clone and checkout the PR:
@@ -196,187 +176,18 @@ Clone and checkout the PR:
 ```bash
 git clone https://github.com/openstack-k8s-operators/horizon-operator.git
 cd horizon-operator
-git fetch origin pull/402/head:pr-402
-git checkout pr-402
+git fetch origin pull/510/head:pr-510
+git checkout pr-510
 ```
-
-### Build and Deploy the Updated Operator
-
-Build the operator with the new changes:
-
-```bash
-make install
-make run
-```
-
-*Or if using OLM, update your subscription to use the new image*
-
-### Create Custom HTTPD Configuration
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: custom-httpd-config
-  namespace: openstack
-stringData:
-  custom.conf: |
-    # Your custom HTTPD virtual host configuration
-    <VirtualHost *:80>
-        ServerName custom.horizon.example.com
-        DocumentRoot /var/www/html
-        # Add your custom directives here
-    </VirtualHost>
-```
-
-Apply the secret:
-
-```bash
-oc apply -f custom-httpd-config.yaml
-```
-
-### Update Horizon Custom Resource
-
-```yaml
-apiVersion: horizon.openstack.org/v1beta1
-kind: Horizon
-metadata:
-  name: horizon
-  namespace: openstack
-spec:
-  httpdCustomization:
-    customConfigSecret: custom-httpd-config
-  # ... other existing spec fields
-```
-
-Apply the configuration:
-
-```bash
-oc apply -f horizon-cr.yaml
-```
-
-### Verify the Configuration
-
-Check that Horizon pods are running:
-
-```bash
-oc get pods -n openstack -l app=horizon
-```
-
-Verify custom configuration is applied:
-
-```bash
-oc exec -it <horizon-pod-name> -n openstack -- cat /etc/httpd/conf.d/custom.conf
-```
-
-Check HTTPD configuration is valid:
-
-```bash
-oc exec -it <horizon-pod-name> -n openstack -- httpd -t
-```
-
-### Run Automated Tests with Test Operator
-
-Install the Test Operator via OLM:
-
-```yaml
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: test-operator
-  namespace: openstack-operators
-spec:
-  name: test-operator
-  source: openstack-operator-index
-  sourceNamespace: openstack-operators
-```
-
-Apply it:
-
-```bash
-oc apply -f test-operator.yaml
-```
-
-### Create the HorizonTest Custom Resource
-
-```yaml
-apiVersion: test.openstack.org/v1beta1
-kind: HorizonTest
-metadata:
-  name: horizontest-sample
-  namespace: openstack
-spec:
-  adminUsername: "admin"
-  adminPassword: "your_admin_password"
-  dashboardUrl: "https://horizon-openstack.apps.ocp.openstack.lab/"
-  authUrl: "https://keystone-public-openstack.apps.ocp.openstack.lab"
-  repoUrl: "https://review.opendev.org/openstack/horizon"
-  horizonRepoBranch: "master"
-  imageUrl: "http://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img"
-  projectName: "horizontest"
-  user: "horizontest"
-  password: "horizontest"
-  flavorName: "m1.tiny"
-  logsDirectoryName: "horizon"
-  horizonTestDir: "/var/lib/horizontest"
-  parallel: false
-  backoffLimit: 0
-```
-
-Run the tests:
-
-```bash
-oc apply -f horizontest-cr.yaml
-```
-
-Monitor test execution:
-
-```bash
-oc get pods -n openstack | grep horizontest
-oc logs -n openstack <horizontest-pod-name>
-```
-
-Retrieve test artifacts:
-
-```bash
-oc cp <horizontest-pod-name>:/mnt ./test-artifacts
-```
-
-### Manual Testing
-
-- Access the Horizon dashboard and verify it loads correctly
-- Test that custom HTTPD configurations are working as expected
-- Verify that the custom virtual host settings are applied
-- Check that the operator handles configuration updates properly
-
-### Validation Checklist
-
-- [ ] Custom configuration secret is properly mounted
-- [ ] HTTPD configuration is valid and loads without errors
-- [ ] Horizon dashboard is accessible and functional
-- [ ] Custom virtual host settings are applied
-- [ ] Operator handles secret updates correctly
-- [ ] No regression in existing functionality
-
-## Troubleshooting
-
-### Why do I see "Tool fetch_pull_request not found"?
-
-This is okay to ignore for now.
-
-![Tool not found](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402_fetch_pull_reqeust_not_found.png)
-
----
-
 ## OpenDev Review Agent
 
 The second agent I created analyzes OpenDev Gerrit reviews. See the [cursor-opendev-review-agent](cursor-opendev-review-agent/) directory for the implementation.
 
 This agent was created following similar steps to the GitHub agent, but adapted for OpenDev's Gerrit review system.
 
-Example usage: Analyze [review 963261: Fix TOTP view redirection](https://review.opendev.org/c/openstack/horizon/+/963261)
+Example usage: Analyze [review 960204: Remove all dependencies/connections of old integration test code](https://review.opendev.org/c/openstack/horizon/+/960204)
 
-![Review OpenDev](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_opendev_963261.png)
+![Review OpenDev](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_opendev_960204.png)
 
 ---
 
