@@ -1,0 +1,207 @@
+#+OPTIONS: ^:nil num:nil \n:t
+#+TITLE: HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests
+#+SETUPFILE: theme-readtheorg.setup
+
+* TL;DR
+
+This document investigates [[https://issues.redhat.com/browse/OSPRH-18672][OSPRH-18672: Investigate all the dependencies/connections of old integration tests]]
+
+* Start
+
+: Investigate all the dependencies/connections of old integration test code.
+:
+: There are probably multiple parts outside of the old integration tests code (repository):
+: https://github.com/openstack/horizon/tree/master/openstack_dashboard/test/integration_tests
+:
+: that somehow rely on it.
+:
+: Maybe also other projects somehow rely on it through jobs (parents).
+:
+: All those aspects need to be investigated and clear before we start with removing.
+:
+: Goal:
+:
+: It is clear what we need to take care of before we remove the old integration tests
+
+* Create patch
+
+Check out code
+: git clone https://github.com/openstack/horizon horizon-integration-tests
+: cd horizon-integration-tests
+
+What directory to remove?
+
+: $ find . -name integration
+: ./openstack_dashboard/test/selenium/integration
+
+* ask: I need to remove the integration tests, in particular, the integration directory.
+
+: ask: I need to remove the integration tests, in particular, the integration directory.
+: I need to remove the integration tests, in particular, the integration directory. What concerns should I have about "breaking something?
+: please see if you see any hidden dependencies there may be with me just removing the integration directory entirely.
+
+* answer
+I'll help you analyze the potential dependencies and impacts of removing the integration directory.
+- Let me first explore the codebase structure to understand what's in the integration directory and identify any potential dependencies.
+
+#+BEGIN_EXAMPLE
+TODO: what are all these called tools?
+#+END_EXAMPLE
+
+: [6 tools called]
+:
+: Interesting! I notice that there's no `integration` directory in the project root. Let me search for any references to "integration" to understand what you might be referring to, and also examine the package.json and other configuration files to understand the project structure better.
+:
+: [5 tools called]
+:
+: Now I can see the real picture! Let me check the actual integration test directories that exist and search for more specific references:
+:
+: [5 tools called]
+:
+: Now let me check the tools scripts and CI/CD configurations to understand the complete dependency chain:
+:
+: [4 tools called]
+:
+: Let me check the CI/CD playbooks and read some key configuration files to understand all dependencies:
+:
+: [5 tools called]
+:
+: Now let me examine how the integration test configuration is referenced in the main settings and search for any other potential dependencies:
+:
+: [3 tools called]
+:
+: Now let me check if those gate scripts exist and examine the HTML template that references the integration tests:
+:
+: [5 tools called]
+:
+: Now let me complete the analysis by checking for any remaining dependencies:
+:
+: [7 tools called]
+
+** Perfect
+Perfect! Now I have a comprehensive understanding of the integration test dependencies.
+- Let me provide you with a detailed analysis of what you need to be concerned about when removing the integration directories.
+
+** Analysis: Removing Integration Test Directories - Dependencies and Concerns
+gBased on my thorough analysis of your OpenStack Horizon codebase, I've identified two main integration test directories and their dependencies:
+
+** Integration Test Directories to Remove
+- openstack_dashboard/test/integration_tests - The main integration test framework
+- openstack_dashboard/test/selenium/integration - Selenium-based integration tests
+
+* 🚨 MAJOR CONCERNS - Things That Will Break
+
+** Tox Environment Configurations
+File: *tox.ini*
+: Lines 80-91: `[testenv:integration]` environment
+: Lines 93-103: `[testenv:integration-pytest]` environment
+: Line 102: References `{toxinidir}/openstack_dashboard/test/selenium/integration`
+: Line 91: References `{toxinidir}/openstack_dashboard/test/integration_tests`
+
+** Impact: These tox environments will fail completely if the directories are removed.
+
+** CI/CD Pipeline Jobs
+
+** Files: *.zuul.d/tempest-and-integrated.yaml* and *.zuul.d/project.yaml*
+- *horizon-integration-pytest* job
+- *horizon-ui-pytest* job
+- These jobs are configured in the project's gate and check pipelines
+
+** Impact: CI/CD builds will fail on integration test jobs.
+
+** Configuration Entry Points
+
+: X
+: ipython setup.cfg
+: openstack_dashboard_integration_tests = openstack_dashboard.test.integration_tests.config:list_opts
+
+** Impact: This entry point will fail to load, potentially breaking oslo-config-generator commands.
+
+** Build Scripts and Tools
+
+** File: tools/unit_tests.sh
+- Line 36: Excludes integration tests with tag filtering
+- Line 67: Ignores selenium directory
+
+** File: tools/executable_files.txt
+- References *./tools/gate/integration/post_test_hook.sh* and *./tools/gate/integration/pre_test_hook.sh* (though these files don't exist)
+
+* 🟨 MINOR CONCERNS - Things That Are Safe
+
+These will simply not execute when *INTEGRATION_TESTS_SUPPORT* is *False* (the default).
+
+** Settings and Template Conditional Logic
+These are *safe to leave as-is* because they use conditional checks:
+
+: X
+: ishell openstack_dashboard/templates/horizon/_scripts.html
+:
+: {% if HORIZON_CONFIG.integration_tests_support %}
+: <script src="{{ STATIC_URL }}horizon/js/horizon.selenium.js"></script>
+: {% endif %}
+
+** File: horizon/tables/base.py
+
+: X
+: ipython horizon/tables/base.py
+:
+: if settings.INTEGRATION_TESTS_SUPPORT:
+:     # integration test scaffolds
+
+* Documentation and Release Notes
+These are informational and won't break functionality.
+- Various translation files and release notes mentioning integration tests
+- Documentation in *doc/source/contributor/topics/testing.rst*
+
+* 📋 RECOMMENDED ACTION PLAN
+
+** Option A: Clean Removal (Recommended)
+
+** Remove directories
+- *openstack_dashboard/test/integration_tests/*
+- *openstack_dashboard/test/selenium/integration/*
+
+** Update tox.ini: Remove or comment out
+- *testenv:integration* section (lines 80-91)
+- *testenv:integration-pytest* section (lines 93-103)
+- *testenv:ui-pytest* section (lines 105-115)
+
+** Update setup.cfg: Remove line 56:
+
+: X
+: ipython setup.cfg
+: openstack_dashboard_integration_tests = openstack_dashboard.test.integration_tests.config:list_opts
+
+** Update CI/CD configs: Remove integration jobs from zuul.d:
+- Remove *horizon-integration-pytest* from *project.yaml*
+- Remove or comment out integration job definitions in *tempest-and-integrated.yaml*
+
+* Clean up tools/executable_files.txt: Remove non-existent gate script references
+
+** Option B: Gradual Deprecation
+- Keep the tox environments but make them no-ops
+- Add deprecation warnings
+- Remove in a future release
+
+* 🔍 Testing the Removal
+After removal, test these commands to ensure nothing breaks:
+
+Should still work
+- tox -e pep8
+- tox -e py3
+- tox -e npm
+- tox -e selenium
+
+Should fail gracefully or be removed
+
+: tox -e integration  # Remove this environment
+: tox -e integration-pytest  # Remove this environment
+: tox -e ui-pytest  # Remove this environment
+
+Should work
+: oslo-config-generator --namespace openstack_dashboard  # Remove integration_tests namespace
+
+* Bottom Line
+The main risk is in *CI/CD pipeline failures* and *tox environment errors*.
+- the application code itself has proper conditional checks and won't break.
+- You need to update the build configuration files alongside removing the directories for a clean removal.

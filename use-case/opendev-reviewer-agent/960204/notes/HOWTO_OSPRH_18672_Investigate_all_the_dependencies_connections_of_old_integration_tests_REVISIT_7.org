@@ -1,0 +1,216 @@
+#+OPTIONS: ^:nil num:nil \n:t
+#+TITLE: HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_7
+#+SETUPFILE: theme-readtheorg.setup
+
+* TL;DR
+
+This document investigates [[https://issues.redhat.com/browse/OSPRH-18672][OSPRH-18672: Investigate all the dependencies/connections of old integration tests]]
+
+This is revisit #7 of [[https://spaces.redhat.com/spaces/~omcgonag/pages/711624071/HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_6][HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_6]]
+
+Review at [[https://review.opendev.org/c/openstack/horizon/+/960204][960204: Remove all dependencies/connections of old integration test code]]
+- *MERGED* on Tue, Oct 21, 2025
+
+* What next?
+Get a clean checkout of the latest?
+
+: git clone https://github.com/openstack/horizon horizon-integration-tests-960204
+: cd horizon-integration-tests-960204
+: git fetch https://review.opendev.org/openstack/horizon refs/changes/04/960204/11 && git checkout FETCH_HEAD
+: git checkout -b integration-tests-cleanup
+
+* Comment from Tatiana
+Comment is a good one - why remove this line if it has nothing to do with the test itself?
+- *SOLUTION:* line was removed
+
+
+: https://review.opendev.org/c/openstack/horizon/+/960204/11/setup.cfg
+:
+:   [coverage:html]
+:   directory = reports
+:
+:   [extract_messages]
+:   keywords = gettext_noop gettext_lazy ngettext_lazy:1,2 ugettext_noop ugettext_lazy ungettext_lazy:1,2 npgettext:1c,2,3 pgettext_lazy:1c,2 npgettext_lazy:1c,2,3
+:   add_comments = Translators:
+:
+:   [entry_points]
+:   oslo.config.opts =
+
+: Owen McGonagle
+: Oct 09
+: does this need to stay? what type of test can I run to verify/deny this?
+:
+: Tatiana Ovchinnikova
+: Oct 14
+: It is unrelated to the integration tests, see https://opendev.org/openstack/horizon/src/branch/master/openstack_dashboard/utils/config.py#L53
+
+: -     openstack_dashboard = openstack_dashboard.utils.config:list_options                                         <== put it back
+:       openstack_dashboard_integration_tests = openstack_dashboard.test.integration_tests.config:list_opts
+:   # We use a custom extractor to find translatable strings in AngularJS templates.
+:   # See http://babel.pocoo.org/docs/messages/#referencing-extraction-methods for
+:   # details on how this works.
+:   babel.extractors =
+:       angular = horizon.utils.babel_extract_angular:extract_angular
+:
+:   def list_options():
+:       # This is a really nasty hack to make the translatable strings
+:       # work without having to initialize Django and read all the settings.
+:       from django.apps import registry
+:       from django.conf import settings
+:
+:       settings.configure()
+:       registry.apps.check_apps_ready = lambda: True
+:
+:       config = load_config()
+:       return [
+:           (name, [d['opt'] for d in group._opts.values()])
+:           for (name, group) in config._groups.items()
+:       ]
+
+* Put the line back
+
+: $ git status
+: On branch integration-tests-cleanup
+: Changes not staged for commit:
+:   (use "git add <file>..." to update what will be committed)
+:   (use "git restore <file>..." to discard changes in working directory)
+: 	modified:   setup.cfg
+:
+: no changes added to commit (use "git add" and/or "git commit -a")
+
+: git config core.editor "emacsclient"
+: export EDITOR=emacsclient
+: M-x server-start
+
+: git add setup.cfg
+: git commit --amend -s
+: git review
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ git config core.editor "emacsclient"
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ export EDITOR=emacsclient
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ git add setup.cfg
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ git commit --amend -s
+: hint: Waiting for your editor to close the file...
+: Waiting for Emacs...
+: [integration-tests-cleanup 760ebf934] Remove all dependencies/connections of old integration test code
+:  Date: Mon Sep 8 16:56:15 2025 -0400
+:  100 files changed, 9 insertions(+), 9577 deletions(-)
+:  delete mode 100644 openstack_dashboard/test/integration_tests/README.rst
+:  delete mode 100644 openstack_dashboard/test/integration_tests/basewebobject.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/decorators.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/helpers.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/flavorspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/hostaggregatespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/hypervisorspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/imagespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/instancespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/floatingipspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/networkspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/routerspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/overviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/defaultspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/imagespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/metadatadefinitionspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/resource_usage/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/system_info/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/grouptypespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/snapshotspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/volumespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/volumetypespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/basepage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/groupspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/projectspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/rolespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/userspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/loginpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/navigation.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/pageobject.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/apiaccesspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/imagespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/instancespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/keypairspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/overviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/servergroupspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/floatingipspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/networkoverviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/networkspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/networktopologypage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/routerinterfacespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/routeroverviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/routerspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/security_groups/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/security_groups/managerulespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/securitygroupspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/object_store/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/volumes/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/volumes/snapshotspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/volumes/volumespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/settings/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/settings/changepasswordpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/settings/usersettingspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/bars.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/baseregion.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/exceptions.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/forms.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/menus.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/messages.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/tables.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test-data/empty_namespace.json
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_credentials.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_defaults.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_flavors.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_floatingips.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_groups.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_grouptypes.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_host_aggregates.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_images.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_instances.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_keypairs.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_login.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_metadata_definitions.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_networks.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_projects.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_router.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_router_gateway.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_security_groups.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_user_settings.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_users.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_volume_snapshots.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_volumes.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_volumetypes.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/video_recorder.py
+:  create mode 100644 releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ git review
+: Creating a git remote called 'gerrit' that maps to:
+: 	ssh://omcgonag@review.opendev.org:29418/openstack/horizon.git
+: Your change was committed before the commit hook was installed.
+: Amending the commit to add a gerrit change id.
+: remote:
+: remote: Processing changes: updated: 1 (\)
+: remote: Processing changes: refs: 1, updated: 1 (\)
+: remote: Processing changes: refs: 1, updated: 1 (\)
+: remote: Processing changes: refs: 1, updated: 1, done
+: remote: commit 49e5fe1: warning: subject >50 characters; use shorter first paragraph
+: remote:
+: remote: SUCCESS
+: remote:
+: remote:   https://review.opendev.org/c/openstack/horizon/+/960204 Remove all dependencies/connections of old integration test code
+: remote:
+: remote: The following approvals got outdated and were removed:
+: remote: * Code-Review+2 by Radomir Dopieralski
+: remote:
+: remote:
+: To ssh://review.opendev.org:29418/openstack/horizon.git
+:  * [new reference]       HEAD -> refs/for/master%topic=integration-tests-cleanup
