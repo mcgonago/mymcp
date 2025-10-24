@@ -289,14 +289,6 @@ At the Cursor prompt, enter:
 
 ![Review PR-402](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402.png)
 
-## Troubleshooting
-
-### Why do I see "Tool fetch_pull_request not found"?
-
-This is okay to ignore for now.
-
-![Tool not found](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402_fetch_pull_reqeust_not_found.png)
-
 ### Verifying OpenDev Review Agent is Operational
 
 To test if your OpenDev review agent is working correctly, run this command from your terminal:
