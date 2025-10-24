@@ -56,3 +56,4 @@ In Cursor, use the agent by mentioning it:
 - `server.sh` - Launch script that activates venv and runs server
 - `requirements.txt` - Python dependencies
 
+

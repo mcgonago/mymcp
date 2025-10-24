@@ -54,3 +54,8 @@ Makefile~
 # Logs
 *.log
 
+# Emacs backup files
+.#*
+#*
+*~
+*.*~

@@ -130,6 +130,10 @@ Click **+ Add new global MCP server** and paste this JSON configuration (remembe
 }
 ```
 
+#### Step 4: Reload Cursor
+
+Press **Ctrl+Shift+P** (or Cmd+Shift+P on Mac) → Type **"Developer: Reload Window"** → Press Enter
+
 ### Testing the Agent
 
 #### Invoke the OpenDev Cursor Agent on Review 960204
@@ -232,6 +236,10 @@ Paste the below JSON configuration (remember to replace `<your-mymcp-cloned-repo
 }
 ```
 
+#### Step 4: Reload Cursor
+
+Press **Ctrl+Shift+P** (or Cmd+Shift+P on Mac) → Type **"Developer: Reload Window"** → Press Enter
+
 ### Testing the Agent
 
 #### Invoke the GitHub Cursor Agent on PR-402
@@ -253,6 +261,40 @@ At the Cursor prompt, enter:
 This is okay to ignore for now.
 
 ![Tool not found](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402_fetch_pull_reqeust_not_found.png)
+
+### Verifying OpenDev Review Agent is Operational
+
+To test if your OpenDev review agent is working correctly, run this command from your terminal:
+
+```bash
+cd <your-mymcp-cloned-repo-path>/cursor-opendev-review-agent
+bash server.sh <<< '{"jsonrpc": "2.0", "method": "exit"}' 2>&1 | head -20
+```
+
+If working correctly, you should see output like:
+
+```
+╭────────────────────────────────────────────────────────────────────────────╮
+│                                                                            │
+│        _ __ ___  _____           __  __  _____________    ____    ____     │
+│       _ __ ___ .'____/___ ______/ /_/  |/  / ____/ __ \  |___ \  / __ \    │
+│      _ __ ___ / /_  / __ `/ ___/ __/ /|_/ / /   / /_/ /  ___/ / / / / /    │
+│     _ __ ___ / __/ / /_/ (__  ) /_/ /  / / /___/ ____/  /  __/_/ /_/ /     │
+│    _ __ ___ /_/    \____/____/\__/_/  /_/\____/_/      /_____(*)____/      │
+│                                                                            │
+│                                                                            │
+│                                FastMCP  2.0                                │
+│                                                                            │
+│                                                                            │
+│                 🖥️  Server name:     opendev-reviewer                       │
+│                 📦 Transport:       STDIO                                  │
+│                                                                            │
+│                 🏎️  FastMCP version: 2.12.5                                 │
+│                 🤝 MCP SDK version: 1.16.0                                 │
+│                                                                            │
+```
+
+This confirms the MCP server starts successfully.
 
 ---
 
