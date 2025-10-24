@@ -40,7 +40,7 @@ This agent will be a tool that the LLM uses to answer the prompt: **"Review this
 
 ### Set Up the Environment
 
-First, set up a minimal Python environment for your MCP server:
+First, set up a minimal Python environment for your MCP server, you can do this from directory `cursor-opendev-review-agent` of your repo:
 
 ```bash
 mkdir cursor-opendev-review-agent
@@ -149,7 +149,7 @@ This agent will be a tool that the LLM uses to answer the prompt: **"Review this
 
 ### Set Up the Environment
 
-First, set up a minimal Python environment for your MCP server:
+First, set up a minimal Python environment for your MCP server, you can do this from directory `cursor-github-agent` of your repo:
 
 ```bash
 mkdir cursor-github-agent
