@@ -2,6 +2,15 @@
 
 This repository demonstrates how to build custom MCP (Model Context Protocol) agents for Cursor. It contains three MCP agents that I built to analyze different types of code reviews.
 
+> [!IMPORTANT]
+> **Path Placeholder Convention**  
+> Throughout this document, you'll see `<your-mymcp-cloned-repo-path>` used in code examples and configuration snippets.  
+> **Replace this placeholder with the absolute path to where you cloned this repository.**  
+>   
+> For example:
+> - Linux/Mac: `/home/username/projects/mymcp` or `/Users/username/projects/mymcp`
+> - Windows: `C:\Users\username\projects\mymcp`
+
 ## TL;DR
 
 This document describes how I built my MCP agents for Cursor, including:
@@ -108,9 +117,7 @@ Search for **MCP Servers** or go to **Features -> MCP Servers**.
 
 #### Step 3: Add New Global MCP Server
 
-Click **+ Add new global MCP server** and paste this JSON configuration:
-
-**Crucial:** You must replace `<your-mymcp-cloned-repo-path>` with the actual path to your cloned repository.
+Click **+ Add new global MCP server** and paste this JSON configuration (remember to replace `<your-mymcp-cloned-repo-path>`):
 
 ```json
 {
@@ -210,11 +217,9 @@ Click **+ Add new global MCP server** and paste this JSON configuration:
 
 ![Add new global MCP server](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server.png)
 
-Paste the below JSON configuration (replace with your actual path):
+Paste the below JSON configuration (remember to replace `<your-mymcp-cloned-repo-path>`):
 
 ![Template](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_template.png)
-
-**Crucial:** You must replace `<your-mymcp-cloned-repo-path>` with the actual path to your cloned repository.
 
 ```json
 {
@@ -355,7 +360,7 @@ To configure all agents in Cursor at once:
 
 1. Open Cursor Settings (**Ctrl/Cmd + ,**)
 2. Search for: **MCP Servers**
-3. Paste this complete configuration:
+3. Paste this complete configuration (remember to replace `<your-mymcp-cloned-repo-path>`):
 
 ```json
 {
@@ -383,8 +388,6 @@ To configure all agents in Cursor at once:
   }
 }
 ```
-
-**Important**: Replace `<your-mymcp-cloned-repo-path>` with your actual repository path.
 
 4. Save and restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
 
