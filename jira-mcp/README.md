@@ -213,6 +213,62 @@ The agent will query your Jira instance and return the requested information.
 
 ---
 
+## Troubleshooting
+
+### Verifying Jira MCP Agent is Operational
+
+To test if your Jira MCP agent is working correctly, run this command from your terminal:
+
+```bash
+timeout 5 podman run --rm -i --env-file ~/.rh-jira-mcp.env jira-mcp:latest <<< '{"jsonrpc": "2.0", "method": "exit"}' 2>&1 | head -20
+```
+
+If working correctly, you should see output like:
+
+```
+[10/24/25 21:06:34] INFO     Starting MCP server 'Jira Context     server.py:797
+                             Server' with transport 'stdio'
+```
+
+This confirms the MCP server starts successfully and can connect to your Jira instance.
+
+### Common Issues
+
+#### Issue: "No such image"
+**Problem**: The container image hasn't been built yet.
+
+**Solution**: 
+```bash
+cd <your-mymcp-cloned-repo-path>/jira-mcp
+make build
+```
+
+#### Issue: "Environment file not found"
+**Problem**: The `.rh-jira-mcp.env` file doesn't exist or is in the wrong location.
+
+**Solution**: 
+```bash
+cp <your-mymcp-cloned-repo-path>/jira-mcp/example.env ~/.rh-jira-mcp.env
+# Then edit the file to add your Jira URL and API token
+```
+
+#### Issue: "Authentication failed" or "401 Unauthorized"
+**Problem**: Your Jira API token is incorrect or expired.
+
+**Solution**: 
+1. Generate a new API token from your Jira instance
+2. Update the `JIRA_API_TOKEN` in `~/.rh-jira-mcp.env`
+
+#### Issue: Agent not appearing in Cursor
+**Problem**: Cursor hasn't loaded the agent yet or the configuration is incorrect.
+
+**Solution**:
+1. Verify your `~/.cursor/mcp.json` has the correct **absolute path** to the env file (no `~` tilde)
+2. **Fully quit Cursor** (Ctrl+Q) and restart (don't just reload window)
+3. Check for any error messages in Cursor's console
+
+---
+
 ## Development Commands
 
 If you want to modify or extend the agent:
