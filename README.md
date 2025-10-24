@@ -110,13 +110,13 @@ Search for **MCP Servers** or go to **Features -> MCP Servers**.
 
 Click **+ Add new global MCP server** and paste this JSON configuration:
 
-**Crucial:** You must replace `/absolute/path/to/cursor-opendev-review-agent/server.sh` with the actual file path on your laptop (e.g., `/home/omcgonag/Work/cursor-opendev-review-agent/server.sh`).
+**Crucial:** You must replace `<your-mymcp-cloned-repo-path>` with the actual path to your cloned repository.
 
 ```json
 {
   "mcpServers": {
     "opendev-reviewer-agent": {
-      "command": "/home/omcgonag/Work/cursor-opendev-review-agent/server.sh",
+      "command": "<your-mymcp-cloned-repo-path>/cursor-opendev-review-agent/server.sh",
       "description": "Analyzes OpenDev Gerrit reviews to perform automated code review."
     }
   }
@@ -214,13 +214,13 @@ Paste the below JSON configuration (replace with your actual path):
 
 ![Template](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_template.png)
 
-**Crucial:** You must replace `/absolute/path/to/cursor-github-agent/server.sh` with the actual file path on your laptop (e.g., `/home/omcgonag/Work/cursor-github-agent/server.sh`).
+**Crucial:** You must replace `<your-mymcp-cloned-repo-path>` with the actual path to your cloned repository.
 
 ```json
 {
   "mcpServers": {
     "github-reviewer-agent": {
-      "command": "/home/omcgonag/Work/cursor-github-agent/server.sh",
+      "command": "<your-mymcp-cloned-repo-path>/cursor-github-agent/server.sh",
       "description": "Analyzes GitHub pull requests to perform automated code review."
     }
   }
@@ -330,21 +330,21 @@ Before configuring agents in Cursor, verify they're properly set up:
 
 ```bash
 # Test OpenDev Agent
-cd /path/to/cursor-opendev-review-agent
+cd <your-mymcp-cloned-repo-path>/cursor-opendev-review-agent
 ls -la server.sh server.py
 source venv/bin/activate
 python -c "import fastmcp, requests; print('Dependencies OK')"
 deactivate
 
 # Test GitHub Agent
-cd /path/to/cursor-github-agent
+cd <your-mymcp-cloned-repo-path>/cursor-github-agent
 ls -la server.sh server.py
 source venv/bin/activate
 python -c "import fastmcp, requests; print('Dependencies OK')"
 deactivate
 
 # Test Jira MCP Agent (if using)
-cd /path/to/jira-mcp
+cd <your-mymcp-cloned-repo-path>/jira-mcp
 podman images | grep jira-mcp
 test -f .env && echo ".env exists" || echo ".env missing"
 ```
@@ -361,11 +361,11 @@ To configure all agents in Cursor at once:
 {
   "mcpServers": {
     "opendev-reviewer-agent": {
-      "command": "/absolute/path/to/cursor-opendev-review-agent/server.sh",
+      "command": "<your-mymcp-cloned-repo-path>/cursor-opendev-review-agent/server.sh",
       "description": "Analyzes OpenDev Gerrit reviews to perform automated code review."
     },
     "github-reviewer-agent": {
-      "command": "/absolute/path/to/cursor-github-agent/server.sh",
+      "command": "<your-mymcp-cloned-repo-path>/cursor-github-agent/server.sh",
       "description": "Analyzes GitHub pull requests to perform automated code review."
     },
     "jira-mcp": {
@@ -375,7 +375,7 @@ To configure all agents in Cursor at once:
         "--rm",
         "-i",
         "--env-file",
-        "/absolute/path/to/jira-mcp/.env",
+        "<your-mymcp-cloned-repo-path>/jira-mcp/.env",
         "jira-mcp:latest"
       ],
       "description": "Provides access to Jira issues, projects, boards, and sprints."
@@ -384,7 +384,7 @@ To configure all agents in Cursor at once:
 }
 ```
 
-**Important**: Replace `/absolute/path/to/` with your actual paths.
+**Important**: Replace `<your-mymcp-cloned-repo-path>` with your actual repository path.
 
 4. Save and restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
 
