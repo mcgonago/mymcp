@@ -1,5 +1,11 @@
 # Background Knowledge: Old vs New Integration Test Frameworks
 
+> [!WARNING]
+> **NOTE: Contents of this document have yet to be reviewed. Very good (highly) chance of inaccuracies, please read with a bit of caution.**
+
+> [!NOTE]
+> **NOTE: If you find an obvious discrepancy/error - please feel free to fix and update, thank you.**
+
 This document provides detailed background information about the old and new integration test frameworks in OpenStack Horizon, explaining why the migration (review 960204) was necessary.
 
 ---

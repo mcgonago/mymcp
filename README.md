@@ -58,178 +58,7 @@ Create a file named `server.py`. This script will host the MCP server and define
 - **Tool Name**: `gerrit_review_fetcher`
 - **Tool Action**: Retrieve review metadata, file changes, and comments from Gerrit API.
 
-```python
-#!/usr/bin/env python3
-"""
-OpenDev.Review MCP Agent
-An MCP server that analyzes OpenDev Gerrit reviews for code review.
-"""
-
-import os
-import sys
-import json
-import requests
-import re
-import asyncio
-from datetime import datetime
-from fastmcp import FastMCP
-
-def extract_change_number(review_url):
-    """Extract change number from OpenDev.Review URL."""
-    # Pattern to match URLs like: https://review.opendev.org/c/openstack/horizon/+/963261
-    pattern = r'review\.opendev\.org/c/[^/]+/[^/]+/\+/(\d+)'
-    match = re.search(pattern, review_url)
-    if match:
-        return match.group(1)
-    return None
-
-def gerrit_review_fetcher(review_url: str):
-    """
-    Fetches review data from OpenDev's Gerrit system.
-    
-    Args:
-        review_url: The full URL to the OpenDev.Review change (e.g., 
-                   https://review.opendev.org/c/openstack/horizon/+/963261)
-    
-    Returns:
-        Dictionary containing review metadata and analysis prompt
-    """
-    if "review.opendev.org" not in review_url:
-        return {"error": "Invalid OpenDev Gerrit URL provided."}
-
-    # Extract change number from the URL
-    change_number = extract_change_number(review_url)
-    if not change_number:
-        return {"error": "Could not extract change number from URL. Expected format: https://review.opendev.org/c/project/repo/+/CHANGE_NUMBER"}
-
-    # Gerrit REST API endpoints
-    change_url = f"https://review.opendev.org/changes/{change_number}/detail"
-    files_url = f"https://review.opendev.org/changes/{change_number}/revisions/current/files"
-    comments_url = f"https://review.opendev.org/changes/{change_number}/comments"
-
-    try:
-        # Fetch the change details
-        response = requests.get(change_url, timeout=10)
-        response.raise_for_status()
-        # Gerrit API responses start with a security prefix that needs to be stripped
-        json_content = response.text
-        if json_content.startswith(")]}'"):
-            json_content = json_content[4:]
-        change_data = json.loads(json_content)
-
-        # Fetch the list of files changed
-        files_response = requests.get(files_url, timeout=10)
-        files_response.raise_for_status()
-        files_json_content = files_response.text
-        if files_json_content.startswith(")]}'"):
-            files_json_content = files_json_content[4:]
-        files_data = json.loads(files_json_content)
-
-        # Fetch comments if available
-        comments_response = requests.get(comments_url, timeout=10)
-        if comments_response.status_code == 200:
-            comments_json_content = comments_response.text
-            if comments_json_content.startswith(")]}'"):
-                comments_json_content = comments_json_content[4:]
-            comments_data = json.loads(comments_json_content)
-        else:
-            comments_data = {}
-
-        # Process the change data
-        title = change_data.get('subject', 'No title available')
-        author = change_data.get('owner', {}).get('name', 'Unknown author')
-        author_email = change_data.get('owner', {}).get('email', '')
-        project = change_data.get('project', 'Unknown project')
-        branch = change_data.get('branch', 'Unknown branch')
-        status = change_data.get('status', 'Unknown status')
-        
-        # Process files changed
-        files_changed = []
-        file_stats = []
-        
-        for file_path, file_info in files_data.items():
-            if file_path == '/COMMIT_MSG':
-                continue
-                
-            files_changed.append(file_path)
-            
-            # Extract file statistics
-            lines_inserted = file_info.get('lines_inserted', 0)
-            lines_deleted = file_info.get('lines_deleted', 0)
-            file_stats.append({
-                'file': file_path,
-                'insertions': lines_inserted,
-                'deletions': lines_deleted,
-                'net_changes': lines_inserted - lines_deleted
-            })
-
-        # Calculate total changes
-        total_insertions = sum(stat['insertions'] for stat in file_stats)
-        total_deletions = sum(stat['deletions'] for stat in file_stats)
-        total_files = len(files_changed)
-
-        # Construct the review prompt
-        review_prompt = f"""
-Analyze the OpenDev.Review change for {project}:
-
-**Change Summary:**
-- Title: {title}
-- Author: {author} ({author_email})
-- Project: {project}
-- Branch: {branch}
-- Status: {status}
-- Files Changed: {total_files}
-- Lines: +{total_insertions}/-{total_deletions}
-
-**Files Modified:**
-{chr(10).join([f"- {file}" for file in files_changed[:10]])}
-{f"... and {len(files_changed) - 10} more files" if len(files_changed) > 10 else ""}
-
-**Review Focus Areas:**
-1. Code quality and adherence to OpenStack standards
-2. Security implications of the changes
-3. Performance impact
-4. Backward compatibility
-5. Test coverage and documentation
-6. Compliance with project coding guidelines
-
-Please provide a comprehensive code review focusing on these areas.
-"""
-
-        return {
-            "change_number": change_number,
-            "title": title,
-            "author": author,
-            "project": project,
-            "branch": branch,
-            "status": status,
-            "total_files": total_files,
-            "total_insertions": total_insertions,
-            "total_deletions": total_deletions,
-            "files_changed": files_changed,
-            "file_stats": file_stats,
-            "review_prompt": review_prompt.strip()
-        }
-
-    except requests.RequestException as e:
-        return {"error": f"Failed to fetch review data: {str(e)}"}
-    except Exception as e:
-        return {"error": f"Unexpected error: {str(e)}"}
-
-async def main():
-    """Main function to set up and run the MCP server."""
-    mcp = FastMCP(
-        name="opendev-reviewer",
-        instructions="An agent that analyzes and summarizes OpenDev Gerrit reviews for code review.",
-        tools=[gerrit_review_fetcher]
-    )
-
-    # Run the server using standard I/O (stdio) transport
-    await mcp.run_stdio_async()
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
+**See the complete implementation:** [`cursor-opendev-review-agent/server.py`](cursor-opendev-review-agent/server.py)
 
 **Key Features:**
 - **Gerrit API Integration**: Fetches review details from OpenDev's Gerrit REST API
@@ -298,7 +127,7 @@ Click **+ Add new global MCP server** and paste this JSON configuration:
 
 #### Invoke the OpenDev Cursor Agent on Review 960204
 
-I tested my OpenDev Cursor agent on [Review 960204: Remove all dependencies/connections of old integration test code](https://review.opendev.org/c/openstack/horizon/+/960204)
+I tested my OpenDev Cursor agent on [Review 960204: Validate token before revoking in keystone_client](https://review.opendev.org/c/openstack/horizon/+/960204)
 
 At the Cursor prompt, enter:
 
@@ -308,8 +137,89 @@ At the Cursor prompt, enter:
 
 ![Review OpenDev 963261](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_opendev_963261.png)
 
-See more details at use-case/opendev-reviewer-agent/960204
+## Cursor Review of OpenDev Change 960204
 
+Let me help you analyze this OpenDev review for the Horizon project.
+
+### Review #960204 Summary
+
+**Change Details:**
+- **Title**: Validate token before revoking in keystone_client
+- **Project**: openstack/horizon
+- **Author**: The change validates authentication tokens before attempting revocation
+- **Status**: Under review in the OpenDev Gerrit system
+
+### Key Changes
+
+This review introduces validation logic to check if a token is valid before attempting to revoke it in the Keystone client integration. This is a defensive programming practice that prevents unnecessary API calls and potential errors.
+
+### Analysis and Review Considerations
+
+#### 1. Code Quality and OpenStack Standards
+- The change follows OpenStack's defensive programming patterns
+- Implements proper validation before performing destructive operations
+- Adheres to the fail-fast principle
+
+#### 2. Security Implications
+✅ **Positive Security Impact:**
+- Prevents attempts to revoke invalid or already-revoked tokens
+- Reduces the attack surface by validating before making API calls
+- Follows the principle of least privilege
+
+#### 3. Performance Impact
+✅ **Performance Benefits:**
+- Reduces unnecessary API calls to Keystone
+- Avoids network overhead for invalid tokens
+- Improves overall system responsiveness
+
+#### 4. Backward Compatibility
+- Should maintain backward compatibility
+- Existing valid tokens continue to work as expected
+- Invalid token handling is improved, not changed
+
+#### 5. Test Coverage
+**Recommendations:**
+- Verify that unit tests cover the new validation logic
+- Ensure edge cases are tested (expired tokens, malformed tokens, null tokens)
+- Check that integration tests validate the Keystone client interaction
+
+#### 6. Code Review Checklist
+
+- [ ] Validation logic correctly identifies invalid tokens
+- [ ] Error handling is appropriate for different failure scenarios
+- [ ] Logging provides sufficient debugging information
+- [ ] Documentation explains the validation criteria
+- [ ] No regression in existing token revocation functionality
+- [ ] Performance benchmarks show improvement or neutral impact
+
+### Testing Recommendations
+
+To test this change:
+
+1. **Unit Testing:**
+   ```bash
+   # Run Horizon unit tests for authentication
+   tox -e py312 -- openstack_auth.tests.unit.test_auth
+   ```
+
+2. **Integration Testing:**
+   - Test with valid tokens (should revoke successfully)
+   - Test with invalid tokens (should fail validation gracefully)
+   - Test with expired tokens (should handle appropriately)
+   - Test with malformed tokens (should reject before API call)
+
+3. **Manual Testing:**
+   ```bash
+   # Deploy Horizon with the change
+   # Attempt to logout multiple times
+   # Verify no errors in logs when token is already revoked
+   ```
+
+### Conclusion
+
+This is a solid defensive programming improvement that enhances the robustness of Horizon's Keystone client integration. The change validates tokens before revocation, improving security, performance, and error handling.
+
+---
 
 ## Building a GitHub Review Agent
 
@@ -342,48 +252,7 @@ Create a file named `server.py`. This script will host the MCP server and define
 - **Tool Name**: `github_pr_fetcher`
 - **Tool Action**: Retrieve the PR summary, file list, and diff content.
 
-```python
-import os
-import sys
-import json
-from fastmcp import FastMCP, stdio_transport
-
-# --- MCP Tool Definition ---
-def github_pr_fetcher(pr_url: str):
-    """A placeholder function to retrieve PR data.
-    In a real implementation, this would use the GitHub API
-    to fetch the PR's title, description, and diff."""
-
-    if "github.com" not in pr_url:
-        return {"error": "Invalid GitHub URL provided."}
-
-    # Simulate API call and return structured data
-    # In a real script, you would parse the URL (e.g., owner/repo/pull/number)
-    # and use the PyGithub library to get the data.
- 
-    return {
-        "pr_number": 945310,
-        "title": "Fix: Catch callback in network service doesn't throw",
-        "author": "tobias.urdin@binero.com",
-        "file_changes_summary": "1 file changed, 10 insertions(+), 5 deletions(-)",
-        "core_diff_summary": "Modified openstack/horizon/_static/app/network/network.service.js to add explicit error handling.",
-        "review_prompt": "Analyze the change in the network service file. Verify that the new error handling is compliant with OpenStack standards."
-    }
-
-# --- Main MCP Server Setup ---
-def main():
-    mcp = FastMCP(
-        name="github-reviewer",
-        description="An agent that analyzes and summarizes GitHub Pull Requests for code review.",
-        tools=[github_pr_fetcher]
-    )
-
-    # Run the server using standard I/O (stdio) transport
-    stdio_transport(mcp)
-
-if __name__ == "__main__":
-    main()
-```
+**See the complete implementation:** [`cursor-github-agent/server.py`](cursor-github-agent/server.py)
 
 ### Create the Server Launcher
 
@@ -456,6 +325,206 @@ At the Cursor prompt, enter:
 
 ![Review PR-402](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402.png)
 
+## Cursor Review of PR-402
+
+I'll help you review the PR and understand how to test it. Let me start by examining the PR details and then look at the codebase to understand the testing approach.
+
+### PR #402 Review Summary
+
+Based on my research, **PR #402** in the *openstack-k8s-operators/horizon-operator* repository introduces **custom HTTPD virtual host configuration capabilities** to the Horizon Operator. This allows users to customize the HTTPD configuration by referencing a Kubernetes Secret containing their custom configuration.
+
+### Key Changes in PR #402
+
+The PR adds:
+- A new *HttpdCustomization* field in the Horizon Custom Resource
+- Support for referencing a Kubernetes Secret containing custom HTTPD configuration
+- Integration of custom configuration into the Horizon pod's HTTPD setup
+
+## How to Test PR #402
+
+Here's a comprehensive testing approach:
+
+### Environment Setup
+
+Ensure you have an OpenShift cluster with OpenStack operators.
+
+Clone and checkout the PR:
+
+```bash
+git clone https://github.com/openstack-k8s-operators/horizon-operator.git
+cd horizon-operator
+git fetch origin pull/402/head:pr-402
+git checkout pr-402
+```
+
+### Build and Deploy the Updated Operator
+
+Build the operator with the new changes:
+
+```bash
+make install
+make run
+```
+
+*Or if using OLM, update your subscription to use the new image*
+
+### Create Custom HTTPD Configuration
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: custom-httpd-config
+  namespace: openstack
+stringData:
+  custom.conf: |
+    # Your custom HTTPD virtual host configuration
+    <VirtualHost *:80>
+        ServerName custom.horizon.example.com
+        DocumentRoot /var/www/html
+        # Add your custom directives here
+    </VirtualHost>
+```
+
+Apply the secret:
+
+```bash
+oc apply -f custom-httpd-config.yaml
+```
+
+### Update Horizon Custom Resource
+
+```yaml
+apiVersion: horizon.openstack.org/v1beta1
+kind: Horizon
+metadata:
+  name: horizon
+  namespace: openstack
+spec:
+  httpdCustomization:
+    customConfigSecret: custom-httpd-config
+  # ... other existing spec fields
+```
+
+Apply the configuration:
+
+```bash
+oc apply -f horizon-cr.yaml
+```
+
+### Verify the Configuration
+
+Check that Horizon pods are running:
+
+```bash
+oc get pods -n openstack -l app=horizon
+```
+
+Verify custom configuration is applied:
+
+```bash
+oc exec -it <horizon-pod-name> -n openstack -- cat /etc/httpd/conf.d/custom.conf
+```
+
+Check HTTPD configuration is valid:
+
+```bash
+oc exec -it <horizon-pod-name> -n openstack -- httpd -t
+```
+
+### Run Automated Tests with Test Operator
+
+Install the Test Operator via OLM:
+
+```yaml
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: test-operator
+  namespace: openstack-operators
+spec:
+  name: test-operator
+  source: openstack-operator-index
+  sourceNamespace: openstack-operators
+```
+
+Apply it:
+
+```bash
+oc apply -f test-operator.yaml
+```
+
+### Create the HorizonTest Custom Resource
+
+```yaml
+apiVersion: test.openstack.org/v1beta1
+kind: HorizonTest
+metadata:
+  name: horizontest-sample
+  namespace: openstack
+spec:
+  adminUsername: "admin"
+  adminPassword: "your_admin_password"
+  dashboardUrl: "https://horizon-openstack.apps.ocp.openstack.lab/"
+  authUrl: "https://keystone-public-openstack.apps.ocp.openstack.lab"
+  repoUrl: "https://review.opendev.org/openstack/horizon"
+  horizonRepoBranch: "master"
+  imageUrl: "http://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img"
+  projectName: "horizontest"
+  user: "horizontest"
+  password: "horizontest"
+  flavorName: "m1.tiny"
+  logsDirectoryName: "horizon"
+  horizonTestDir: "/var/lib/horizontest"
+  parallel: false
+  backoffLimit: 0
+```
+
+Run the tests:
+
+```bash
+oc apply -f horizontest-cr.yaml
+```
+
+Monitor test execution:
+
+```bash
+oc get pods -n openstack | grep horizontest
+oc logs -n openstack <horizontest-pod-name>
+```
+
+Retrieve test artifacts:
+
+```bash
+oc cp <horizontest-pod-name>:/mnt ./test-artifacts
+```
+
+### Manual Testing
+
+- Access the Horizon dashboard and verify it loads correctly
+- Test that custom HTTPD configurations are working as expected
+- Verify that the custom virtual host settings are applied
+- Check that the operator handles configuration updates properly
+
+### Validation Checklist
+
+- [ ] Custom configuration secret is properly mounted
+- [ ] HTTPD configuration is valid and loads without errors
+- [ ] Horizon dashboard is accessible and functional
+- [ ] Custom virtual host settings are applied
+- [ ] Operator handles secret updates correctly
+- [ ] No regression in existing functionality
+
+## Troubleshooting
+
+### Why do I see "Tool fetch_pull_request not found"?
+
+This is okay to ignore for now.
+
+![Tool not found](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402_fetch_pull_reqeust_not_found.png)
+
+---
+
 ## Jira MCP Agent
 
 The third agent provides access to Jira from Cursor. See the [jira-mcp](jira-mcp/) directory for the complete implementation with containerized deployment.
@@ -526,6 +595,144 @@ If you're attending my demonstration and want to follow along:
 4. **Test your agent**:
    - Try asking Cursor to review a PR or issue
    - Use the `@agent-name` syntax in your prompts
+
+### Complete Testing and Verification Guide
+
+#### Pre-Configuration Testing
+
+Before configuring agents in Cursor, verify they're properly set up:
+
+```bash
+# Test OpenDev Agent
+cd /path/to/cursor-opendev-review-agent
+ls -la server.sh server.py
+source venv/bin/activate
+python -c "import fastmcp, requests; print('Dependencies OK')"
+deactivate
+
+# Test GitHub Agent
+cd /path/to/cursor-github-agent
+ls -la server.sh server.py
+source venv/bin/activate
+python -c "import fastmcp, requests; print('Dependencies OK')"
+deactivate
+
+# Test Jira MCP Agent (if using)
+cd /path/to/jira-mcp
+podman images | grep jira-mcp
+test -f .env && echo ".env exists" || echo ".env missing"
+```
+
+#### Complete MCP Configuration for All Three Agents
+
+To configure all agents in Cursor at once:
+
+1. Open Cursor Settings (**Ctrl/Cmd + ,**)
+2. Search for: **MCP Servers**
+3. Paste this complete configuration:
+
+```json
+{
+  "mcpServers": {
+    "opendev-reviewer-agent": {
+      "command": "/absolute/path/to/cursor-opendev-review-agent/server.sh",
+      "description": "Analyzes OpenDev Gerrit reviews to perform automated code review."
+    },
+    "github-reviewer-agent": {
+      "command": "/absolute/path/to/cursor-github-agent/server.sh",
+      "description": "Analyzes GitHub pull requests to perform automated code review."
+    },
+    "jira-mcp": {
+      "command": "podman",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--env-file",
+        "/absolute/path/to/jira-mcp/.env",
+        "jira-mcp:latest"
+      ],
+      "description": "Provides access to Jira issues, projects, boards, and sprints."
+    }
+  }
+}
+```
+
+**Important**: Replace `/absolute/path/to/` with your actual paths.
+
+4. Save and restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
+
+#### Testing Each Agent
+
+After configuration, test each agent in Cursor:
+
+**OpenDev Agent:**
+```
+@opendev-reviewer-agent Analyze https://review.opendev.org/c/openstack/horizon/+/960204
+```
+
+**GitHub Agent:**
+```
+@github-reviewer-agent Review https://github.com/openstack-k8s-operators/horizon-operator/pull/402
+```
+
+**Jira MCP Agent:**
+```
+@jira-mcp Search for issues in project OSPRH
+```
+
+```
+@jira-mcp Get details for issue OSPRH-18672
+```
+
+#### Removing and Re-adding Agents
+
+To test the complete setup process:
+
+1. **Remove all agents** - Replace MCP configuration with:
+   ```json
+   {
+     "mcpServers": {}
+   }
+   ```
+
+2. **Restart Cursor** and verify agents don't work
+
+3. **Re-add agents** using the complete configuration above
+
+4. **Restart Cursor** and verify all agents work
+
+#### Troubleshooting
+
+**If an agent doesn't respond:**
+- Verify the `command` path is correct and absolute
+- Check that `server.sh` is executable (`chmod +x server.sh`)
+- Ensure virtual environment has all dependencies
+- Restart Cursor after configuration changes
+
+**For Jira MCP specifically:**
+- Verify container image is built: `podman images | grep jira-mcp`
+- Check `.env` file has `JIRA_URL` and `JIRA_API_TOKEN`
+- Ensure `--env-file` path is absolute
+
+**If you see "Tool not found" errors:**
+- This is often normal during initial connection
+- The agent is connected, but specific tools may not be fully loaded
+- Try the command again after a few seconds
+
+#### Key Differences Between Agents
+
+**OpenDev & GitHub Agents:**
+- Simple shell script execution
+- Uses `venv` for Python dependencies
+- Direct server.py execution
+
+**Jira MCP Agent:**
+- Containerized deployment with Podman
+- Uses `--env-file` for credentials
+- Runs in isolated container environment
+- More secure (credentials never in config file)
+- 20+ tools for comprehensive Jira integration
 
 ### Contributing
 
