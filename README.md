@@ -137,90 +137,6 @@ At the Cursor prompt, enter:
 
 ![Review OpenDev 963261](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_opendev_963261.png)
 
-## Cursor Review of OpenDev Change 960204
-
-Let me help you analyze this OpenDev review for the Horizon project.
-
-### Review #960204 Summary
-
-**Change Details:**
-- **Title**: Validate token before revoking in keystone_client
-- **Project**: openstack/horizon
-- **Author**: The change validates authentication tokens before attempting revocation
-- **Status**: Under review in the OpenDev Gerrit system
-
-### Key Changes
-
-This review introduces validation logic to check if a token is valid before attempting to revoke it in the Keystone client integration. This is a defensive programming practice that prevents unnecessary API calls and potential errors.
-
-### Analysis and Review Considerations
-
-#### 1. Code Quality and OpenStack Standards
-- The change follows OpenStack's defensive programming patterns
-- Implements proper validation before performing destructive operations
-- Adheres to the fail-fast principle
-
-#### 2. Security Implications
-✅ **Positive Security Impact:**
-- Prevents attempts to revoke invalid or already-revoked tokens
-- Reduces the attack surface by validating before making API calls
-- Follows the principle of least privilege
-
-#### 3. Performance Impact
-✅ **Performance Benefits:**
-- Reduces unnecessary API calls to Keystone
-- Avoids network overhead for invalid tokens
-- Improves overall system responsiveness
-
-#### 4. Backward Compatibility
-- Should maintain backward compatibility
-- Existing valid tokens continue to work as expected
-- Invalid token handling is improved, not changed
-
-#### 5. Test Coverage
-**Recommendations:**
-- Verify that unit tests cover the new validation logic
-- Ensure edge cases are tested (expired tokens, malformed tokens, null tokens)
-- Check that integration tests validate the Keystone client interaction
-
-#### 6. Code Review Checklist
-
-- [ ] Validation logic correctly identifies invalid tokens
-- [ ] Error handling is appropriate for different failure scenarios
-- [ ] Logging provides sufficient debugging information
-- [ ] Documentation explains the validation criteria
-- [ ] No regression in existing token revocation functionality
-- [ ] Performance benchmarks show improvement or neutral impact
-
-### Testing Recommendations
-
-To test this change:
-
-1. **Unit Testing:**
-   ```bash
-   # Run Horizon unit tests for authentication
-   tox -e py312 -- openstack_auth.tests.unit.test_auth
-   ```
-
-2. **Integration Testing:**
-   - Test with valid tokens (should revoke successfully)
-   - Test with invalid tokens (should fail validation gracefully)
-   - Test with expired tokens (should handle appropriately)
-   - Test with malformed tokens (should reject before API call)
-
-3. **Manual Testing:**
-   ```bash
-   # Deploy Horizon with the change
-   # Attempt to logout multiple times
-   # Verify no errors in logs when token is already revoked
-   ```
-
-### Conclusion
-
-This is a solid defensive programming improvement that enhances the robustness of Horizon's Keystone client integration. The change validates tokens before revocation, improving security, performance, and error handling.
-
----
-
 ## Building a GitHub Review Agent
 
 I wanted to build an agent for Cursor that analyzes GitHub reviews (pull requests). Here's the step-by-step process.
@@ -324,21 +240,6 @@ At the Cursor prompt, enter:
 ```
 
 ![Review PR-402](images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402.png)
-
-## Cursor Review of PR-402
-
-I'll help you review the PR and understand how to test it. Let me start by examining the PR details and then look at the codebase to understand the testing approach.
-
-### PR #402 Review Summary
-
-Based on my research, **PR #402** in the *openstack-k8s-operators/horizon-operator* repository introduces **custom HTTPD virtual host configuration capabilities** to the Horizon Operator. This allows users to customize the HTTPD configuration by referencing a Kubernetes Secret containing their custom configuration.
-
-### Key Changes in PR #402
-
-The PR adds:
-- A new *HttpdCustomization* field in the Horizon Custom Resource
-- Support for referencing a Kubernetes Secret containing custom HTTPD configuration
-- Integration of custom configuration into the Horizon pod's HTTPD setup
 
 ## How to Test PR #402
 
