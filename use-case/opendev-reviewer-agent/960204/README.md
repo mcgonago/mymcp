@@ -1,64 +1,67 @@
 # Summary of Changes Made by Review 960204
 
 **Review**: [Remove all dependencies/connections of old integration test code](https://review.opendev.org/c/openstack/horizon/+/960204)  
-**Status**: MERGED  
 **Project**: openstack/horizon  
 **Branch**: master  
+
+---
+
+## Changes Made by Review
 
 This review removed the deprecated Selenium WebDriver-based integration test framework from OpenStack Horizon. 
 
 ## Core Framework Files Removed
-
 These were the foundational files of the old Page Object Model framework:
 
-| File | Lines Deleted | Purpose |
-|------|---------------|---------|
-| `basewebobject.py` | 169 | Base class for all Selenium web objects |
-| `helpers.py` | 355 | Test helper functions and BaseTestCase class |
-| `decorators.py` | 176 | Test decorators (@services, @skip_because, etc.) |
-| `video_recorder.py` | (deleted) | Video recording for failed tests |
-| `README.rst` | 31 | Documentation for old framework |
+```
+openstack_dashboard/test/integration_tests/
+├── basewebobject.py - Base class for all Selenium web objects
+├── helpers.py - Test helper functions and BaseTestCase class
+├── decorators.py - Test decorators (@services, @skip_because, etc.)
+├── video_recorder.py - Video recording for failed tests
+└── README.rst - Documentation for old framework
+```
 
 ## Page Object Model Files Removed
 
 The review removed the entire page object hierarchy that implemented the UI abstraction layer:
 
-**Admin Panel Pages** (19 files):
+**Admin Panel Pages**:
 ```
-pages/admin/
+openstack_dashboard/test/integration_tests/pages/admin/
 ├── compute/
-│   ├── flavorspage.py (155 lines)
-│   ├── hostaggregatespage.py (79 lines)
-│   ├── hypervisorspage.py (20 lines)
-│   ├── imagespage.py (18 lines)
-│   └── instancespage.py (19 lines)
+│   ├── flavorspage.py
+│   ├── hostaggregatespage.py
+│   ├── hypervisorspage.py
+│   ├── imagespage.py
+│   └── instancespage.py
 ├── network/
-│   ├── floatingipspage.py (18 lines)
-│   ├── networkspage.py (38 lines)
-│   └── routerspage.py (41 lines)
+│   ├── floatingipspage.py
+│   ├── networkspage.py
+│   └── routerspage.py
 ├── system/
-│   ├── defaultspage.py (166 lines)
-│   ├── imagespage.py (17 lines)
-│   └── metadatadefinitionspage.py (128 lines)
+│   ├── defaultspage.py
+│   ├── imagespage.py
+│   └── metadatadefinitionspage.py
 └── volume/
-    ├── grouptypespage.py (70 lines)
-    ├── snapshotspage.py (18 lines)
-    ├── volumespage.py (18 lines)
-    └── volumetypespage.py (135 lines)
+    ├── grouptypespage.py
+    ├── snapshotspage.py
+    ├── volumespage.py
+    └── volumetypespage.py
 ```
 
-**Identity Pages** (4 files):
+**Identity Pages**:
 ```
-pages/identity/
+openstack_dashboard/test/integration_tests/pages/identity/
 ├── groupspage.py
 ├── projectspage.py
 ├── rolespage.py
 └── userspage.py
 ```
 
-**Project Panel Pages** (17 files):
+**Project Panel Pages**:
 ```
-pages/project/
+openstack_dashboard/test/integration_tests/pages/project/
 ├── compute/
 │   ├── imagespage.py
 │   ├── instancespage.py
@@ -79,63 +82,68 @@ pages/project/
     └── volumespage.py
 ```
 
-**Settings Pages** (2 files):
+**Settings Pages**:
 ```
-pages/settings/
+openstack_dashboard/test/integration_tests/pages/settings/
 ├── changepasswordpage.py
 └── usersettingspage.py
 ```
 
-**Core Page Files** (4 files):
+**Core Page Files**:
 ```
-pages/
-├── basepage.py (89 lines) - Base class for all pages
+openstack_dashboard/test/integration_tests/pages/
+├── basepage.py - Base class for all pages
 ├── loginpage.py - Login functionality
 ├── navigation.py - Navigation menu handling
 └── pageobject.py - Enhanced page object implementation
 ```
 
 ## Reusable UI Components (Regions) Removed
+
 The regions provided reusable components for common UI patterns:
 
-| File | Purpose |
-|------|---------|
-| `regions/baseregion.py` | Base class for all UI regions |
-| `regions/tables.py` | Table components, row actions, sorting |
-| `regions/forms.py` | Form handling and field interactions |
-| `regions/menus.py` | Dropdown and navigation menus |
-| `regions/bars.py` | Progress bars and status indicators |
-| `regions/messages.py` | Toast notifications and alert messages |
-| `regions/exceptions.py` | Custom exceptions for region handling |
+```
+openstack_dashboard/test/integration_tests/regions/
+├── baseregion.py - Base class for all UI regions
+├── tables.py - Table components, row actions, sorting
+├── forms.py - Form handling and field interactions
+├── menus.py - Dropdown and navigation menus
+├── bars.py - Progress bars and status indicators
+├── messages.py - Toast notifications and alert messages
+└── exceptions.py - Custom exceptions for region handling
+```
 
 ## Test Cases Removed
+
 The review removed 23 comprehensive test files:
 
-| Test File | Testing Area |
-|-----------|--------------|
-| `test_credentials.py` | User credential management |
-| `test_defaults.py` | Default configuration tests |
-| `test_flavors.py` | Instance flavor operations |
-| `test_floatingips.py` | Floating IP management |
-| `test_groups.py` | User group operations |
-| `test_grouptypes.py` | Volume group types |
-| `test_host_aggregates.py` | Host aggregate management |
-| `test_images.py` | Glance image operations |
-| `test_instances.py` | Nova instance lifecycle |
-| `test_keypairs.py` | SSH keypair management |
-| `test_login.py` | Authentication flows |
-| `test_metadata_definitions.py` | Metadata catalog |
-| `test_networks.py` | Neutron network operations |
-| `test_projects.py` | Project/tenant management |
-| `test_router.py` | Router operations |
-| `test_router_gateway.py` | Router gateway configuration |
-| `test_security_groups.py` | Security group rules |
-| `test_user_settings.py` | User preference settings |
-| `test_users.py` | User account management |
-| `test_volume_snapshots.py` | Volume snapshot operations |
-| `test_volumes.py` | Cinder volume operations |
-| `test_volumetypes.py` | Volume type management |
-| `test-data/empty_namespace.json` | Test data file |
+```
+openstack_dashboard/test/integration_tests/tests/
+├── test_credentials.py - User credential management
+├── test_defaults.py - Default configuration tests
+├── test_flavors.py - Instance flavor operations
+├── test_floatingips.py - Floating IP management
+├── test_groups.py - User group operations
+├── test_grouptypes.py - Volume group types
+├── test_host_aggregates.py - Host aggregate management
+├── test_images.py - Glance image operations
+├── test_instances.py - Nova instance lifecycle
+├── test_keypairs.py - SSH keypair management
+├── test_login.py - Authentication flows
+├── test_metadata_definitions.py - Metadata catalog
+├── test_networks.py - Neutron network operations
+├── test_projects.py - Project/tenant management
+├── test_router.py - Router operations
+├── test_router_gateway.py - Router gateway configuration
+├── test_security_groups.py - Security group rules
+├── test_user_settings.py - User preference settings
+├── test_users.py - User account management
+├── test_volume_snapshots.py - Volume snapshot operations
+├── test_volumes.py - Cinder volume operations
+├── test_volumetypes.py - Volume type management
+└── test-data/
+    └── empty_namespace.json - Test data file
+```
 
 ## Configuration and Build Files Modified
 
@@ -143,13 +151,13 @@ The review removed 23 comprehensive test files:
 |------|--------|---------|
 | `tox.ini` | Modified | Removed `[testenv:integration]` section |
 | `tools/executable_files.txt` | Modified | Removed references to integration gate scripts |
-| `openstack_dashboard/templates/horizon/_scripts.html` | -3 lines | Removed integration_tests_support conditional block |
+| `openstack_dashboard/templates/horizon/_scripts.html` | Modified | Removed integration_tests_support conditional block |
 
 **Added Files**:
 
 | File | Change | Purpose |
 |------|--------|---------|
-| `releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml` | +9 lines | Release note documenting the removal |
+| `releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml` | Added | Release note documenting the removal |
 
 ## What Was Preserved
 
@@ -169,19 +177,7 @@ Critically, the review **did NOT remove** the following modern test infrastructu
 - `horizon-integration-pytest` - CI/CD job for integration testing
 - `horizon-ui-pytest` - CI/CD job for UI testing
 
-### Breakdown by Category
-
-| Category | Files Removed | Approx. Lines Deleted |
-|----------|---------------|----------------------|
-| Core Framework | 5 files | ~731 lines |
-| Page Objects | 46 files | ~3,500+ lines |
-| Regions (UI Components) | 7 files | ~500+ lines |
-| Test Cases | 23 files | ~4,000+ lines |
-| Configuration/Build | 3 files modified | -3 lines (net) |
-| Documentation | 1 file | 31 lines |
-| **Total** | **100 files** | **~9,577 lines** |
-
-### The Release Note
+## The Release Note
 
 The review added a release note explaining the change:
 
@@ -221,7 +217,7 @@ upgrade:
 - **CI/CD integration**: Zuul jobs continue to run tests
 - **Developer workflow**: `tox -e integration-pytest` and `tox -e ui-pytest` work
 
-## Testing
+## Test invocation
 
 Developers now use:
 ```bash
@@ -254,6 +250,8 @@ The Horizon project now has a modern, maintainable testing infrastructure that f
 
 - **Review**: https://review.opendev.org/c/openstack/horizon/+/960204
 - **Jira**: OSPRH-18672: Investigate all the dependencies/connections of old integration tests
+
+---
 
 ## Additional Resources
 
