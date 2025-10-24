@@ -28,6 +28,7 @@ This document describes how I built my MCP agents for Cursor, including:
   - [Testing the Agent](#testing-the-agent-1)
 - [Building a GitHub Review Agent](#building-a-github-review-agent)
   - [Set Up the Environment](#set-up-the-environment-1)
+  - [Configure GitHub Authentication](#configure-github-authentication)
   - [Define the MCP Server Script](#define-the-mcp-server-script-2)
   - [Create the Server Launcher](#create-the-server-launcher-2)
   - [Configure Cursor](#configure-cursor-2)
@@ -170,6 +171,40 @@ source venv/bin/activate
 pip install requests fastmcp
 pip install PyGithub
 ```
+
+### Configure GitHub Authentication
+
+The GitHub agent requires a personal access token to fetch PR data from the GitHub API.
+
+#### Create a GitHub Personal Access Token
+
+1. Go to https://github.com/settings/tokens
+2. Click **"Generate new token"** → **"Generate new token (classic)"**
+3. Give it a descriptive name: `Cursor GitHub MCP Agent`
+4. Select scopes:
+   - ✅ `public_repo` (for accessing public repositories)
+   - ✅ `repo` (only if you need access to private repositories)
+5. Click **"Generate token"**
+6. **Copy the token** (you won't be able to see it again!)
+
+#### Set Up the Environment File
+
+Create a `.env` file in the `cursor-github-agent` directory:
+
+```bash
+cd cursor-github-agent
+cp example.env .env
+```
+
+Edit the `.env` file and replace `your_github_token_here` with your actual token:
+
+```bash
+GITHUB_TOKEN=ghp_your_actual_token_here
+```
+
+> [!WARNING]
+> **Never commit the `.env` file to Git!** It contains your personal access token.  
+> The `.gitignore` file is already configured to exclude it.
 
 ### Define the MCP Server Script
 
