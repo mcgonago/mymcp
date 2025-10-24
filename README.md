@@ -130,10 +130,9 @@ Click **+ Add new global MCP server** and paste this JSON configuration (remembe
 }
 ```
 
-#### Step 4: Save and Reload Cursor
+#### Step 4: Reload Cursor
 
-**Save your new mcp.json configuration**  
-Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
+Press **Ctrl+Shift+P** (or Cmd+Shift+P on Mac) → Type **"Developer: Reload Window"** → Press Enter
 
 ### Testing the Agent
 
@@ -237,10 +236,9 @@ Paste the below JSON configuration (remember to replace `<your-mymcp-cloned-repo
 }
 ```
 
-#### Step 4: Save and Reload Cursor
+#### Step 4: Reload Cursor
 
-**Save your new mcp.json configuration**  
-Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
+Press **Ctrl+Shift+P** (or Cmd+Shift+P on Mac) → Type **"Developer: Reload Window"** → Press Enter
 
 ### Testing the Agent
 
@@ -433,8 +431,7 @@ To configure all agents in Cursor at once:
 }
 ```
 
-4. **Save your new mcp.json configuration**  
-   Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
+4. Save and restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
 
 #### Testing Each Agent
 
