@@ -1,0 +1,1071 @@
+#+OPTIONS: ^:nil num:nil \n:t
+#+TITLE: HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_5
+#+SETUPFILE: theme-readtheorg.setup
+
+* TL;DR
+
+This document investigates [[https://issues.redhat.com/browse/OSPRH-18672][OSPRH-18672: Investigate all the dependencies/connections of old integration tests]]
+
+This is revisit #5 of [[https://spaces.redhat.com/spaces/~omcgonag/pages/686722277/HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_4][HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_4]]
+
+Review at [[https://review.opendev.org/c/openstack/horizon/+/960204][960204: Remove all dependencies/connections of old integration test code]]
+
+* Next to look at
+*⚠️ Key Concerns from Reviewers:*
+
+Release Notes Required (Ivan Anfimov)
+- Need to add release note about this major change
+
+Configuration Dependencies (Radomir Dopieralski)
+- `horizon.conf` and `config.py` files may still be needed
+- Selenium tests depend on integration test config
+- Module import errors when integration tests are removed
+
+Your Own Acknowledgment:
+- You've noted some solutions are temporary/workarounds
+- Need to re-evaluate after test results
+
+
+* Where did I leave off?
+** reply (as always)
+
+jjasek
+: Hi Owen, I think that there is nothing needed to do when you change hrozion.conf
+:
+: When you change something in horizon.conf (like dashboard_url ) to point to the http://10.0.148.47/dashboard/project for example,
+: then the affect should be applied immediately when you run something that consumes this (tests).
+:
+: In my case when I run tests from local and I do some change in horizon.conf, then I just hit tox -e integration-pytest and it runs the tests with all changes in horizon.conf applied
+:
+: I hope I understand your question :smile: my brain is no much fresh today.
+
+jjasek
+: Heh.... This is good question about this setup.cfg.
+:
+: I am wondering about the oslo.config there, because as far as I know oslo.config is not fully implemented for Horizon yet.
+:
+: We talked about it on PTG. Radomir will be probably the best person for this question as he was working on "start implement oslo.config for Horizon"
+: - but if you will have a meeting about it, I would be happy to attend.
+:
+: I am going to eat and sleep, good night! :slightly_smiling_face:
+
+omcgonag
+: Talk tomorrow
+
+** A quick reach out to Jan on slack
+
+: Hi Jan,
+:
+: I finally got back to the integration tests review https://review.opendev.org/c/openstack/horizon/+/960204
+: I have one question in there about a one line change in setup.cfg
+:
+: I was also able to get my devstack PSI up at http://10.0.148.47/dashboard/project
+:
+: I plan on running these steps when I get in (that you had given me)
+:
+: Quick question - after I update horizon.conf - what test command line(s) do I run?
+:
+: Thanks in advance
+:
+:
+: git clone https://github.com/openstack/horizon
+: cd horizon
+:
+: Then in horizon.conf change:
+: - instead of localhost you want to point to the address of your instance in psi (where horizon UI is accessible)
+: - and you need to change *credentials* in horizon.conf because in default there is password *secretadmin* and in default deploy it is only *secret*
+:
+: openstack_dashboard/test/integration_tests/horizon.conf
+:
+: [dashboard]
+: # Where the dashboard can be found (string value)
+: dashboard_url=http://localhost/dashboard/
+:
+: # Where the keystone endpoint is
+: auth_url=http://localhost/identity/v3
+
+* Finally, I understand a bit more about You are in detatched HEAD
+
+This sequence gets me the detached HEAD - which is ok...
+: git clone https://github.com/openstack/horizon horizon-integration-tests-960204
+: cd horizon-integration-tests-960204
+: git fetch https://review.opendev.org/openstack/horizon refs/changes/04/960204/9 && git checkout FETCH_HEAD
+
+Just, right after, it is a good protocol to create your development branch *integration-tests-cleanup* and go from there:
+: git clone https://github.com/openstack/horizon horizon-integration-tests-960204
+: cd horizon-integration-tests-960204
+: git fetch https://review.opendev.org/openstack/horizon refs/changes/04/960204/9 && git checkout FETCH_HEAD
+: git fetch origin
+: git checkout -b integration-tests-cleanup         <== DO THIS
+
+Seeing the detached HEAD:
+: $ git clone https://github.com/openstack/horizon horizon-integration-tests-960204
+: $ cd horizon-integration-tests-960204
+: $ git fetch https://review.opendev.org/openstack/horizon refs/changes/04/960204/9 && git checkout FETCH_HEAD
+: remote: Counting objects: 4630, done
+: remote: Finding sources: 100% (12/12)
+: remote: Total 12 (delta 11), reused 12 (delta 11)
+: Unpacking objects: 100% (12/12), 961 bytes | 192.00 KiB/s, done.
+: From https://review.opendev.org/openstack/horizon
+:  * branch                refs/changes/04/960204/9 -> FETCH_HEAD
+: Note: switching to 'FETCH_HEAD'.
+:
+: You are in 'detached HEAD' state. You can look around, make experimental
+: changes and commit them, and you can discard any commits you make in this
+: state without impacting any branches by switching back to a branch.
+:
+: If you want to create a new branch to retain commits you create, you may
+: do so (now or later) by using -c with the switch command. Example:
+:
+:   git switch -c <new-branch-name>
+:
+: Or undo this operation with:
+:
+:   git switch -
+:
+: Turn off this advice by setting config variable advice.detachedHead to false
+:
+: HEAD is now at 82401b61d [WIP] Remove all dependencies/connections of old integration test code
+
+
+* Write up steps to create PSI instance and point ui-pytest against it
+Moved all this good stuff to [[https://spaces.redhat.com/spaces/~omcgonag/pages/702026699/HOWTO_install_devstack_on_psi][HOWTO_install_devstack_on_psi]] (*DONE*)
+
+* Can now see my Horizon dashboard
+My PSI node is at 10.0.148.47 - I can see the dashboard
+: http://10.0.148.47/dashboard/project
+
+[[file:../images/dfg_ui_psi_instance_omcgonag_devstack_psi_dashboard.png]]
+
+* Update horizon.conf to run integration tests
+Need to update horizon.conf so that you can connect to the dashboard from your laptop
+
+From Jan:
+- Create Instace in PSI (*DONE*)
+- deploy devstack (*DONE*)
+
+Clone horizon on your laptop - you need to point the integration tests against your PSI deployed devstack
+: git clone https://github.com/openstack/horizon
+: cd horizon
+
+Then in horizon.conf change:
+- instead of *localhost* you want to point to the address of your instance in psi (where horizon UI is accessible)
+- and you need to change *credentials* in horizon.conf because in default there is password *secretadmin* and in default deploy it is only *secret*
+
+: X
+: iyaml openstack_dashboard/test/integration_tests/horizon.conf
+:
+: [dashboard]
+: # Where the dashboard can be found (string value)
+: dashboard_url=http://localhost/dashboard/
+:
+: # Where the keystone endpoint is
+: auth_url=http://localhost/identity/v3
+
+X.X STEPXX: remove WIP
+======================
+
+grep "git clone" HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests*.txt
+
+How to checkout latest version of my patch?
+
+: git clone https://github.com/openstack/horizon horizon-integration-tests-960204
+: cd horizon-integration-tests-960204
+: git fetch https://review.opendev.org/openstack/horizon refs/changes/04/960204/9 && git checkout FETCH_HEAD
+
+Where was last time I made a change and pushed things?
+
+file: ~/Work/howto_documents_pages/org/HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_4.org
+
+: git config core.editor "emacsclient"
+: export EDITOR=emacsclient
+: M-x server-start
+
+: git add setup.cfg openstack_dashboard/test/integration_tests
+: git commit --amend -s
+: git review
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-osprh_18672]$ git commit --amend -s
+: hint: Waiting for your editor to close the file...
+: Waiting for Emacs...
+: [detached HEAD f96bd0da2] Remove all dependencies/connections of old integration test code
+:  Date: Mon Sep 8 16:56:15 2025 -0400
+:  127 files changed, 2 insertions(+), 14875 deletions(-)
+:  delete mode 100644 openstack_dashboard/test/integration_tests/README.rst
+:  delete mode 100644 openstack_dashboard/test/integration_tests/basewebobject.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/decorators.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/helpers.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/flavorspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/hostaggregatespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/hypervisorspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/imagespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/instancespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/floatingipspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/networkspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/routerspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/overviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/defaultspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/imagespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/metadatadefinitionspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/resource_usage/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/system_info/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/grouptypespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/snapshotspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/volumespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/volumetypespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/basepage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/groupspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/projectspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/rolespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/userspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/loginpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/navigation.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/pageobject.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/apiaccesspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/imagespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/instancespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/keypairspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/overviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/servergroupspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/floatingipspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/networkoverviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/networkspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/networktopologypage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/routerinterfacespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/routeroverviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/routerspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/security_groups/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/security_groups/managerulespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/securitygroupspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/object_store/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/volumes/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/volumes/snapshotspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/volumes/volumespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/settings/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/settings/changepasswordpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/settings/usersettingspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/bars.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/baseregion.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/exceptions.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/forms.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/menus.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/messages.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/tables.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test-data/empty_namespace.json
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_credentials.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_defaults.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_flavors.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_floatingips.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_groups.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_grouptypes.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_host_aggregates.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_images.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_instances.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_keypairs.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_login.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_metadata_definitions.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_networks.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_projects.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_router.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_router_gateway.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_security_groups.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_user_settings.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_users.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_volume_snapshots.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_volumes.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_volumetypes.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/video_recorder.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/conftest.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_credentials.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_defaults.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_federation_login.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_flavors.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_floatingips.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_groups.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_grouptypes.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_host_aggregates.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_images.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_instances.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_keypairs.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_metadata_definitions.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_networks.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_projects.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_routers.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_security_groups.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_settings.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_user_credentials.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_users.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_volume_snapshots.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_volumes.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_volumetypes.py
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-osprh_18672]$ git review
+: remote:
+: remote: Processing changes: updated: 1 (\)
+: remote: Processing changes: updated: 1 (|)
+: remote: Processing changes: refs: 1, updated: 1 (|)
+: remote: Processing changes: refs: 1, updated: 1, done
+: remote: commit f96bd0d: warning: subject >50 characters; use shorter first paragraph
+: remote:
+: remote: SUCCESS
+: remote:
+: remote:   https://review.opendev.org/c/openstack/horizon/+/960204 Remove all dependencies/connections of old integration test code
+: remote:
+: remote: The following approvals got outdated and were removed:
+: remote: * Verified-1 by Zuul
+: remote:
+: remote:
+: To ssh://review.opendev.org:29418/openstack/horizon.git
+:  * [new reference]       HEAD -> refs/for/master
+
+
+* Where did I leave things off with the last revision?
+QUESTION: Do I do this through my new review.opendev.org MCP?
+
+: ask:
+:
+: I am revisiting my review at https://review.opendev.org/c/openstack/horizon/+/960204
+: please give it a high level assesment on the changes.
+: I need to remove the [WIP] tag and let the reviewers do the review
+
+** answer
+I'll analyze the OpenDev.Review change at https://review.opendev.org/c/openstack/horizon/+/960204 to give you a high-level assessment before you remove the [WIP] tag.
+
+** High-Level Assessment
+[[https://review.opendev.org/c/openstack/horizon/+/960204][Change 960204]]]
+
+** Change Overview
+- *Title:* [WIP] Remove all dependencies/connections of old integration test code
+- *Author:* Owen McGonagle (omcgonag@redhat.com) - *That's you!*
+- *Project:* openstack/horizon
+- *Branch:* master
+- *Status:* NEW
+- *Topic:* review-branch
+- *Created:* September 8, 2025
+- *Last Updated:* September 10, 2025
+
+* Scope & Impact Analysis
+
+*📊 Massive Cleanup Operation:*
+- *Files Changed:* 100 files
+- *Lines Removed:* 9,578 lines
+- *Lines Added:* 1 line (net change: -9,577)
+- *Scope:* Complete removal of old integration test infrastructure
+
+*🎯 What's Being Removed:*
+- Entire *openstack_dashboard/test/integration_tests/* directory structure
+
+#+BEGIN_EXAMPLE
+TODO: All that is there is this
+
+$ ls openstack_dashboard/test/integration_tests
+config.py  horizon.conf  __init__.py
+#+END_EXAMPLE
+
+- All integration test pages, tests, and supporting code
+- Configuration files (*setup.cfg*, *tox.ini* entries)
+- Template references (*_scripts.html*)
+- Documentation (*README.rst*)                <== is that needed anymore?
+
+** Review Status & Feedback
+
+*✅ Positive Indicators:*
+- *No blocking reviews* - no negative Code-Review scores
+- *Active discussion* with reviewers (Ivan Anfimov, Radomir Dopieralski)
+- *Iterative improvements* - you've been addressing feedback
+
+*⚠️ Key Concerns from Reviewers:*
+
+Release Notes Required (Ivan Anfimov)
+- Need to add release note about this major change
+
+Configuration Dependencies (Radomir Dopieralski)
+- `horizon.conf` and `config.py` files may still be needed
+- Selenium tests depend on integration test config
+- Module import errors when integration tests are removed
+
+Your Own Acknowledgment:
+- You've noted some solutions are temporary/workarounds
+- Need to re-evaluate after test results
+
+Recommendation: Ready to Remove [WIP] Tag ✅
+
+Why it's ready
+- *Comprehensive cleanup* - you've systematically removed all old integration test code
+- *Active engagement* - you're responding to reviewer feedback
+- *Iterative approach* - you've been fixing issues as they arise
+- *No blocking reviews* - reviewers are providing constructive feedback, not blocking
+
+*Before removing [WIP], consider:*
+- *Add release note* as requested by Ivan
+- *Address the config dependency* concern from Radomir
+- *Document the migration path* for any remaining dependencies
+
+This is a substantial architectural change that removes legacy code - exactly the kind of cleanup that benefits the project long-term.
+- the reviewers seem engaged and constructive rather than blocking.
+
+*Go ahead and remove the [WIP] tag!*
+
+* ask: please create a release note for the changes that have already gone into this review
+Run cursor INSIDE this directory
+: /home/omcgonag/Work/horizon-integration-tests-960204
+
+: ask: please create a release note for the changes that have already gone into this review
+
+** answer
+I'll help you create a release note for the changes in this review.
+- First, let me examine the current state of the repository to understand what changes have been made.
+- Now let me check the current state of the integration tests directory to understand what was removed:
+- Now I have a clear understanding of the changes.
+
+Let me create a release note for this significant change. Based on the commit, this removes all the old integration test code and dependencies, which is a major cleanup effort.
+- I've successfully created a release note for the changes in this review. Here's what I found and documented:
+
+** Summary of Changes
+The current commit (82401b61d) represents a significant cleanup effort that removes all legacy integration test code from the Horizon codebase.
+
+Specifically:
+- *100 files changed* with *9,578 deletions* and only *1 insertion*
+- Complete removal of the old Selenium-based integration test framework
+- Elimination of page objects, test cases, and utilities in openstack_dashboard/test/integration_tests/
+- Removal of related configuration and dependencies from setup.cfg and tox.ini
+
+Release Note Created
+I've created a new release note file: `remove-legacy-integration-tests-82401b61d354845fd3017f55323c30e94047737e.yaml`
+
+The release note follows the established format used in the project and documents this as a feature that:
+- Removes legacy integration test code and dependencies
+- Eliminates over 9,500 lines of deprecated test code
+- Simplifies the project structure
+- Is part of the ongoing effort to modernize Horizon's testing approach
+
+The release note is now ready and follows the same structure and style as other release notes in the project.
+
+** What does the release note look like?
+
+: $ git status
+: HEAD detached at FETCH_HEAD
+: Untracked files:
+:   (use "git add <file>..." to include in what will be committed)
+: 	releasenotes/notes/remove-legacy-integration-tests-82401b61d354845fd3017f55323c30e94047737e.yaml
+:
+: nothing added to commit but untracked files present (use "git add" to track)
+
+** What is under the releaenotes currently?
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ ls -lrt releasenotes/notes/
+: total 1128
+: -rw-r--r--. 1 omcgonag omcgonag  585 Oct  9 16:23 Selectable-Themes-Setting-863c4686f71c70d8.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  419 Oct  9 16:23 bp-angular-table-directive-1b593f2ad28c2845.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  301 Oct  9 16:23 bp-angular-schema-form-bbe1aedf644b53db.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  433 Oct  9 16:23 bp-angular-performance-strict-di-3cf325d8bfca8487.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  245 Oct  9 16:23 bp-allow-users-change-expired-password-19223784fdf5059b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  135 Oct  9 16:23 bp-allow-launching-ports-b1fcc495777b7f4c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  309 Oct  9 16:23 bp-admin-views-filter-first-5b0d8a02b1271135.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  219 Oct  9 16:23 bp-admin-manage-fips-5aa409d3502b031a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  247 Oct  9 16:23 bp-add-server-metadata-a5d5582966ef25c5.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  550 Oct  9 16:23 bp-add-scheduler-hints-77600faec041e134.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  138 Oct  9 16:23 angular-features-d677356f161322d6.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  566 Oct  9 16:23 angular-direct-1b156f152590ab93.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  109 Oct  9 16:23 allow-non-admins-cold-migrate.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  147 Oct  9 16:23 admin-state-variable.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  218 Oct  9 16:23 admin-redirect-on-login-6a818fe886621a14.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  466 Oct  9 16:23 admin-neutron-l3-agents-dd6274467572906b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  499 Oct  9 16:23 add-virtio-forwarder-vnic-type-03eba218d36e2aae.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   70 Oct  9 16:23 add-totp-support-d14d01b038e5deea.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  179 Oct  9 16:23 add-support-to-floating-ip-port-forwardings-3d0d43a2d997ce79.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  273 Oct  9 16:23 add-show_agents_column-setting-to-OPENSTACK_NEUTRON_NETWORK-c1c8e76c61c3d7f0.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  270 Oct  9 16:23 add-server-groups-quota-management-0c1dc5763a3b893c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  107 Oct  9 16:23 add-networks-pagination-4c05d784998fafb2.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  221 Oct  9 16:23 add_enable_metadata_and_enable_net_ports_options-8213bb18558031a8.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  628 Oct  9 16:23 add-domain-dropdown-65006187e5605735.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  273 Oct  9 16:23 add_default_user_data-76d9c17e474fc34e.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  327 Oct  9 16:23 add_default_availability_zone-9c070832b2992958.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  265 Oct  9 16:23 add-credentials-totp-with-qr.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   83 Oct  9 16:23 add-create-button-to-admin-panel-02cbe5d96036ac4c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  260 Oct  9 16:23 add-clouds-yaml-f72b9a0b7df2aa79.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  434 Oct  9 16:23 action-results-303c282165b60f47.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  198 Oct  9 16:23 1637490-c29444e4eb458087.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  614 Oct  9 16:23 bp-neutron-trunk-ui-72e05888e68502c4.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  563 Oct  9 16:23 bp-neutron-rbac-policies-9cv77nu2k93ieh4r.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  518 Oct  9 16:23 bp-network-ports-tenant-58a9d5ba925f1d3d.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  645 Oct  9 16:23 bp-network-bandwidth-limiting-qos-df3d667b1a644e30.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  152 Oct  9 16:23 bp-mks-console-support-a943797a8bad14ca.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  247 Oct  9 16:23 bp-mitigate-breach-attacks-dd54b705e22363b0.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  133 Oct  9 16:23 bp-local-settings-override-mechanism-6c8632432cf1f44c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag 1103 Oct  9 16:23 bp-less-customization-templates-30384e91c5565328.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  150 Oct  9 16:23 bp-launch-instance-volume-quotas-490070a36cadfe8d.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  377 Oct  9 16:23 bp-kubernetes-config-gen-bcebcbd8f9fb9991.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  240 Oct  9 16:23 bp-keystone-federation-protocol-mapping-a6ea9f7c35d2d6f0.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  545 Oct  9 16:23 bp-k2k-horizon-9577253d626337c1.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   81 Oct  9 16:23 bp-integration-with-cinder-volume-encryption-80a3fe4ff66314b2.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  346 Oct  9 16:23 bp-integration-tests-hardening-8e94e87bc548c1fe.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  388 Oct  9 16:23 bp-integrate-magic-search-03a97d4431d7c3d1.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  283 Oct  9 16:23 bp-horizon-vendor-split-4451bc1988485957.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  764 Oct  9 16:23 bp-horizon-glance-large-image-upload-c987dc86bab38761.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  637 Oct  9 16:23 bp-handle-multiple-login-sessions-from-same-user-in-horizon-448baa6534a8a451.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  789 Oct  9 16:23 bp-global-default-service-region-0cafecaafa1af5be.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  201 Oct  9 16:23 bp-enable-angular-launch-instance-897f7bb227711c86.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  121 Oct  9 16:23 bp-edit-server-metadata-7e6b00946a2e793a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  583 Oct  9 16:23 bp-dj110-438f26c21f283c46.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  393 Oct  9 16:23 bp-configurable-boot-sources-4ba89f3b2a927801.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  652 Oct  9 16:23 bp-cinder-consistency-groups-b0aba555b1ed4a6c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  726 Oct  9 16:23 bp-cinder-consistency-groups-7cc98fda0ff3bb7a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  412 Oct  9 16:23 bp-cache-templates-4ab00dcda195a03a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  430 Oct  9 16:23 bp-bootstrap-theme-preview-65da171c9b943646.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  231 Oct  9 16:23 bp-application-credentials-26aa907271e467c2.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  647 Oct  9 16:23 bp-angular-template-overrides-9f05ffd61367245a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  373 Oct  9 16:23 bp-angularize-swift-9a1b44aa3646bc8c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  731 Oct  9 16:23 bug-1779268-44848e4d2c69fddc.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  461 Oct  9 16:23 bug-1755339-2dfa3ce2accb568f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  188 Oct  9 16:23 bug-1746706-8d2f982c514f22b1.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  247 Oct  9 16:23 bug-1709056-33d18a562840e334.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  326 Oct  9 16:23 bug-1699144-configurable-image-visibility-fda69cb25d960efb.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  222 Oct  9 16:23 bug-1678109-4440ebe90908647d.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  437 Oct  9 16:23 bug-1640049-1195315b5f591ab0.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  259 Oct  9 16:23 bug-1635505-3807fd0151702a5f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  318 Oct  9 16:23 bug-1618235-59865fa0e5991e63.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  176 Oct  9 16:23 bug-1595913-5f0cd019b7c2173a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  231 Oct  9 16:23 bug-1593903-8fb8721dc2449f71.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  100 Oct  9 16:23 bug-1588663-6fab83e9d89b20d2.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  568 Oct  9 16:23 bug-1585682-abd815f290e494d3.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  230 Oct  9 16:23 bug-1568764-cached-template-loaders-3536f35e11099eba.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  284 Oct  9 16:23 bug-123741-4be1aa90b9d44e40.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  480 Oct  9 16:23 bug-1226003-drop-simple-fip-disassociation-3c751297b467597e.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  120 Oct  9 16:23 bp-volume-snapshot-backups-54e4d18633fd4c5d.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  262 Oct  9 16:23 bp-update-nova-enforce-policies-c207166bc3a714d5.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  829 Oct  9 16:23 bp-update-dependencies-newton-3bd257faa37d3dda.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  307 Oct  9 16:23 bp-system-scope-switch-c610c028bd5de706.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  107 Oct  9 16:23 bp-support-rescue-instance-a7b8578c395abd3e.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  278 Oct  9 16:23 bp-support-extra-prop-for-project-and-user-e8a4578c395a8ade.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  153 Oct  9 16:23 bp-restrict-private-network-input-5e5bd5978b273c62.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  303 Oct  9 16:23 bp-port-allowed-address-pairs-extension-a05c3a864f494b0c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  204 Oct  9 16:23 bp-pike-docs-overhaul-b4f01f45ced58e07.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  379 Oct  9 16:23 bp-password-expires-validation-28b7ea155404b778.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  195 Oct  9 16:23 bp-pagination-for-flavor-f603fd7630e13756.yaml
+: -rw-r--r--. 1 omcgonag omcgonag 1011 Oct  9 16:23 bp-ng-users-01212620d644289f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  483 Oct  9 16:23 bp-ng-server-groups-c60849796a273138.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  565 Oct  9 16:23 bp-ng-keypairs-876c38a1a8aed60f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  253 Oct  9 16:23 bp-next-steps-4c7064e52d5abcf5.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  372 Oct  9 16:23 bp-neutron-trunk-ui-queens-1d59df887b9a079a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  162 Oct  9 16:23 django-version-queens-b7785b96ecbceaf0.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  491 Oct  9 16:23 django-2.2-2aff36c491fb7b95.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  195 Oct  9 16:23 django-2.0-b37c6e91d20519fa.yaml
+: -rw-r--r--. 1 omcgonag omcgonag 1121 Oct  9 16:23 deprecations-in-stein-4090a0b816ba2d81.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  348 Oct  9 16:23 deprecation-of-old-wsgi-file-7ffdeae78698ff93.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  404 Oct  9 16:23 deprecation-of-default-subnet-pool-label-options-b05ebccbf6f68ecf.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  432 Oct  9 16:23 deprecate-nova-extensions-blacklist-b6285bf02c4011f8.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  457 Oct  9 16:23 deprecate-neutron-quota-legacy-144468a1b269cce8.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  467 Oct  9 16:23 deprecate-lbaas-v1-dashboard-1f9c48d7c6997b1f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  599 Oct  9 16:23 deprecate-django-panels-for-images-keyspairs-roles-36b9c234eef71b51.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  501 Oct  9 16:23 deprecate-django-launch-instance-form-cc176ad708e2f1f7.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  294 Oct  9 16:23 delete-update-flavor-feature-6ed1e482b91f5e08.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  133 Oct  9 16:23 defaults-tab-rename.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  647 Oct  9 16:23 default-settings-moved-1e6a60408c47e2e2.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  334 Oct  9 16:23 default-keystone-api-v3-dc201adba4255752.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  147 Oct  9 16:23 default-instance-boot-source-0cd60b3090ef4b38.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  187 Oct  9 16:23 create-port-with-security-groups-68afba4d26f1eac1.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  342 Oct  9 16:23 configurable-volume-delete.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  387 Oct  9 16:23 cleanup-cache-command-64a5020755c5e05c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  372 Oct  9 16:23 cinder-v3-only-daae11ff71a26ba7.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  472 Oct  9 16:23 cinder-user-facing-messages-92cfd25492616d6d.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  101 Oct  9 16:23 cinder-backup-cinder-messages-2127d04da3c82033.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  399 Oct  9 16:23 cinder-api-v3-by-default-d6e3c12760fdf655.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  164 Oct  9 16:23 change-prefixlen-field.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  221 Oct  9 16:23 change-metadef-for-cinder-volume-type-f65dd215d2a3ce75.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  455 Oct  9 16:23 change-libsass-pyscss-120e0e847470261b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  183 Oct  9 16:23 change-keystone-url-default-value-6a56397acf4f7328.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  164 Oct  9 16:23 change-keystone-default-role-3f95b6af11aed63b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  198 Oct  9 16:23 change-default-image-visibility-560c3b6ab2830cdc.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  166 Oct  9 16:23 bump-script-size.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  283 Oct  9 16:23 bug-cd9099c1ba78d637.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  347 Oct  9 16:23 bug-2039225-39b7060a7e4bff07.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  217 Oct  9 16:23 bug_1963652_fix_policy_for_resume-a719efb23054c708.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  323 Oct  9 16:23 bug-1822849-2833b5e6a5d021b7.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  518 Oct  9 16:23 bug-1792524-7497aabcf6bc1e81.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  485 Oct  9 16:23 bug-1785263-46edf7313d833b4c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  172 Oct  9 16:23 fix-image-sharing-visibility.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  174 Oct  9 16:23 fix-default-userdata-3cb75b85b1a5708f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  239 Oct  9 16:23 fix-admin-state-status.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  255 Oct  9 16:23 filter-first-identity-panels-139c4a5b7a696707.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  442 Oct  9 16:23 feature-system-scope-a88a07b7f414b3d6.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  371 Oct  9 16:23 extensible-service-a8689c89a71f8961.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  192 Oct  9 16:23 extensible-header-ac3c94f3057c1b2a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  238 Oct  9 16:23 excise-trove-ce576b50fbcd15ad.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  241 Oct  9 16:23 excise-sahara-7eff95feb416ce4b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  566 Oct  9 16:23 enhance-tox-26f73a048b88df2f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   91 Oct  9 16:23 enable-phantomjs-selenium-cce59f25cb327ca2.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  352 Oct  9 16:23 enable-neutron-quotas-by-default-7c89cda96a972a48.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  307 Oct  9 16:23 enable-js-catalog-plugin-1885df911148247a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  351 Oct  9 16:23 edit-port-security-groups-f650fc98f5e10eb8.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  474 Oct  9 16:23 dynamic-themes-b6b02238e47b99f8.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  644 Oct  9 16:23 drop-settings-enable-fireall-vpn-fad7c1a4cd96df2b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  204 Oct  9 16:23 drop-python27-support-160366ba52a1205b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  440 Oct  9 16:23 drop-pki-token-d8bc4d665887aedf.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  455 Oct  9 16:23 drop-nova-network-2186d008f696cfa7.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  436 Oct  9 16:23 drop-nova-extensions-blacklist-7718f0ef622e3af8.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  284 Oct  9 16:23 drop-neutron-quota-legacy-1efd1f1924ae3489.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  455 Oct  9 16:23 drop-LBaaS-v1-dashboard-d767b0bde5274af5.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  274 Oct  9 16:23 drop-keystone-v2-support-04c7658f3bea67ac.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  140 Oct  9 16:23 drop-glance-v1-support-2c161d19b179951e.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  193 Oct  9 16:23 drop-django-wsgi-a6a1ae2df4e05118.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  305 Oct  9 16:23 drop-django-launch-instance-form-c6543e1d52786b79.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  199 Oct  9 16:23 drop-django3.2-support-94b52cf6d175a818.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  199 Oct  9 16:23 drop-django22-support-d0e2dea1509228a2.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  233 Oct  9 16:23 drop-django111-support-8803cfa3a6402dbe.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  670 Oct  9 16:23 drop-deprecated-settings-rocky-dd8c853d979d6990.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  317 Oct  9 16:23 drop-cgroup-c1f6b169ba10a5d3.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  399 Oct  9 16:23 drop-action-strings-attributes-64f0cb0323f629ee.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  278 Oct  9 16:23 do-not-hide-region.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  937 Oct  9 16:23 domains-0581aa42773d5f41.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  210 Oct  9 16:23 django32-support-78232a850d04842c.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  493 Oct  9 16:23 keystone-federation-idp-d4456dd3b3081a53.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  358 Oct  9 16:23 keystone-endpoint-type-ab4151eca35e04c0.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  626 Oct  9 16:23 keystone-admin-endpoint-no-longer-required-06a8d29dfdb3b1cd.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  352 Oct  9 16:23 keystone-access-rules-35d00bd9cfe5d32e.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  339 Oct  9 16:23 ip-availability-be217ba59cc02b40.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  241 Oct  9 16:23 introduce_default_service_regions_config-26a41e0d06582d7a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  245 Oct  9 16:23 instance-volume-type-e79d607de15e1a24.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  323 Oct  9 16:23 instance-defaults-hide-create-volume-774549bebb6e7c82.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  558 Oct  9 16:23 image-panel-switch-38e9d3716451f9e3.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  127 Oct  9 16:23 image-description-3fc00c02f46a80c7.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  459 Oct  9 16:23 idle-session-timeout-ab47085807881afe.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  579 Oct  9 16:23 hz-select-fixes-c9bfe6a53e0daa20.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  313 Oct  9 16:23 horizon-without-nova-3cd0a84109ed2187.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  308 Oct  9 16:23 horizon-vendor-split-e16aa3d81dea9708.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  535 Oct  9 16:23 heat-panel-splitout-b609b157aa4bf29b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  391 Oct  9 16:23 global-class-name-convention-71ff68913c39b800.yaml
+: -rw-r--r--. 1 omcgonag omcgonag 1148 Oct  9 16:23 glance-v2-ba86ba34611f95ce.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  220 Oct  9 16:23 glance_disk_formats-a13cb994a2d5c1fe.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  696 Oct  9 16:23 get-me-a-network-c979c244fa038258.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  505 Oct  9 16:23 generic-volumes-support-407406de8233c912.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  349 Oct  9 16:23 generic-volume-groups-c0bf175f5d7d3a37.yaml
+: -rw-r--r--. 1 omcgonag omcgonag 1091 Oct  9 16:23 generic-details-4f78452b14005e5b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  582 Oct  9 16:23 gb-to-gib-conversion-8a91839030a2f570.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  575 Oct  9 16:23 fwaas-panel-splitout-635c63d4da0e6d97.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  225 Oct  9 16:23 floating-ip-dns-attributes-d227f98eb5c39396.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  192 Oct  9 16:23 floating_ip_description-f4d2df7949b9fde9.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  540 Oct  9 16:23 flavor-panel-switch-6b5cd5f0964f4ba3.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  428 Oct  9 16:23 fix-precise-keystone-endpoint-message-03129e37a6377715.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  137 Oct  9 16:23 fixed-problems-with-network-qos.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  116 Oct  9 16:23 fixed--issue-with-provider-network-tab.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  380 Oct  9 16:23 removal-of-webroot-theme-108db1d2f11da449.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  432 Oct  9 16:23 removal-of-default-subnet-pool-label-options-9aeaa816ad6cc2f8.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  477 Oct  9 16:23 refactor-error-messages-26c53bb3fe57fe72.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  574 Oct  9 16:23 quota-usage-reduce-unnecessary-API-calls-1ca424e093bec135.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  269 Oct  9 16:23 provider-net-config-713f0672c8e49888.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  251 Oct  9 16:23 port-security-81278703eae4f927.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  551 Oct  9 16:23 policy-sync-stein-82531c937609ebb2.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   92 Oct  9 16:23 policy-rules-flavors-94f50aa168d8563b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   95 Oct  9 16:23 policy-rules-aggregates-3cd74c07e30511fa.yaml
+: -rw-r--r--. 1 omcgonag omcgonag 1107 Oct  9 16:23 policy-in-code-support-f79d559c25976215.yaml
+: -rw-r--r--. 1 omcgonag omcgonag 1113 Oct  9 16:23 plugin-enabled-override-f317e7c9c352f58f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag 1012 Oct  9 16:23 pluggable-workflow-steps-c919cdd8b0cbea55.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  498 Oct  9 16:23 pluggable-tabs-7b7467e7c64d1e5b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  187 Oct  9 16:23 operation-history-log-64354f66614cb1dd.yaml
+: -rw-r--r--. 1 omcgonag omcgonag 1261 Oct  9 16:23 openstack-profiler-at-developer-dashboard-da1b1556e30aa858.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  580 Oct  9 16:23 openstack-auth-policy-dirs-c5d77665eac415ea.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  969 Oct  9 16:23 openrc-clouds-yaml-link-f1642b77e25f08ba.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  631 Oct  9 16:23 ngdetail-reload-e711a77b2d07191a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  227 Oct  9 16:23 new-vnic-types-supported-ef211ff036712ce3.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  438 Oct  9 16:23 neutron-default-quotas-ddd237af2935fde3.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  191 Oct  9 16:23 network-type-midonet-6c78bdfe1e3186a0.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   87 Oct  9 16:23 network-type-geneve-71eed4104699754e.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  257 Oct  9 16:23 network_qos_rules-cd103f9383b6cdf9.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  142 Oct  9 16:23 network_qos-ee068d073e86de76.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  543 Oct  9 16:23 navigation-improvements-ab101299eb1a8d54.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  549 Oct  9 16:23 multi-attached-volume-support-3d32cde6f296cdd9.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  358 Oct  9 16:23 move-policy-engine-b19e434a62912e5f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  358 Oct  9 16:23 move-developer-enabled-files-b1ad2265cd79b11e.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  177 Oct  9 16:23 missing-volumes-statuses-added.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  417 Oct  9 16:23 message-of-the-day-19eb745a147ca56d.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  243 Oct  9 16:23 merge-openstack-auth-aa101f9432ba799a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  319 Oct  9 16:23 lock-password-d87b63f361d4bdc1.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  336 Oct  9 16:23 launch-instance-defaults-c6ab65b7ab822162.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  172 Oct  9 16:23 launch-instance-admin-password-68e7e4b7af239bae.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  250 Oct  9 16:23 story-2003657-79dec309cb6fa060.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  495 Oct  9 16:23 stein-cinderclient-dependency-9e12a69492f63289.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  162 Oct  9 16:23 show-ports-from-all-projects.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  316 Oct  9 16:23 show-keystone-v2-openrc-false-c7e904473da2f823.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   91 Oct  9 16:23 sg-rule-description-support-37ea7580d3b7c7a9.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  496 Oct  9 16:23 setting-retrieve-instance-ip-addresses-b9db6703d8b010c8.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  566 Oct  9 16:23 setting-OVERVIEW_DAYS_RANGE-9b87e8b077952a32.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  478 Oct  9 16:23 setting-openstack-endpoint-type-ebdeda92ba0d1587.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  899 Oct  9 16:23 session-engine-bc6305bfb74a9beb.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  433 Oct  9 16:23 security-group-rule-wildcard-protocol-and-port-support-7dd6f5acfaba55ba.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  150 Oct  9 16:23 security-group-no-rules-list-bugfix-b77ab5aff1d3e45e.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  256 Oct  9 16:23 security-group-in-port-detail-10a7f5d6d50d1571.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  281 Oct  9 16:23 security-group-associate-per-port-c81ca7beb7dca409.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  568 Oct  9 16:23 resource-directives-44629f1116545141.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  681 Oct  9 16:23 reorganize-admin-dashboard-e180216d200357ec.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  426 Oct  9 16:23 reorganise-access-and-security-ea7780aa9e7b83e7.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  563 Oct  9 16:23 rename-chinese-locales-a6fb595bc373791f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  688 Oct  9 16:23 remove-transfer-table-avail-changed-cfae61341b5fea71.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  149 Oct  9 16:23 remove-table-update-action-d3fc1c5e5e3598b0.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   90 Oct  9 16:23 remove-show-keystone-v2-rc-913c822deaaa98cd.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   92 Oct  9 16:23 remove-rxtx-factor.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  113 Oct  9 16:23 remove-py38-6914ddb9fdf4cacd.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  317 Oct  9 16:23 remove-inline-edit-63f92054238378d3.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  377 Oct  9 16:23 remove-i9n-scaffolds-from-production-6e52eb1da2a4bc9e.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  173 Oct  9 16:23 remove-fix-auth-url-version-e63c52fbbd293838.yaml
+: -rw-r--r--. 1 omcgonag omcgonag   79 Oct  9 16:23 remove-enable-flavor-edit-config-option-0733b2ebb2ee1b4d.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  244 Oct  9 16:23 remove-ec2-creds-7869cba1e7e13af1.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  304 Oct  9 16:23 remove-deprecated-swift-ui-1165b60bab5771d6.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  187 Oct  9 16:23 remove-deprecated-init-scope-342153755181f0a4.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  495 Oct  9 16:23 remove-default-styles-1d8ba7ad46a51381.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  281 Oct  9 16:23 remove-cinder-v1-api-support-7cec9a556945a5c5.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  146 Oct  9 16:23 remove-change-pw-from-users-table-ef8d45a4a95762e0.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  164 Oct  9 16:23 remove-ceilometer-support-376d38802a3ef833.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  678 Oct  9 16:23 xstatic-updates-c3ff5e2b4750ae96.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  380 Oct  9 16:23 xstatic-settings-cleanup-8de0e2ba00fd43ec.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  187 Oct  9 16:23 workflow-step-policy-1ca99b0249294337.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  328 Oct  9 16:23 workflow-step-allowed-support-d0a770da1d30efb7.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  309 Oct  9 16:23 websso-default-redirection-1acf25d32ac00dd1.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  602 Oct  9 16:23 vpnaas-panel-splitout-5783df1675bc984f.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  144 Oct  9 16:23 volume-backups-a198d0ce16d62636.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  103 Oct  9 16:23 vcpu-and-pcpu-writing-style.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  576 Oct  9 16:23 use-toast-instead-of-alert-ef2f7dec2bd1121a.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  766 Oct  9 16:23 use-simple-tenant-usage-f713a2eff9357458.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  143 Oct  9 16:23 token-delete-disabled-bb50c3cddd315ee6.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  445 Oct  9 16:23 theme-modal-sizes-924e5835efe9bb79.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  124 Oct  9 16:23 table-row-warning-class-2fdb3434440d0c22.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  190 Oct  9 16:23 swift-storage-policy-options-308087b16156a2cb.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  261 Oct  9 16:23 swift-object-copy-function-d0fd75cf2bc0e0c7.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  798 Oct  9 16:23 support-websso_use_http_referer-6fb2dc0d292b54d4.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  380 Oct  9 16:23 support-websso_keystone_url-f663bbf40a5855c9.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  294 Oct  9 16:23 support-shared-security-group-cb3dafba46dbff8b.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  133 Oct  9 16:23 support-extending-in-use-volume-404b29c2cbc6df84.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  700 Oct  9 16:23 strip-trailing-space-password-856bd5595938a094.yaml
+: -rw-r--r--. 1 omcgonag omcgonag  612 Oct  9 16:42 remove-legacy-integration-tests-82401b61d354845fd3017f55323c30e94047737e.yaml
+
+** Why the long name
+
+: remove-legacy-integration-tests-82401b61d354845fd3017f55323c30e94047737e.yaml
+: vs.
+: strip-trailing-space-password-856bd5595938a094.yaml
+
+You're absolutely right to question that!
+
+The filename I used is unnecessarily long. Looking at the existing release note files, I can see they follow a much shorter naming pattern. Let me check the existing naming conventions and fix this.
+
+You're absolutely right! The existing naming convention uses much shorter, more descriptive names followed by a short commit hash. Let me rename the file to follow the proper convention:
+
+Perfect! I've renamed the file to follow the proper naming convention. The filename is now:
+: remove-legacy-integration-tests-82401b61d.yaml
+
+This follows the same pattern as other release notes in the project:
+- *Short, descriptive name*: `remove-legacy-integration-tests`
+- *Short commit hash*: `82401b61d` (first 9 characters)
+- *File extension*: `.yaml`
+
+This is much more consistent with the existing naming pattern like:
+- *strip-trailing-space-password-856bd5595938a094.yaml*
+- *delete-update-flavor-feature-6ed1e482b91f5e08.yaml*
+- *drop-action-strings-attributes-64f0cb0323f629ee.yaml*
+
+The long filename I initially used was unnecessarily verbose and didn't follow the project's established conventions. Thanks for catching that!
+
+** Comparing a few:
+
+: ~/Work/horizon-integration-tests-960204/releasenotes/notes/workflow-step-allowed-support-d0a770da1d30efb7.yaml
+:
+: ---
+: features:
+:   - Horizon workflow Step now support allowed() method to determine
+:     the step should be displayed conditionally.
+:     The workflow Step class already support policy check and permission
+:     mechanism to decide the step should be displayed, but allowed() is used
+:     to support more complex or dynamic condition.
+
+: ~/Work/horizon-integration-tests-960204/releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+:
+: ---
+: features:
+:   - >
+:     Removed all legacy integration test code and dependencies from the Horizon
+:     codebase. This includes the complete removal of the old Selenium-based
+:     integration test framework, page objects, test cases, and related utilities.
+:     This change helps simplify the project structure by removing unused testing
+:     infrastructure.
+
+* Cool, add the release note, remove the WIP, and go
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ git status
+: HEAD detached at FETCH_HEAD
+: Untracked files:
+:   (use "git add <file>..." to include in what will be committed)
+: 	releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+:
+: nothing added to commit but untracked files present (use "git add" to track)
+
+: git config core.editor "emacsclient"
+: export EDITOR=emacsclient
+: M-x server-start
+
+: git add releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+: git commit --amend -s
+: git review
+
+* It has been a while since I made any changes
+
+: ask:
+:
+: I did a rebase through the GUI - how can I check to see if my recent pull of the patch is in sync with the rebase
+:
+: I want to push this release note change but want to make sure I do not hit a rebase issue along the way
+
+** Git Repository Analysis and Release Note Creation: Initial Repository State Analysis
+Check current git status
+: git status
+: # Output: HEAD detached at FETCH_HEAD
+: #         Untracked files: releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+
+Check recent commit history
+: git log --oneline -10
+: # Output:
+: # 82401b61d [WIP] Remove all dependencies/connections of old integration test code
+: # 64c47ac36 Merge "Revert "SDK: Remove remaining neutronclient calls""
+: # 0700d1254 Revert "SDK: Remove remaining neutronclient calls"
+: # f583f32e7 Merge "Fix port listing for trunks case"
+: # 8937d2379 Merge "SDK: Remove remaining neutronclient calls"
+: # 623f12d74 Merge "Update Admin State display in routers and ports overview"
+: # 032209ecb Merge "Remove remaining job with Ubuntu Jammy (22.04)"
+: # 0c9a496b6 Merge "Replace deprecated django.utils.datetime_safe"
+: # 488694475 Remove remaining job with Ubuntu Jammy (22.04)
+: # 3d8e2088e Imported Translations from Zanata
+
+Check the main commit details
+: git show --stat HEAD
+: # Output: 100 files changed, 1 insertion(+), 9578 deletions(-)
+: #         Complete removal of integration test framework and dependencies
+
+** Repository Configuration Check
+Check remote configuration
+
+: git remote -v
+: # origin	https://github.com/openstack/horizon (fetch)
+: # origin	https://github.com/openstack/horizon (push)
+
+Fetch latest changes
+: git fetch origin
+
+Check available branches
+: git branch -a
+: * (HEAD detached at 82401b61d)
+:   master
+:   remotes/origin/HEAD -> origin/master
+:   remotes/origin/master
+:   remotes/origin/stable/2024.1
+:   remotes/origin/stable/2024.2
+:   remotes/origin/stable/2025.1
+:   remotes/origin/stable/2025.2
+:   [additional stable branches...]
+
+** Branch Creation and File Management
+Create new branch from detached HEAD
+: git checkout -b integration-tests-cleanup
+: Switched to a new branch 'integration-tests-cleanup'
+
+Add the release note file
+: git add releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+
+Check status after staging
+: git status
+:   On branch integration-tests-cleanup
+:   Changes to be committed:
+:   new file:   releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+
+** History Analysis and Verification
+Check current branch vs origin/master
+: git log --oneline origin/master -5
+: 4b81bd78f Imported Translations from Zanata
+: d054f60d4 Merge "Update bug tracker for ironic UI"
+: fc2de23a1 Imported Translations from Zanata
+: d4d5dbfcf Imported Translations from Zanata
+: c7292ba49 Merge "Add neutron-fwaas-dashboard in plugin registry"
+
+Check commit graph to understand divergence
+: git log --oneline --graph --decorate -10
+:
+: * 82401b61d (HEAD -> integration-tests-cleanup) [WIP] Remove all dependencies/connections of old integration test code
+: *   64c47ac36 (tag: 25.5.0) Merge "Revert "SDK: Remove remaining neutronclient calls""
+: |\
+: | * 0700d1254 Revert "SDK: Remove remaining neutronclient calls"
+: * |   f583f32e7 Merge "Fix port listing for trunks case"
+: |\ \
+: | * | dc868dc53 Fix port listing for trunks case
+: [additional merge commits...]
+
+** Commit Details Verification
+Verify the main commit details
+
+: git show --stat 82401b61d
+: Output: 100 files changed, 1 insertion(+), 9578 deletions(-)
+:         Complete removal of integration test framework including:
+:         - Page objects and test cases
+:         - Selenium-based test utilities
+:         - Configuration files and dependencies
+:         - All related test infrastructure
+
+** Final Commit and Push Preparation
+Commit the release note
+: git commit -m "Add release note for integration tests removal
+:
+: This release note documents the removal of legacy integration test code
+: and dependencies that was done in commit 82401b61d."
+:
+: [integration-tests-cleanup b73128a1f] Add release note for integration tests removal
+:  1 file changed, 8 insertions(+)
+:  create mode 100644 releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+
+Final status check
+: git status
+:         On branch integration-tests-cleanup
+:         nothing to commit, working tree clean
+
+** Release Note Content Created
+
+cleaned up
+: X
+: iyaml releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+:
+: ---
+: features:
+:   - >
+:     Removed all legacy integration test code and dependencies from the Horizon
+:     codebase. This includes the complete removal of the old Selenium-based
+:     integration test framework, page objects, test cases, and related utilities.
+:     This change helps simplify the project structure by removing unused testing
+:     infrastructure.
+
+Original
+: X
+: iyaml releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+:
+: ---
+: features:
+:   - >
+:     Removed all legacy integration test code and dependencies from the Horizon
+:     codebase. This includes the complete removal of the old Selenium-based
+:     integration test framework, page objects, test cases, and related utilities
+:     that were previously located in `openstack_dashboard/test/integration_tests/`.
+:     The removal eliminates over 9,500 lines of deprecated test code and
+:     simplifies the project structure by removing unused testing infrastructure.
+:     This change is part of the ongoing effort to modernize Horizon's testing
+:     approach and reduce maintenance overhead.
+
+** Final Push Command
+Push the new branch with both commits
+: git push origin integration-tests-cleanup
+
+** Summary
+- *Original commit preserved:* `82401b61d` with 9,578 deletions across 100 files
+- *New commit added:* `b73128a1f` with release note documentation
+- *History intact:* All patch sets, reviews, and development history preserved
+- *Safe approach:* New branch avoids rebase conflicts
+- *Ready for review:* Both original work and release note are included
+
+* Final steps
+I think I want to park this, and start a bit over
+- I want to re-clone and fetch the changes
+- I then want to run the step of creating the branch
+- I then want to add my new release note
+- and then just do things the normal way I am used to
+- Fetch latest changes
+- git fetch origin
+- Create new branch from detached HEAD
+- git checkout -b integration-tests-cleanup
+- I also want to do the old school git commit --amend -s
+
+** DO it
+: mv horizon-integration-tests-960204 horizon-integration-tests-960204.oct.10
+
+: git clone https://github.com/openstack/horizon horizon-integration-tests-960204
+: cd horizon-integration-tests-960204
+: git fetch https://review.opendev.org/openstack/horizon refs/changes/04/960204/9 && git checkout FETCH_HEAD
+: git fetch origin
+: git checkout -b integration-tests-cleanup
+
+: $ git status
+: On branch integration-tests-cleanup
+: nothing to commit, working tree clean
+
+Add new file:
+: cp ../horizon-integration-tests-960204.oct.10/releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml ./releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+
+: X
+: iyaml releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+:
+: ---
+: features:
+:   - >
+:     Removed all legacy integration test code and dependencies from the Horizon
+:     codebase. This includes the complete removal of the old Selenium-based
+:     integration test framework, page objects, test cases, and related utilities.
+:     This change helps simplify the project structure by removing unused testing
+:     infrastructure.
+
+: git config core.editor "emacsclient"
+: export EDITOR=emacsclient
+: M-x server-start
+
+: git add releasenotes/notes/remove-legacy-integration-tests-82401b61d.yaml
+: git commit --amend -s
+: git review
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ git review
+: Creating a git remote called 'gerrit' that maps to:
+: 	ssh://omcgonag@review.opendev.org:29418/openstack/horizon.git
+: Your change was committed before the commit hook was installed.
+: Amending the commit to add a gerrit change id.
+: remote:
+: remote: Processing changes: updated: 1 (\)
+: remote: Processing changes: refs: 1, updated: 1 (\)
+: remote: Processing changes: refs: 1, updated: 1, done
+: remote: commit 5e02cfe: warning: subject >50 characters; use shorter first paragraph
+: remote:
+: remote: SUCCESS
+: remote:
+: remote:   https://review.opendev.org/c/openstack/horizon/+/960204 Remove all dependencies/connections of old integration test code
+: remote:
+: To ssh://review.opendev.org:29418/openstack/horizon.git
+:  * [new reference]       HEAD -> refs/for/master%topic=integration-tests-cleanup
+
+* Compare change sets and reach out to the team
+
+Review at [[https://review.opendev.org/c/openstack/horizon/+/960204][960204: Remove all dependencies/connections of old integration test code]]
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 Work]$ ls -lrt | grep integration
+: drwxr-xr-x. 1 omcgonag omcgonag      736 Sep  8 16:51 horizon-integration-tests
+: drwxr-xr-x. 1 omcgonag omcgonag      736 Oct  9 16:23 horizon-integration-tests-960204.oct.10
+: drwxr-xr-x. 1 omcgonag omcgonag      736 Oct  9 17:08 horizon-integration-tests-960204
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests]$ ls
+: babel-django.cfg    CONTRIBUTING.rst  horizon	 openstack_auth       playbooks		   README.rst	 requirements.txt  setup.py		  tools
+: babel-djangojs.cfg  doc		      LICENSE	 openstack_dashboard  plugin-registry.csv  releasenotes  roles		   test-requirements.txt  tox.ini
+: bindep.txt	    HACKING.rst       manage.py  package.json	      pyproject.toml	   reno.yaml	 setup.cfg	   test-shim.js
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests]$ pwd
+: /home/omcgonag/Work/horizon-integration-tests
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests]$ ls openstack_dashboard/test/integration_tests/
+: basewebobject.py  config.py  decorators.py  helpers.py	horizon.conf  __init__.py  pages  README.rst  regions  tests  video_recorder.py
+
+What about now?
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ pwd
+: /home/omcgonag/Work/horizon-integration-tests-960204
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-integration-tests-960204]$ ls openstack_dashboard/test/integration_tests/
+: config.py  horizon.conf  __init__.py

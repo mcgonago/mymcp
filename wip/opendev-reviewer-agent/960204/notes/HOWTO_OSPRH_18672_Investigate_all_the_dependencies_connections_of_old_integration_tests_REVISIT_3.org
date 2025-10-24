@@ -1,0 +1,1540 @@
+#+OPTIONS: ^:nil num:nil \n:t
+#+TITLE: HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_3
+#+SETUPFILE: theme-readtheorg.setup
+
+* TL;DR
+
+This document investigates [[https://issues.redhat.com/browse/OSPRH-18672][OSPRH-18672: Investigate all the dependencies/connections of old integration tests]]
+
+This is revisit #3 of [[https://spaces.redhat.com/spaces/~omcgonag/pages/686721547/HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_2][HOWTO_OSPRH_18672_Investigate_all_the_dependencies_connections_of_old_integration_tests_REVISIT_2]]
+
+* Major TODO
+What environment will let me run *tox -e ui-pytest* without getting this Xvfb failure?
+
+: $ tox -e ui-pytest
+: ERROR openstack_dashboard/test/selenium/ui/test_settings.py::test_languages - OSError: Can't find Xvfb. Please install it and try again
+
+* cursor: HORIZON_INTEGRATION_TESTS_ANALYSIS.org
+This analysis (below) shows that the configuration infrastructure is essential for the new tests to function and cannot be safely removed without a complete refactor of the test system.
+
+Cursor created:
+: /home/omcgonag/Work/horizon-osprh_18672/HORIZON_INTEGRATION_TESTS_ANALYSIS.org
+
+: TITLE: Horizon Integration Tests Migration Analysis
+: AUTHOR: Claude Analysis
+: DATE: [2025-01-27 Mon]
+: STARTUP: overview
+: OPTIONS: toc:2
+
+** Executive Summary
+The error *ModuleNotFoundError: No module named 'openstack_dashboard.test.integration_tests'*is the result of
+- an incomplete migration from old integration tests to new pytest-based UI tests. 
+- The commit =8660241a4= removed the entire integration test infrastructure, but the new UI tests still depend on the configuration system that was removed.
+
+** Problem Statement
+
+** The Error
+From *test-results.txt*:
+
+: No local_settings file found.
+: ImportError while loading conftest '/home/zuul/src/opendev.org/openstack/horizon/openstack_dashboard/test/selenium/conftest.py'.
+: openstack_dashboard/test/selenium/conftest.py:25: in <module>
+:     from openstack_dashboard.test.integration_tests import config as horizon_config
+: E   ModuleNotFoundError: No module named 'openstack_dashboard.test.integration_tests'
+
+** The Colleague's Statement
+: "I believe the horizon.conf and config.py files need to stay, as they are also used by the new tests"
+
+* Investigation Process
+
+** Step 1: Understanding the Current Test Structure
+
+Current Test Directory Structure:
+
+: openstack_dashboard/test/
+: ├── __init__.py
+: ├── helpers.py
+: ├── jasmine/
+: ├── selenium/
+: │   ├── conftest.py          # ← This file imports the missing module
+: │   ├── ui/
+: │   │   ├── conftest.py
+: │   │   ├── test_browse.py   # ← Also imports the missing module
+: │   │   ├── test_actions.py
+: │   │   └── ...
+: │   └── widgets.py
+: ├── settings.py
+: ├── test_data/
+: ├── test_panels/
+: ├── test_plugins/
+: └── unit/
+
+** Missing Directory
+The *integration_tests/* directory is completely missing, but expected by:
+- *openstack_dashboard/test/selenium/conftest.py:25*
+- *openstack_dashboard/test/selenium/ui/test_browse.py:20
+
+** Step 2: Analyzing the Failing Imports
+
+** In conftest.py
+
+: X
+: ipython openstack_dashboard/test/selenium/conftest.py
+: # Line 25 in openstack_dashboard/test/selenium/conftest.py
+: from openstack_dashboard.test.integration_tests import config as horizon_config
+
+** Usage of Config in conftest.py
+The config is used extensively in the *Session* class:
+
+: X
+: ipython openstack_dashboard/test/selenium/conftest.py
+:
+: class Session:
+:     def __init__(self, driver, config):
+:         self.current_user = None
+:         self.current_project = None
+:         self.driver = driver
+:         self.config = config
+:         self.credentials = {
+:             'user': (
+:                 config.identity.username,           # ← Missing config
+:                 config.identity.password,           # ← Missing config
+:                 config.identity.home_project,       # ← Missing config
+:             ),
+:             'admin': (
+:                 config.identity.admin_username,     # ← Missing config
+:                 config.identity.admin_password,     # ← Missing config
+:                 config.identity.admin_home_project, # ← Missing config
+:             ),
+:         }
+:         # ... more config usage
+
+** Step 3: Examining Git History
+Key Commit Found:
+: 8660241a4 Remove all dependencies/connections of old integration test code
+
+** What Was Removed
+The commit removed *15,325 lines* across *131 files*, including:
+- *openstack_dashboard/test/integration_tests/config.py*
+- *openstack_dashboard/test/integration_tests/horizon.conf*
+- entire *openstack_dashboard/test/integration_tests/* directory
+- *openstack_dashboard/test/selenium/integration/* directory
+- Entry point in *setup.cfg*
+
+** Step 4: Understanding What Was Lost
+
+** The config.py File
+This showed oslo.config groups like:
+
+: X
+: ipython openstack_dashboard/test/integration_tests/config.py
+: 
+: DashboardGroup = [
+:     cfg.StrOpt('dashboard_url',
+:                default='http://localhost/dashboard/',
+:                help='Where the dashboard can be found'),
+:     cfg.StrOpt('auth_url',
+:                default='http://localhost/identity/v3',
+:                help='Where the keystone can be found'),
+:     # ... more options
+: ]
+: 
+: IdentityGroup = [
+:     cfg.StrOpt('username',
+:                default='demo',
+:                help='Username to use for non-admin API requests.'),
+:     cfg.StrOpt('password',
+:                default='secretadmin',
+:                help='API key to use when authenticating.',
+:                secret=True),
+:     # ... more identity options
+: ]
+
+** The horizon.conf File
+This provided configuration values:
+
+: X
+: ishell openstack_dashboard/test/integration_tests/horizon.conf
+:
+: [dashboard]
+: dashboard_url=http://localhost/dashboard/
+: auth_url=http://localhost/identity/v3
+: help_url=https://docs.openstack.org/
+: 
+: [selenium]
+: message_wait=60
+: page_timeout=60
+: screenshots_directory=test_reports
+: implicit_wait=30
+: explicit_wait=180
+: maximize_browser=yes
+: 
+: [flavors]
+: panel_type=legacy
+: 
+: [image]
+: panel_type=angular
+: http_image=http://download.cirros-cloud.net/0.6.3/cirros-0.6.3-x86_64-uec.tar.gz
+: images_list=cirros-0.6.3-x86_64-disk
+
+** Step 5: Oslo Config Generator Investigation
+
+** Original tox.ini Commands
+The old test environments included:
+
+: [testenv:integration]
+: commands =
+:   oslo-config-generator --namespace openstack_dashboard_integration_tests
+:   pytest --ds=openstack_dashboard.test.settings ...
+: 
+: [testenv:ui-pytest]  
+: commands =
+:   oslo-config-generator --namespace openstack_dashboard_integration_tests
+:   pytest --ds=openstack_dashboard.settings ...
+
+** Current tox.ini Status
+Result: *No matches found* - the oslo-config-generator commands were removed.
+
+** But test-results.txt Shows It's Still Being Called
+From the error log:
+: ui-pytest: 2127 W commands[0]> oslo-config-generator --namespace openstack_dashboard_integration_tests
+: WARNING:stevedore.named:Could not load openstack_dashboard_integration_tests
+
+This indicates there's still a *ui-pytest* environment trying to generate config.
+
+** Step 6: Entry Points Analysis
+
+** Original setup.cfg Entry Point
+Before removal:
+
+: X
+: ishell setup.cfg
+:
+: [entry_points]
+: oslo.config.opts =
+:     openstack_dashboard = openstack_dashboard.utils.config:list_options
+:     openstack_dashboard_integration_tests = openstack_dashboard.test.integration_tests.config:list_opts
+
+** Current setup.cfg Entry Point
+Now only contains
+: X
+: ishell setup.cfg
+:
+: oslo.config.opts =
+:     openstack_dashboard = openstack_dashboard.utils.config:list_options
+
+* Root Cause Analysis
+
+** The Migration Problem
+The commit *8660241a4* was intended to remove old integration test infrastructure and replace it with new pytest-based UI tests. 
+- however, the migration was *incomplete*:
+
+** What Was Successfully Migrated
+- New UI tests were created in *openstack_dashboard/test/selenium/ui/*
+- New *conftest.py* files were created with pytest fixtures
+- Tests were converted to use pytest instead of the old framework
+
+** What Was Not Properly Migrated
+1. *Configuration System*: New tests still import *openstack_dashboard.test.integration_tests.config*
+2. *Oslo Config Integration*: Tests expect oslo.config-based configuration
+3. *Test Environment Setup*: *ui-pytest* tox environment still calls *oslo-config-generator*
+
+#+BEGIN_EXAMPLE
+TODO: understand the oslo-config-generator references
+TODO: the new ui tests still depend on these command having been executed?
+      oslo-config-generator --namespace openstack_dashboard_integration_tests
+#+END_EXAMPLE
+
+** The Dependency Chain
+
+: tox ui-pytest environment
+:     ↓
+: oslo-config-generator --namespace openstack_dashboard_integration_tests
+:     ↓
+: setup.cfg entry point (REMOVED)
+:     ↓
+: openstack_dashboard.test.integration_tests.config:list_opts (REMOVED)
+:     ↓
+: openstack_dashboard/test/integration_tests/config.py (REMOVED)
+:     ↓
+: conftest.py import fails
+:     ↓
+: ModuleNotFoundError
+
+* Why the Colleague Is Correct
+
+** The New Tests Need Configuration
+The new pytest UI tests in *openstack_dashboard/test/selenium/* require:
+
+1. *Dashboard URLs* for connecting to the web interface
+2. *Authentication credentials* for login testing  
+3. *Selenium timeouts and settings* for browser automation
+4. *Test environment configuration* (screenshots directory, browser settings)
+
+** Current Usage in New Tests
+
+** conftest.py Configuration Usage
+
+: X
+: ipython
+:
+: @pytest.fixture(scope='session')
+: def config():
+:     return horizon_config.get_config()  # ← Needs the config module
+: 
+: # Used throughout the Session class:
+: config.identity.username              # ← Authentication
+: config.identity.password              # ← Authentication  
+: config.dashboard.dashboard_url        # ← Web interface URL
+: config.selenium.implicit_wait         # ← Browser timeouts
+: config.selenium.maximize_browser      # ← Browser settings
+
+** test_browse.py Usage
+
+: X
+: ipython 
+: from openstack_dashboard.test.integration_tests import config  # ← Direct import
+
+: def test_switch_to_material_theme(live_server, driver, user, config):
+:     # Uses config for test settings
+
+* Solution Options
+** Option A: Restore Minimal Configuration Infrastructure (Recommended)
+
+** Pros
+- Minimal changes to existing new tests
+- Preserves the oslo.config-based approach
+- Maintains compatibility with existing test patterns
+
+** Implementation Steps
+1. *Restore config.py*
+2. *Restore horizon.conf*
+3. *Restore entry point in setup.cfg*
+4. *Create __init__.py*
+
+** Option B: Complete Migration to New Configuration System
+
+** Pros  
+- Cleaner long-term solution
+- Removes dependency on old infrastructure
+- Simpler configuration management
+
+** Cons
+- Requires significant refactoring of new tests
+- Higher risk of introducing bugs
+- More development effort
+
+* Immediate Action Plan
+
+** Step 1: Implement Option A (Quick Fix)
+
+: X
+: ishell
+:
+: # Create the directory
+: $ mkdir -p openstack_dashboard/test/integration_tests
+: 
+: # Restore the config.py file
+: $ git show 8660241a4^:openstack_dashboard/test/integration_tests/config.py > openstack_dashboard/test/integration_tests/config.py
+: 
+: # Restore the horizon.conf file  
+: $ git show 8660241a4^:openstack_dashboard/test/integration_tests/horizon.conf > openstack_dashboard/test/integration_tests/horizon.conf
+: 
+: # Create __init__.py
+: $ touch openstack_dashboard/test/integration_tests/__init__.py
+
+** Step 2: Update setup.cfg
+Add back the entry point:
+: X
+: ishell setup.cfg
+:
+: [entry_points]
+: oslo.config.opts =
+:     openstack_dashboard = openstack_dashboard.utils.config:list_options
+:     openstack_dashboard_integration_tests = openstack_dashboard.test.integration_tests.config:list_opts
+
+** Step 3: Test the Fix
+: $ tox -e ui-pytest
+
+* Conclusion
+Your colleague is absolutely correct. The *horizon.conf* and *config.py* files need to stay because:
+
+1. *The new pytest UI tests still depend on them* via imports in *conftest.py* and test files
+2. *The configuration provides essential test settings* for authentication, URLs, and selenium behavior
+3. *The migration from old to new tests was incomplete* - the infrastructure was removed but dependencies remained
+4. *The oslo-config-generator command in tox still expects* the integration tests namespace to exist
+
+The quickest and safest solution is to restore the minimal configuration infrastructure (Option A) rather than attempting a complete refactor of the new test system.
+
+* Technical Details
+
+** File Locations Involved
+- *openstack_dashboard/test/selenium/conftest.py* (imports config)
+- *openstack_dashboard/test/selenium/ui/test_browse.py* (imports config)  
+- *openstack_dashboard/test/integration_tests/config.py* (MISSING - defines oslo.config groups)
+- *openstack_dashboard/test/integration_tests/horizon.conf* (MISSING - provides config values)
+- *setup.cfg* (missing entry point for oslo.config.opts)
+- *tox.ini* (ui-pytest environment calls oslo-config-generator)
+
+** Oslo.config Integration Flow
+- tox calls: oslo-config-generator --namespace openstack_dashboard_integration_tests
+- oslo-config-generator looks up entry point in setup.cfg
+- Entry point points to: openstack_dashboard.test.integration_tests.config:list_opts  
+- config.py defines configuration groups and options
+- horizon.conf provides default values
+- Tests import config module and access configuration
+
+** Configuration Groups Used
+- *DashboardGroup* - URLs and basic settings
+- *IdentityGroup* - Authentication credentials  
+- *SeleniumGroup* - Browser and timeout settings
+- *ImageGroup* - Test image configuration
+- *FlavorGroup* - Flavor panel settings
+
+
+* Clean environment
+
+: cd /home/omcgonag/Work
+: mv horizon-osprh_18672 horizon-osprh_18672.tue.try1
+
+Still on [[https://review.opendev.org/c/openstack/horizon/+/960204][960204: Remove all dependencies/connections of old integration test code]]
+
+*BEFORE* I foget, add in [WIP]
+
+: git clone https://opendev.org/openstack/horizon.git horizon-osprh_18672
+: cd horizon-osprh_18672
+: git fetch https://review.opendev.org/openstack/horizon refs/changes/04/960204/5 && git checkout FETCH_HEAD
+
+I do not think I need these?
+: git remote add gerrit ssh://omcgonag@review.opendev.org:29418/openstack/horizon.git
+: git review -s
+
+: # Create the directory
+: $ mkdir -p openstack_dashboard/test/integration_tests
+: 
+: # Restore the config.py file
+: $ git show 8660241a4^:openstack_dashboard/test/integration_tests/config.py > openstack_dashboard/test/integration_tests/config.py
+: 
+: # Restore the horizon.conf file  
+: $ git show 8660241a4^:openstack_dashboard/test/integration_tests/horizon.conf > openstack_dashboard/test/integration_tests/horizon.conf
+: 
+: # Create __init__.py
+: $ touch openstack_dashboard/test/integration_tests/__init__.py
+
+Add back the entry point
+: X
+: ishell setup.cfg
+:
+: [entry_points]
+: oslo.config.opts =
+:     openstack_dashboard = openstack_dashboard.utils.config:list_options
+:     openstack_dashboard_integration_tests = openstack_dashboard.test.integration_tests.config:list_opts
+
+: diff --git a/setup.cfg b/setup.cfg
+: index ca81155c8..88734bb8b 100644
+: --- a/setup.cfg
+: +++ b/setup.cfg
+: @@ -53,6 +53,7 @@ add_comments = Translators:
+:  [entry_points]
+:  oslo.config.opts =
+:      openstack_dashboard = openstack_dashboard.utils.config:list_options
+: +    openstack_dashboard_integration_tests = openstack_dashboard.test.integration_tests.config:list_opts
+:  # We use a custom extractor to find translatable strings in AngularJS templates.
+:  # See http://babel.pocoo.org/docs/messages/#referencing-extraction-methods for
+:  # details on how this works.
+
+** Add review
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-osprh_18672]$ git status
+: HEAD detached at 8660241a4
+: Changes not staged for commit:
+:   (use "git add <file>..." to update what will be committed)
+:   (use "git restore <file>..." to discard changes in working directory)
+: 	modified:   setup.cfg
+: 
+: Untracked files:
+:   (use "git add <file>..." to include in what will be committed)
+: 	openstack_dashboard/test/integration_tests/
+: 
+: no changes added to commit (use "git add" and/or "git commit -a")
+
+: git config core.editor "emacsclient"
+: export EDITOR=emacsclient
+: M-x server-start
+
+: git add setup.cfg openstack_dashboard/test/integration_tests
+: git commit --amend -s
+: git review
+
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-osprh_18672]$ git commit --amend -s
+: hint: Waiting for your editor to close the file...
+: Waiting for Emacs...
+: [detached HEAD f96bd0da2] Remove all dependencies/connections of old integration test code
+:  Date: Mon Sep 8 16:56:15 2025 -0400
+:  127 files changed, 2 insertions(+), 14875 deletions(-)
+:  delete mode 100644 openstack_dashboard/test/integration_tests/README.rst
+:  delete mode 100644 openstack_dashboard/test/integration_tests/basewebobject.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/decorators.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/helpers.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/flavorspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/hostaggregatespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/hypervisorspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/imagespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/compute/instancespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/floatingipspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/networkspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/network/routerspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/overviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/defaultspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/imagespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/metadatadefinitionspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/resource_usage/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/system/system_info/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/grouptypespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/snapshotspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/volumespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/admin/volume/volumetypespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/basepage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/groupspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/projectspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/rolespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/identity/userspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/loginpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/navigation.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/pageobject.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/apiaccesspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/imagespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/instancespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/keypairspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/overviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/compute/servergroupspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/floatingipspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/networkoverviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/networkspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/networktopologypage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/routerinterfacespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/routeroverviewpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/routerspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/security_groups/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/security_groups/managerulespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/network/securitygroupspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/object_store/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/volumes/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/volumes/snapshotspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/project/volumes/volumespage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/settings/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/settings/changepasswordpage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/pages/settings/usersettingspage.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/bars.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/baseregion.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/exceptions.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/forms.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/menus.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/messages.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/regions/tables.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/__init__.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test-data/empty_namespace.json
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_credentials.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_defaults.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_flavors.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_floatingips.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_groups.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_grouptypes.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_host_aggregates.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_images.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_instances.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_keypairs.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_login.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_metadata_definitions.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_networks.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_projects.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_router.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_router_gateway.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_security_groups.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_user_settings.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_users.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_volume_snapshots.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_volumes.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/tests/test_volumetypes.py
+:  delete mode 100644 openstack_dashboard/test/integration_tests/video_recorder.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/conftest.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_credentials.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_defaults.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_federation_login.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_flavors.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_floatingips.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_groups.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_grouptypes.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_host_aggregates.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_images.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_instances.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_keypairs.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_metadata_definitions.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_networks.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_projects.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_routers.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_security_groups.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_settings.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_user_credentials.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_users.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_volume_snapshots.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_volumes.py
+:  delete mode 100644 openstack_dashboard/test/selenium/integration/test_volumetypes.py
+: [omcgonag@omcgonag-thinkpadp16vgen1 horizon-osprh_18672]$ git review
+: remote: 
+: remote: Processing changes: updated: 1 (\)        
+: remote: Processing changes: updated: 1 (|)        
+: remote: Processing changes: refs: 1, updated: 1 (|)        
+: remote: Processing changes: refs: 1, updated: 1, done            
+: remote: commit f96bd0d: warning: subject >50 characters; use shorter first paragraph        
+: remote: 
+: remote: SUCCESS        
+: remote: 
+: remote:   https://review.opendev.org/c/openstack/horizon/+/960204 Remove all dependencies/connections of old integration test code        
+: remote: 
+: remote: The following approvals got outdated and were removed:        
+: remote: * Verified-1 by Zuul        
+: remote: 
+: remote: 
+: To ssh://review.opendev.org:29418/openstack/horizon.git
+:  * [new reference]       HEAD -> refs/for/master
+
+* How did the revert to patchset 3 go?
+Comment at [[https://review.opendev.org/c/openstack/horizon/+/960204/comments/76206af2_40b2cd4a][I believe the horizon.conf and config.py files need to stay]]
+
+* Ask claude
+From my first result capture saved at ~/Work/horizon-osprh_18672.artifacts/test-results.txt
+
+: ask:
+: 
+: From test-results.txt I see this error at the end:
+: 
+: No local_settings file found.
+: ImportError while loading conftest '/home/zuul/src/opendev.org/openstack/horizon/openstack_dashboard/test/selenium/conftest.py'.
+: openstack_dashboard/test/selenium/conftest.py:25: in <module>
+:     from openstack_dashboard.test.integration_tests import config as horizon_config
+: E   ModuleNotFoundError: No module named 'openstack_dashboard.test.integration_tests'
+: ui-pytest: 2994 C exit 4 (0.76 seconds) /home/zuul/src/opendev.org/openstack/horizon> pytest --ds=openstack_dashboard.settings -v --junitxml=/home/zuul/src/opendev.org/openstack/horizon/test_reports/integration_uitest_results.xml --html=/home/zuul/src/opendev.org/openstack/horizon/test_reports/integration_uitest_results.html --self-contained-html /home/zuul/src/opendev.org/openstack/horizon/openstack_dashboard/test/selenium/ui pid=101790 [tox/execute/api.py:294]
+: .pkg: 2995 W _exit> python /opt/stack/data/venv/lib/python3.11/site-packages/pyproject_api/_backend.py True pbr.build [tox/tox_env/api.py:459]
+: Backend: run command _exit with args {}
+: Backend: Wrote response {'return': 0} to /tmp/pep517__exit-axh1_zt2.json
+: .pkg: 2996 I exit None (0.00 seconds) /home/zuul/src/opendev.org/openstack/horizon> python /opt/stack/data/venv/lib/python3.11/site-packages/pyproject_api/_backend.py True pbr.build pid=101028 [tox/execute/api.py:294]
+: .pkg: 3015 D delete package /home/zuul/src/opendev.org/openstack/horizon/.tox/.tmp/package/2/horizon-25.4.1.dev110-0.editable-py3-none-any.whl [tox/tox_env/python/virtual_env/package/pyproject.py:224]
+:   ui-pytest: FAIL code 4 (2.80=setup[1.93]+cmd[0.11,0.76] seconds)
+:   evaluation failed :( (2.94 seconds)
+: 
+: A colleague of mine told me:
+: "I believe the horizon.conf and config.py files need to stay, as they are also used by the new tests"
+: 
+: Could you please explain a bit more on what he means by this?
+: 
+: While you do this, please expand and show all detail as you go through each analysis phase.
+
+** answer
+Let me investigate the test structure and understand what your colleague means about the horizon.conf and config.py files.
+
+: ● Search(pattern: "integration_tests", path: "undefined")
+:   ⎿  Found 20 files                                                                                                               
+:      /home/omcgonag/Work/horizon-osprh_18672/test-results.txt
+:      /home/omcgonag/Work/horizon-osprh_18672/openstack_dashboard/test/selenium/ui/test_browse.py
+:      /home/omcgonag/Work/horizon-osprh_18672/openstack_dashboard/test/selenium/conftest.py
+:      /home/omcgonag/Work/horizon-osprh_18672/log.txt
+:      /home/omcgonag/Work/horizon-osprh_18672/.git/COMMIT_EDITMSG~
+:      /home/omcgonag/Work/horizon-osprh_18672/roles/fetch-video-output/tasks/main.yaml
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/pt_BR/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/ja/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/id/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/en_GB/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/de/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/notes/flavor-panel-switch-6b5cd5f0964f4ba3.yaml
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/notes/image-panel-switch-38e9d3716451f9e3.yaml
+:      /home/omcgonag/Work/horizon-osprh_18672/openstack_dashboard/settings.py
+:      /home/omcgonag/Work/horizon-osprh_18672/openstack_dashboard/local/local_settings.d/_20_integration_tests_scaffolds.py.example
+:      /home/omcgonag/Work/horizon-osprh_18672/horizon/templates/horizon/common/_workflow.html
+:      /home/omcgonag/Work/horizon-osprh_18672/horizon/conf/default.py
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/id/LC_MESSAGES/doc-contributor.po
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/en_GB/LC_MESSAGES/doc-contributor.po
+:      /home/omcgonag/Work/horizon-osprh_18672/.gitignore
+: 
+: ● Search(pattern: "**/horizon.conf", path: "undefined")
+:   ⎿  Found 0 files
+: 
+: ● Search(pattern: "**/config.py", path: "undefined")
+:   ⎿  Found 2 files                                                                 
+:      /home/omcgonag/Work/horizon-osprh_18672/openstack_dashboard/api/rest/config.py
+:      /home/omcgonag/Work/horizon-osprh_18672/openstack_dashboard/utils/config.py
+: 
+: ● Read(file_path: "/home/omcgonag/Work/horizon-osprh_18672/openstack_dashboard/test/selenium/conftest.py")
+:   ⎿  #    Licensed under the Apache License, Version 2.0 (the "License"); you may    
+:      #    not use this file except in compliance with the License. You may obtain
+:      #    a copy of the License at
+:      #
+:      #         http://www.apache.org/licenses/LICENSE-2.0
+:      #
+:      #    Unless required by applicable law or agreed to in writing, software
+:      #    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+:      #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+:      #    License for the specific language governing permissions and limitations
+:      #    under the License.
+: 
+:      import os
+:      import signal
+:      import socket
+:      import subprocess
+:      from threading import Thread
+:      import time
+: 
+:      import pytest
+:      from selenium.webdriver.support.ui import Select
+:      import xvfbwrapper
+: 
+:      from horizon.test import webdriver
+:      from openstack_dashboard.test.integration_tests import config as horizon_config
+:      from openstack_dashboard.test.selenium import widgets
+: 
+: 
+:      STASH_FAILED = pytest.StashKey[bool]()
+: 
+: 
+:      class Session:
+:          def __init__(self, driver, config):
+:              self.current_user = None
+:              self.current_project = None
+:              self.driver = driver
+:              self.config = config
+:              self.credentials = {
+:                  'user': (
+:                      config.identity.username,
+:                      config.identity.password,
+:                      config.identity.home_project,
+:                  ),
+:                  'admin': (
+:                      config.identity.admin_username,
+:                      config.identity.admin_password,
+:                      config.identity.admin_home_project,
+:                  ),
+:              }
+:              self.oidc_credentials = {
+:                  'user': (
+:                      config.OIDC.keycloak_test_user1_username,
+:                      config.OIDC.keycloak_test_user1_password,
+:                      config.OIDC.keycloak_test_user_home_project,
+:                  ),
+:              }
+:              self.project_name_xpath = config.theme.project_name_xpath
+:              self.logout_url = '/'.join((
+:                  config.dashboard.dashboard_url,
+:                  'auth',
+:                  'logout',
+:              ))
+: 
+:          def login(self, user, project=None):
+:              if project is None:
+:                  project = self.credentials[user][2]
+:              if self.current_user != user:
+:                  username, password, home_project = self.credentials[user]
+:                  self.driver.get(self.logout_url)
+:                  user_field = self.driver.find_element_by_id('id_username')
+:                  user_field.send_keys(username)
+:                  pass_field = self.driver.find_element_by_id('id_password')
+:                  pass_field.send_keys(password)
+:                  button = self.driver.find_element_by_css_selector(
+:                      '.btn-primary')
+:                  button.click()
+:                  self.current_user = user
+:                  project_element = self.driver.find_element_by_xpath(
+:                      self.project_name_xpath)
+:                  self.current_project = project_element.text
+:              if self.current_project != project:
+:                  project_element = self.driver.find_element_by_xpath(
+:                      self.project_name_xpath)
+:                  project_element.click()
+:                  selection = project_element.find_element_by_xpath(
+:                      f'.//*[normalize-space()="{project}"]')
+:                  selection.click()
+:                  widgets.get_and_dismiss_messages(self.driver, self.config)
+:                  self.current_project = self.driver.find_element_by_xpath(
+:                      self.project_name_xpath).text
+: 
+:          def login_oidc(self, user, project=None):
+:              # Keycloak/OIDC login
+:              username, password, home_project = self.oidc_credentials[user]
+:              if project is None:
+:                  project = home_project
+:              self.driver.get(self.logout_url)
+:              select_auth = self.driver.find_element_by_id('id_auth_type')
+:              select_auth.click()
+:              select_opt = Select(select_auth)
+:              select_opt.select_by_visible_text('OpenID Connect')
+:              button = self.driver.find_element_by_css_selector(
+:                  '.btn-primary')
+:              button.click()
+:              keycloak_user_field = self.driver.find_element_by_id('username')
+:              keycloak_user_field.send_keys(username)
+:              keycloak_pass_field = self.driver.find_element_by_id('password')
+:              keycloak_pass_field.send_keys(password)
+:              kc_login_button = self.driver.find_element_by_id('kc-login')
+:              kc_login_button.click()
+: 
+: 
+:      @pytest.fixture(scope='session')
+:      def login(driver, config):
+:          session = Session(driver, config)
+:          return session.login
+: 
+: 
+:      @pytest.hookimpl(tryfirst=True, hookwrapper=True)
+:      def pytest_runtest_makereport(item, call):
+:          """A hook to save the failure state of a test."""
+:          # execute all other hooks to obtain the report object
+:          outcome = yield
+:          rep = outcome.get_result()
+: 
+:          item.stash[STASH_FAILED] = item.stash.get(STASH_FAILED, False) or rep.failed
+: 
+: 
+:      @pytest.fixture(scope='function', autouse=True)
+:      def save_screenshot(request, report_dir, driver):
+:          yield None
+:          if not request.node.stash.get(STASH_FAILED, False):
+:              return
+:          screen_path = os.path.join(report_dir, 'screenshot.png')
+:          driver.get_screenshot_as_file(screen_path)
+: 
+: 
+:      @pytest.fixture(scope='function', autouse=True)
+:      def save_page_source(request, report_dir, driver):
+:          yield None
+:          if not request.node.stash.get(STASH_FAILED, False):
+:              return
+:          source_path = os.path.join(report_dir, 'page.html')
+:          html_elem = driver.find_element_by_tag_name("html")
+:          page_source = html_elem.get_property("innerHTML")
+:          with open(source_path, 'w') as f:
+:              f.write(page_source)
+: 
+: 
+:      @pytest.fixture(scope='function', autouse=True)
+:      def record_video(request, report_dir, xdisplay):
+:          if not os.environ.get('FFMPEG_INSTALLED', False):
+:              yield None
+:              return
+:          filepath = os.path.join(report_dir, 'video.mp4')
+:          frame_rate = 15
+:          display, width, height = xdisplay
+:          command = [
+:              'ffmpeg',
+:              '-video_size', f'{width}x{height}',
+:              '-framerate', str(frame_rate),
+:              '-f', 'x11grab',
+:              '-i', f':{display}',  # noqa: E231
+:              filepath,
+:          ]
+:          fnull = open(os.devnull, 'w')
+:          popen = subprocess.Popen(command, stdout=fnull, stderr=fnull)
+:          yield None
+:          popen.send_signal(signal.SIGINT)
+: 
+:          def terminate_process():
+:              limit = time.time() + 10
+:              while time.time() < limit:
+:                  time.sleep(0.1)
+:                  if popen.poll() is not None:
+:                      return
+:              os.kill(popen.pid, signal.SIGTERM)
+: 
+:          thread = Thread(target=terminate_process)
+:          thread.start()
+:          popen.communicate()
+:          thread.join()
+:          if not request.node.stash.get(STASH_FAILED, False):
+:              try:
+:                  os.remove(filepath)
+:              except OSError:
+:                  pass
+: 
+: 
+:      @pytest.fixture(scope='session')
+:      def xdisplay():
+:          IS_SELENIUM_HEADLESS = os.environ.get('SELENIUM_HEADLESS', "True")
+:          if IS_SELENIUM_HEADLESS.lower() == "true":
+:              width, height = 1920, 1080
+:              vdisplay = xvfbwrapper.Xvfb(width=width, height=height)
+:              args = []
+: 
+:              # workaround for memory leak in Xvfb taken from:
+:              # http://blog.jeffterrace.com/2012/07/xvfb-memory-leak-workaround.html
+:              args.append("-noreset")
+: 
+:              # disables X access control
+:              args.append("-ac")
+: 
+:              if hasattr(vdisplay, 'extra_xvfb_args'):
+:                  # xvfbwrapper 0.2.8 or newer
+:                  vdisplay.extra_xvfb_args.extend(args)
+:              else:
+:                  vdisplay.xvfb_cmd.extend(args)
+:              vdisplay.start()
+:              display = vdisplay.new_display
+:          else:
+:              width, height = subprocess.check_output(
+:                  'xdpyinfo | grep "dimensions:"', shell=True
+:              ).decode().split(':', 1)[1].split()[0].strip().split('x')
+:              vdisplay = None
+:              display = subprocess.check_output(
+:                  'xdpyinfo | grep "name of display:"', shell=True
+:              ).decode().split(':', 1)[1].strip()
+:          yield display, width, height
+:          if vdisplay:
+:              vdisplay.stop()
+: 
+: 
+:      @pytest.fixture(scope='session')
+:      def config():
+:          return horizon_config.get_config()
+: 
+: 
+:      @pytest.fixture(scope='function')
+:      def report_dir(request, config):
+:          root_path = os.path.dirname(os.path.abspath(horizon_config.__file__))
+:          test_name = request.node.nodeid.rsplit('/', 1)[1]
+:          report_dir = os.path.join(
+:              root_path, config.selenium.screenshots_directory, test_name)
+:          if not os.path.isdir(report_dir):
+:              os.makedirs(report_dir)
+:          yield report_dir
+:          try:
+:              os.rmdir(report_dir)  # delete if empty
+:          except OSError:
+:              pass
+: 
+: 
+:      @pytest.fixture(scope='session')
+:      def driver(config, xdisplay):
+:          # Start a virtual display server for running the tests headless.
+:          IS_SELENIUM_HEADLESS = os.environ.get('SELENIUM_HEADLESS', False)
+:          # Increase the default Python socket timeout from nothing
+:          # to something that will cope with slow webdriver startup times.
+:          # This *just* affects the communication between this test process
+:          # and the webdriver.
+:          socket.setdefaulttimeout(60)
+:          # Start the Selenium webdriver and setup configuration.
+:          desired_capabilities = dict(webdriver.desired_capabilities)
+:          desired_capabilities['loggingPrefs'] = {'browser': 'ALL'}
+:          driver = webdriver.WebDriver(
+:              desired_capabilities=desired_capabilities
+:          )
+:          if config.selenium.maximize_browser:
+:              driver.maximize_window()
+:              if IS_SELENIUM_HEADLESS:  # force full screen in xvfb
+:                  display, width, height = xdisplay
+:                  driver.set_window_size(width, height)
+: 
+:          driver.implicitly_wait(config.selenium.implicit_wait)
+:          driver.set_page_load_timeout(config.selenium.page_timeout)
+:          yield driver
+:          driver.quit()
+: 
+: 
+: ● Read(file_path: "/home/omcgonag/Work/horizon-osprh_18672/openstack_dashboard/local/local_settings.d/_20_integration_tests_scaffolds.py.example")
+:   ⎿  # Provide a global setting for switching on/off various integration tests
+:      # scaffolds
+:      INTEGRATION_TESTS_SUPPORT = True
+:      HORIZON_CONFIG['integration_tests_support'] = INTEGRATION_TESTS_SUPPORT
+: 
+: 
+: ● Now let me look for any remaining traces of the integration_tests module to understand what was removed:                                 01:18 PM
+: 
+: ● Bash(find . -name "*.conf" -type f | head -10)
+:   ⎿  ./.tox/ui-pytest/lib/python3.13/site-packages/oslo_config/tests/test_fixture.conf
+: 
+: ● Search(pattern: "horizon\.conf", path: "undefined")
+:   ⎿  Found 29 files                                                                                      
+:      /home/omcgonag/Work/horizon-osprh_18672/test-results.txt
+:      /home/omcgonag/Work/horizon-osprh_18672/log.txt
+:      /home/omcgonag/Work/horizon-osprh_18672/.git/COMMIT_EDITMSG~
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/pt_BR/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/ja/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/id/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/en_GB/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/source/locale/de/LC_MESSAGES/releasenotes.po
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/notes/flavor-panel-switch-6b5cd5f0964f4ba3.yaml
+:      /home/omcgonag/Work/horizon-osprh_18672/releasenotes/notes/image-panel-switch-38e9d3716451f9e3.yaml
+:      /home/omcgonag/Work/horizon-osprh_18672/openstack_dashboard/templates/horizon/_conf.html
+:      /home/omcgonag/Work/horizon-osprh_18672/horizon/test/templates/base.html
+:      /home/omcgonag/Work/horizon-osprh_18672/horizon/static/horizon/js/horizon.messages.js
+:      /home/omcgonag/Work/horizon-osprh_18672/horizon/static/horizon/js/horizon.forms.js
+:      /home/omcgonag/Work/horizon-osprh_18672/horizon/static/horizon/js/horizon.js
+:      /home/omcgonag/Work/horizon-osprh_18672/horizon/static/horizon/js/horizon.communication.js
+:      /home/omcgonag/Work/horizon-osprh_18672/horizon/exceptions.py
+:      /home/omcgonag/Work/horizon-osprh_18672/horizon/conf/__init__.py
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/ru/LC_MESSAGES/doc-install.po
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/ko_KR/LC_MESSAGES/doc-install.po
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/id/LC_MESSAGES/doc-contributor.po
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/id/LC_MESSAGES/doc-configuration.po
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/eo/LC_MESSAGES/doc-install.po
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/en_GB/LC_MESSAGES/doc-contributor.po
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/en_GB/LC_MESSAGES/doc-install.po
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/locale/en_GB/LC_MESSAGES/doc-configuration.po
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/install/from-source.rst
+:      /home/omcgonag/Work/horizon-osprh_18672/doc/source/configuration/settings.rst
+:      /home/omcgonag/Work/horizon-osprh_18672/.gitignore
+: 
+: ● Let me check the horizon/conf directory since it appeared in the search:                                                                 01:18 PM
+: 
+: ● Read(file_path: "/home/omcgonag/Work/horizon-osprh_18672/horizon/conf")
+:   ⎿  Error: EISDIR: illegal operation on a directory, read
+: 
+: ● Bash(ls -la /home/omcgonag/Work/horizon-osprh_18672/horizon/conf/)
+:   ⎿  total 8                                                         
+:      drwxr-xr-x. 1 omcgonag omcgonag  118 Sep  8 21:07 .
+:      drwxr-xr-x. 1 omcgonag omcgonag  592 Sep  8 21:07 ..
+:      drwxr-xr-x. 1 omcgonag omcgonag   86 Sep  8 16:38 dash_template
+:      -rw-r--r--. 1 omcgonag omcgonag 1624 Sep  8 16:38 default.py
+:      -rw-r--r--. 1 omcgonag omcgonag 2219 Sep  8 16:38 __init__.py
+:      drwxr-xr-x. 1 omcgonag omcgonag  132 Sep  8 16:38 panel_template
+:      drwxr-xr-x. 1 omcgonag omcgonag   94 Sep  8 21:11 __pycache__
+: 
+: ● Read(file_path: "/home/omcgonag/Work/horizon-osprh_18672/horizon/conf/default.py")
+:   ⎿  # Licensed under the Apache License, Version 2.0 (the "License"); you may  
+:      # not use this file except in compliance with the License. You may obtain
+:      # a copy of the License at
+:      #
+:      #      http://www.apache.org/licenses/LICENSE-2.0
+:      #
+:      # Unless required by applicable law or agreed to in writing, software
+:      # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+:      # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+:      # License for the specific language governing permissions and limitations
+:      # under the License.
+: 
+:      from django.conf import settings
+:      from django.utils.translation import gettext_lazy as _
+: 
+:      # Default configuration dictionary. Do not mutate.
+:      HORIZON_CONFIG = {
+:          # Allow for ordering dashboards; list or tuple if provided.
+:          'dashboards': None,
+: 
+:          # Name of a default dashboard; defaults to first alphabetically if None
+:          'default_dashboard': None,
+: 
+:          # Default redirect url for users' home
+:          'user_home': settings.LOGIN_REDIRECT_URL,
+: 
+:          # AJAX settings for JavaScript
+:          'ajax_queue_limit': 10,
+:          'ajax_poll_interval': 2500,
+: 
+:          # URL for reporting issue with this site.
+:          'bug_url': None,
+: 
+:          # URL for additional help with this site.
+:          'help_url': None,
+: 
+:          # Exception configuration.
+:          'exceptions': {'unauthorized': [],
+:                         'not_found': [],
+:                         'recoverable': []},
+: 
+:          # Password configuration.
+:          'password_validator': {'regex': '.*',
+:                                 'help_text': _("Password is not accepted")},
+: 
+:          'password_autocomplete': 'off',
+: 
+:          'integration_tests_support': settings.INTEGRATION_TESTS_SUPPORT,
+:      }
+: 
+: 
+: ● Read(file_path: "/home/omcgonag/Work/horizon-osprh_18672/horizon/conf/__init__.py")
+:   ⎿  # Licensed under the Apache License, Version 2.0 (the "License"); you may      
+:      # not use this file except in compliance with the License. You may obtain
+:      # a copy of the License at
+:      #
+:      #      http://www.apache.org/licenses/LICENSE-2.0
+:      #
+:      # Unless required by applicable law or agreed to in writing, software
+:      # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+:      # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+:      # License for the specific language governing permissions and limitations
+:      # under the License.
+: 
+:      import copy
+: 
+:      from django.utils.functional import empty
+:      from django.utils.functional import LazyObject
+:      from django.utils.functional import SimpleLazyObject
+: 
+: 
+:      class LazySettings(LazyObject):
+:          def _setup(self, name=None):
+:              from django.conf import settings
+:              from horizon.conf.default import HORIZON_CONFIG as DEFAULT_CONFIG
+:              HORIZON_CONFIG = copy.copy(DEFAULT_CONFIG)
+:              HORIZON_CONFIG.update(settings.HORIZON_CONFIG)
+: 
+:              # Ensure we always have our exception configuration...
+:              for exc_category in ['unauthorized', 'not_found', 'recoverable']:
+:                  if exc_category not in HORIZON_CONFIG['exceptions']:
+:                      default_exc_config = DEFAULT_CONFIG['exceptions'][exc_category]
+:                      HORIZON_CONFIG['exceptions'][exc_category] = default_exc_config
+: 
+:              # Ensure our password validator always exists...
+:              if 'regex' not in HORIZON_CONFIG['password_validator']:
+:                  default_pw_regex = DEFAULT_CONFIG['password_validator']['regex']
+:                  HORIZON_CONFIG['password_validator']['regex'] = default_pw_regex
+:              if 'help_text' not in HORIZON_CONFIG['password_validator']:
+:                  default_pw_help = DEFAULT_CONFIG['password_validator']['help_text']
+:                  HORIZON_CONFIG['password_validator']['help_text'] = default_pw_help
+: 
+:              self._wrapped = HORIZON_CONFIG
+: 
+:          def __getitem__(self, name, fallback=None):
+:              if self._wrapped is empty:
+:                  self._setup(name)
+:              return self._wrapped.get(name, fallback)
+: 
+: 
+:      def get_webroot():
+:          from django.conf import settings
+:          return settings.WEBROOT
+: 
+: 
+:      HORIZON_CONFIG = LazySettings()
+:      WEBROOT = SimpleLazyObject(get_webroot)
+: 
+: 
+: ● Now let me check the recent git history to understand what was removed:                                                                  01:18 PM
+: 
+:   Bash(git show --name-only 8660241a4)
+:   ⎿  Running…
+:   ⎿  commit 8660241a449ea8fdd5973efcacc15e52671a1233                                                    
+:      Author: Owen McGonagle <omcgonag@redhat.com>
+:      Date:   Mon Sep 8 16:56:15 2025 -0400
+: 
+:          Remove all dependencies/connections of old integration test code
+: 
+:          Change-Id: I013972aac7a6ed998bb33513024e06039232d1d4
+:          Signed-off-by: Owen McGonagle <omcgonag@redhat.com>
+: 
+:      .zuul.d/project.yaml
+:      .zuul.d/tempest-and-integrated.yaml
+:      doc/source/contributor/topics/testing.rst
+:      horizon/tables/base.py
+:      openstack_dashboard/templates/horizon/_scripts.html
+:      openstack_dashboard/test/integration_tests/README.rst
+:      openstack_dashboard/test/integration_tests/__init__.py
+:      openstack_dashboard/test/integration_tests/basewebobject.py
+:      openstack_dashboard/test/integration_tests/config.py
+:      openstack_dashboard/test/integration_tests/decorators.py
+:      openstack_dashboard/test/integration_tests/helpers.py
+:      openstack_dashboard/test/integration_tests/horizon.conf
+:      openstack_dashboard/test/integration_tests/pages/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/admin/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/admin/compute/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/admin/compute/flavorspage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/compute/hostaggregatespage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/compute/hypervisorspage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/compute/imagespage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/compute/instancespage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/network/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/admin/network/floatingipspage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/network/networkspage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/network/routerspage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/overviewpage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/system/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/admin/system/defaultspage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/system/imagespage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/system/metadatadefinitionspage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/system/resource_usage/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/admin/system/system_info/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/admin/volume/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/admin/volume/grouptypespage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/volume/snapshotspage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/volume/volumespage.py
+:      openstack_dashboard/test/integration_tests/pages/admin/volume/volumetypespage.py
+:      openstack_dashboard/test/integration_tests/pages/basepage.py
+:      openstack_dashboard/test/integration_tests/pages/identity/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/identity/groupspage.py
+:      openstack_dashboard/test/integration_tests/pages/identity/projectspage.py
+:      openstack_dashboard/test/integration_tests/pages/identity/rolespage.py
+:      openstack_dashboard/test/integration_tests/pages/identity/userspage.py
+:      openstack_dashboard/test/integration_tests/pages/loginpage.py
+:      openstack_dashboard/test/integration_tests/pages/navigation.py
+:      openstack_dashboard/test/integration_tests/pages/pageobject.py
+:      openstack_dashboard/test/integration_tests/pages/project/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/project/apiaccesspage.py
+:      openstack_dashboard/test/integration_tests/pages/project/compute/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/project/compute/imagespage.py
+:      openstack_dashboard/test/integration_tests/pages/project/compute/instancespage.py
+:      openstack_dashboard/test/integration_tests/pages/project/compute/keypairspage.py
+:      openstack_dashboard/test/integration_tests/pages/project/compute/overviewpage.py
+:      openstack_dashboard/test/integration_tests/pages/project/compute/servergroupspage.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/floatingipspage.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/networkoverviewpage.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/networkspage.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/networktopologypage.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/routerinterfacespage.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/routeroverviewpage.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/routerspage.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/security_groups/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/security_groups/managerulespage.py
+:      openstack_dashboard/test/integration_tests/pages/project/network/securitygroupspage.py
+:      openstack_dashboard/test/integration_tests/pages/project/object_store/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/project/volumes/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/project/volumes/snapshotspage.py
+:      openstack_dashboard/test/integration_tests/pages/project/volumes/volumespage.py
+:      openstack_dashboard/test/integration_tests/pages/settings/__init__.py
+:      openstack_dashboard/test/integration_tests/pages/settings/changepasswordpage.py
+:      openstack_dashboard/test/integration_tests/pages/settings/usersettingspage.py
+:      openstack_dashboard/test/integration_tests/regions/__init__.py
+:      openstack_dashboard/test/integration_tests/regions/bars.py
+:      openstack_dashboard/test/integration_tests/regions/baseregion.py
+:      openstack_dashboard/test/integration_tests/regions/exceptions.py
+:      openstack_dashboard/test/integration_tests/regions/forms.py
+:      openstack_dashboard/test/integration_tests/regions/menus.py
+:      openstack_dashboard/test/integration_tests/regions/messages.py
+:      openstack_dashboard/test/integration_tests/regions/tables.py
+:      openstack_dashboard/test/integration_tests/tests/__init__.py
+:      openstack_dashboard/test/integration_tests/tests/test-data/empty_namespace.json
+:      openstack_dashboard/test/integration_tests/tests/test_credentials.py
+:      openstack_dashboard/test/integration_tests/tests/test_defaults.py
+:      openstack_dashboard/test/integration_tests/tests/test_flavors.py
+:      openstack_dashboard/test/integration_tests/tests/test_floatingips.py
+:      openstack_dashboard/test/integration_tests/tests/test_groups.py
+:      openstack_dashboard/test/integration_tests/tests/test_grouptypes.py
+:      openstack_dashboard/test/integration_tests/tests/test_host_aggregates.py
+:      openstack_dashboard/test/integration_tests/tests/test_images.py
+:      openstack_dashboard/test/integration_tests/tests/test_instances.py
+:      openstack_dashboard/test/integration_tests/tests/test_keypairs.py
+:      openstack_dashboard/test/integration_tests/tests/test_login.py
+:      openstack_dashboard/test/integration_tests/tests/test_metadata_definitions.py
+:      openstack_dashboard/test/integration_tests/tests/test_networks.py
+:      openstack_dashboard/test/integration_tests/tests/test_projects.py
+:      openstack_dashboard/test/integration_tests/tests/test_router.py
+:      openstack_dashboard/test/integration_tests/tests/test_router_gateway.py
+:      openstack_dashboard/test/integration_tests/tests/test_security_groups.py
+:      openstack_dashboard/test/integration_tests/tests/test_user_settings.py
+:      openstack_dashboard/test/integration_tests/tests/test_users.py
+:      openstack_dashboard/test/integration_tests/tests/test_volume_snapshots.py
+:      openstack_dashboard/test/integration_tests/tests/test_volumes.py
+:      openstack_dashboard/test/integration_tests/tests/test_volumetypes.py
+:      openstack_dashboard/test/integration_tests/video_recorder.py
+:      openstack_dashboard/test/selenium/integration/conftest.py
+:      openstack_dashboard/test/selenium/integration/test_credentials.py
+:      openstack_dashboard/test/selenium/integration/test_defaults.py
+:      openstack_dashboard/test/selenium/integration/test_federation_login.py
+:      openstack_dashboard/test/selenium/integration/test_flavors.py
+:      openstack_dashboard/test/selenium/integration/test_floatingips.py
+:      openstack_dashboard/test/selenium/integration/test_groups.py
+:      openstack_dashboard/test/selenium/integration/test_grouptypes.py
+:      openstack_dashboard/test/selenium/integration/test_host_aggregates.py
+:      openstack_dashboard/test/selenium/integration/test_images.py
+:      openstack_dashboard/test/selenium/integration/test_instances.py
+:      openstack_dashboard/test/selenium/integration/test_keypairs.py
+:      openstack_dashboard/test/selenium/integration/test_metadata_definitions.py
+:      openstack_dashboard/test/selenium/integration/test_networks.py
+:      openstack_dashboard/test/selenium/integration/test_projects.py
+:      openstack_dashboard/test/selenium/integration/test_routers.py
+:      openstack_dashboard/test/selenium/integration/test_security_groups.py
+:      openstack_dashboard/test/selenium/integration/test_settings.py
+:      openstack_dashboard/test/selenium/integration/test_user_credentials.py
+:      openstack_dashboard/test/selenium/integration/test_users.py
+:      openstack_dashboard/test/selenium/integration/test_volume_snapshots.py
+:      openstack_dashboard/test/selenium/integration/test_volumes.py
+:      openstack_dashboard/test/selenium/integration/test_volumetypes.py
+:      setup.cfg
+:      tools/executable_files.txt
+:      tools/unit_tests.sh
+:      tox.ini
+: 
+: ● Perfect! Now I can see the full picture. Let me check one of the files that was removed to understand the structure:                     01:19 PM
+: 
+:   Bash(git show 8660241a4^:openstack_dashboard/test/integration_tests/config.py | head -30)
+:   ⎿  Running…
+:   ⎿  # Licensed under the Apache License, Version 2.0 (the "License"); you may  
+:      # not use this file except in compliance with the License. You may obtain
+:      # a copy of the License at
+:      #
+:      # http://www.apache.org/licenses/LICENSE-2.0
+:      #
+:      # Unless required by applicable law or agreed to in writing, software
+:      # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+:      # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+:      # License for the specific language governing permissions and limitations
+:      # under the License.
+: 
+:      import os
+: 
+:      from oslo_config import cfg
+: 
+: 
+:      DashboardGroup = [
+:          cfg.StrOpt('dashboard_url',
+:                     default='http://localhost/dashboard/',
+:                     help='Where the dashboard can be found'),
+:          cfg.StrOpt('auth_url',
+:                     default='http://localhost/identity/v3',
+:                     help='Where the keystone can be found'),
+:          cfg.StrOpt('help_url',
+:                     default='https://docs.openstack.org/',
+:                     help='Dashboard help page url'),
+:      ]
+: 
+:      IdentityGroup = [
+: 
+: ● Based on my investigation, here's what your colleague means about the horizon.conf and config.py files needing to stay:                  01:19 PM
+: 
+:   The Situation
+: 
+:   The recent commit 8660241a4 "Remove all dependencies/connections of old integration test code" removed the entire
+:   openstack_dashboard/test/integration_tests/ directory, which contained:
+: 
+:   1. horizon.conf - A configuration file with test settings (dashboard URLs, timeouts, credentials, etc.)
+:   2. config.py - A Python module that used oslo.config to parse the horizon.conf file and provide configuration objects
+: 
+:   The Problem
+: 
+:   The new selenium-based UI tests in openstack_dashboard/test/selenium/conftest.py:25 still try to import:
+:   from openstack_dashboard.test.integration_tests import config as horizon_config
+: 
+:   But this module no longer exists, causing the ModuleNotFoundError.
+: 
+:   What Your Colleague Means
+: 
+:   Your colleague is saying that while the old integration test framework was removed, the configuration infrastructure (horizon.conf and
+:   config.py) needs to be preserved because:
+: 
+:   1. The new selenium tests still depend on it - They use horizon_config.get_config() to get test configuration
+:   2. Shared configuration needs - Both old and new test systems needed the same basic configuration (URLs, credentials, timeouts)
+:   3. The config structure is still valid - The configuration format and the config.py parsing logic are still useful for the new test
+:   system
+: 
+:   The Fix Needed
+: 
+:   The horizon.conf and config.py files need to be restored (probably in a new location like openstack_dashboard/test/selenium/) so that
+:   the new selenium tests can access configuration settings without breaking the import in conftest.py:25.
+: 
+: ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+:   Showing detailed transcript · Ctrl+R to toggle
+
+* Cursor - same ask (gave better recommendations, detailed next steps)
+Ask the same
+
+: ask:
+:
+: From test-results.txt I see this error at the end:
+: 
+: No local_settings file found.
+: ImportError while loading conftest '/home/zuul/src/opendev.org/openstack/horizon/openstack_dashboard/test/selenium/conftest.py'.
+: openstack_dashboard/test/selenium/conftest.py:25: in <module>
+:     from openstack_dashboard.test.integration_tests import config as horizon_config
+: E   ModuleNotFoundError: No module named 'openstack_dashboard.test.integration_tests'
+: ui-pytest: 2994 C exit 4 (0.76 seconds) /home/zuul/src/opendev.org/openstack/horizon> pytest --ds=openstack_dashboard.settings -v --junitxml=/home/zuul/src/opendev.org/openstack/horizon/test_reports/integration_uitest_results.xml --html=/home/zuul/src/opendev.org/openstack/horizon/test_reports/integration_uitest_results.html --self-contained-html /home/zuul/src/opendev.org/openstack/horizon/openstack_dashboard/test/selenium/ui pid=101790 [tox/execute/api.py:294]
+: .pkg: 2995 W _exit> python /opt/stack/data/venv/lib/python3.11/site-packages/pyproject_api/_backend.py True pbr.build [tox/tox_env/api.py:459]
+: Backend: run command _exit with args {}
+: Backend: Wrote response {'return': 0} to /tmp/pep517__exit-axh1_zt2.json
+: .pkg: 2996 I exit None (0.00 seconds) /home/zuul/src/opendev.org/openstack/horizon> python /opt/stack/data/venv/lib/python3.11/site-packages/pyproject_api/_backend.py True pbr.build pid=101028 [tox/execute/api.py:294]
+: .pkg: 3015 D delete package /home/zuul/src/opendev.org/openstack/horizon/.tox/.tmp/package/2/horizon-25.4.1.dev110-0.editable-py3-none-any.whl [tox/tox_env/python/virtual_env/package/pyproject.py:224]
+:   ui-pytest: FAIL code 4 (2.80=setup[1.93]+cmd[0.11,0.76] seconds)
+:   evaluation failed :( (2.94 seconds)
+: 
+: A colleague of mine told me:
+: "I believe the horizon.conf and config.py files need to stay, as they are also used by the new tests"
+: 
+: Could you please explain a bit more on what he means by this?
+: 
+: While you do this, please expand and show all detail as you go through each analysis phase.
+
+ask:
+: is there any way you can take all that great analysis and put it into a file, with all the detail commands, output, and evaluation? so that I can create a document with that content? If you could write it out in Emacs org markdown format that would be great.
+
+answer:
+: Absolutely! I'll create a comprehensive analysis document in Emacs org-mode format with all the details, commands, and findings.
+
+Perfect! I've created a comprehensive analysis document in Emacs org-mode format at */home/omcgonag/Work/horizon-osprh_18672/HORIZON_INTEGRATION_TESTS_ANALYSIS.org*. 
+
+The document includes:
+
+** Complete Analysis Structure
+
+- *Executive Summary* - Clear problem statement and solution
+- *Detailed Investigation Process* - Step-by-step analysis with commands and outputs
+- *Root Cause Analysis* - Why the migration was incomplete
+- *Technical Evidence* - Git history, file contents, configuration details
+- *Solution Options* - Two approaches with pros/cons
+- *Immediate Action Plan* - Concrete steps to fix the issue
+- *Conclusion* - Why your colleague is correct
+- *Technical Details* - File locations and configuration flow
+
+## Key Findings Documented:
+
+- *The Problem*: ModuleNotFoundError due to missing integration_tests module
+- *The Root Cause*: Incomplete migration - old infrastructure removed but new tests still depend on it
+- *The Evidence*: Commit 8660241a4 removed 15,325 lines including config.py and horizon.conf
+- *The Impact*: New pytest UI tests can't import required configuration
+- *The Solution*: Restore minimal config infrastructure (Option A recommended)
+
+** All Commands and Outputs Included
+The document contains all the investigation commands we ran, their outputs, and the analysis of what each piece of evidence tells us about the problem.
+
+Your colleague is absolutely correct
+- the horizon.conf and config.py files need to stay because the new pytest-based UI tests still depend on the oslo.config-based configuration system that was removed. 
+- The migration was incomplete, leaving the new tests unable to access essential configuration for authentication, URLs, and selenium settings.
+
+You can now use this org-mode document to create your documentation
+- and it provides a complete technical analysis that justifies why the configuration files are still needed.
+
+
+* Misc: Cursor: cut/paste (before it wrote results to a file)
+I'll help you understand what your colleague means about the `horizon.conf` and `config.py` files. 
+- Let me analyze the error and explore the codebase to provide a detailed explanation.
+
+: [1 tool called]
+: Let me start by reading the test results file and then exploring the codebase structure:
+: [4 tools called]
+: Let me search more specifically for the error and examine the conftest.py file that's failing:
+: [3 tools called]
+: Now let me search for the missing integration_tests directory and understand what files should be there:
+: [4 tools called]
+: Let me look for any remaining integration test files and understand the structure better:
+: [3 tools called]
+: Let me search for any recent changes or references to integration tests:
+: [3 tools called]
+: Now let me look at the tox configuration and setup files to understand what's missing:
+: [2 tools called]
+: Let me search for entry points and the oslo configuration namespace:
+: [3 tools called]
+: Let me examine the configuration files that exist and see if there are any historical references:
+: [2 tools called]
+: Let me look at the tox.ini file to understand how these tests are supposed to run:
+: [2 tools called]
+: Now let me look at the git history to understand what happened to the integration_tests directory:
+: [2 tools called]
+: The key commit I see is "Remove all dependencies/connections of old integration test code". Let me examine this commit:
+: [2 tools called]
+: Perfect! Now I can see what happened. Let me look at what was in the config.py and horizon.conf files before they were removed:
+: [2 tools called]
+: Let me also check the current state of the tox.ini to see how the oslo-config-generator is being called:
+: [3 tools called]
+: Now let me check how the current new UI tests are supposed to get their configuration:
+: [2 tools called]
+: Now I have a complete understanding! Let me provide a comprehensive explanation:
+: [1 tool called]
+
+** Analysis and Explanation
+Based on my detailed examination of the codebase, here's what your colleague means and why those config files need to stay:
+
+** What Happened: The Big Migration
+The error you're seeing is the result of a *major migration from old integration tests to new pytest-based UI tests*.
+- The commit `8660241a4` ("Remove all dependencies/connections of old integration test code") removed the *entire* openstack_dashboard/test/integration_tests/ directory, including:
+
+1. config.py - The configuration module that defined oslo.config groups for integration tests
+2. horizon.conf - The INI-style configuration file with test settings  
+3. All the old page object model test infrastructure
+4. The entire old test suite
+
+** The Problem: Incomplete Migration
+The migration removed the old integration test infrastructure but the *new pytest UI tests* (located in `openstack_dashboard/test/selenium/`) still depend on it:
+
+: # From openstack_dashboard/test/selenium/conftest.py:25
+: from openstack_dashboard.test.integration_tests import config as horizon_config
+
+: # From openstack_dashboard/test/selenium/ui/test_browse.py:20  
+: from openstack_dashboard.test.integration_tests import config
+
+** The Configuration System
+The old system worked like this:
+
+1. tox.ini would run: *oslo-config-generator --namespace openstack_dashboard_integration_tests*
+2. this generated a config file from the *config.py* module that defined oslo.config option groups
+3. The *horizon.conf* file provided default values for dashboard URL, credentials, selenium settings, etc.
+4. Tests imported the *config* module to access these settings
+
+** What Your Colleague Means*
+When your colleague says "the horizon.conf and config.py files need to stay, as they are also used by the new tests," they mean:
+
+The new pytest UI tests still expect the configuration system to exist - they import from *openstack_dashboard.test.integration_tests.config*
+
+The configuration provides essential test settings like:
+- Dashboard URL (dashboard_url=http://localhost/dashboard/)
+- Authentication endpoints (auth_url=http://localhost/identity/v3)
+- Selenium timeouts and settings
+- Test credentials (usernames, passwords, projects)
+- Browser settings (maximize_browser, screenshots_directory)
+
+The oslo-config-generator command in tox.ini still tries to generate config from the *openstack_dashboard_integration_tests* namespace
+
+** The Solution
+To fix this, you need to either:
+
+** Option A: Restore the minimal config infrastructure**
+- Restore *openstack_dashboard/test/integration_tests/config.py* 
+- Restore *openstack_dashboard/test/integration_tests/horizon.conf*
+- Keep the oslo.config entry point in setup.cfg
+
+** Option B: Refactor the new tests
+- Update *conftest.py*  and test files to use a different configuration approach
+- Remove the oslo-config-generator command from tox.ini
+- Create a simpler configuration system for the new tests
+
+** Current State
+Right now, the tests are broken because:
+1. The *oslo-config-generator --namespace openstack_dashboard_integration_tests* command fails (namespace doesn't exist)
+2. The import *from openstack_dashboard.test.integration_tests import config* fails (module doesn't exist)
+3. The new UI tests can't get the configuration they need to run
+
+Your colleague is correct - the migration was incomplete, and the configuration infrastructure needs to stay until the new tests are fully converted to work without it.
+
+* Misc: Outdated Votes: Verified-1
+** After uploading patch set 6
+
+: ask:
+: 
+: I uploaded (review) another patch set to my gerrit review
+: 
+: I go to the review https://review.opendev.org/c/openstack/horizon/+/960204 and see this message
+: 
+: Uploaded patch set 6.
+: Outdated Votes:
+: Verified-1
+: 
+: What does that mean?
+
+** answer
+When you see *Outdated Votes: Verified-1* on a Gerrit review, it means:
+
+What Happened
+- A previous patch set (likely patch set 5) received a Verified-1 vote, which means the automated CI/testing failed
+- When you uploaded patch set 6, that negative vote became "outdated" because it applied to the old code
+
+What "Verified-1" Means
+- Verified+1: CI tests passed
+- Verified-1: CI tests failed
+- Verified+2: Usually means a maintainer manually verified (rare)
+
+Current Status
+- The old failing test result no longer applies to your new code
+- Gerrit will automatically trigger new CI jobs for patch set 6
+- You should see new test results appear as the CI system runs your updated code
+
+What to Expect
+- New CI jobs will start running against patch set 6
+- If your fixes resolved the issues, you should get Verified+1
+- If problems remain, you'll get another Verified-1 with updated failure details
+
+The *Outdated Votes* section just shows you what votes existed on previous patch sets that no longer apply to the current version.
+
