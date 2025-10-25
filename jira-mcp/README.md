@@ -253,11 +253,57 @@ cp <your-mymcp-cloned-repo-path>/jira-mcp/example.env ~/.rh-jira-mcp.env
 ```
 
 #### Issue: "Authentication failed" or "401 Unauthorized"
-**Problem**: Your Jira API token is incorrect or expired.
+**Problem**: Your Jira API token is incorrect, expired, or your credentials are misconfigured.
 
-**Solution**: 
-1. Generate a new API token from your Jira instance
-2. Update the `JIRA_API_TOKEN` in `~/.rh-jira-mcp.env`
+**Error Message**:
+```
+JiraError HTTP 401 url: https://issues.redhat.com/rest/api/2/project
+Unauthorized (401)
+os_authType was 'any' and an invalid cookie was sent.
+```
+
+**Root Causes**:
+1. Invalid or expired `JIRA_API_TOKEN`
+2. Incorrect `JIRA_EMAIL` (doesn't match your Jira account)
+3. Wrong `JIRA_URL` (pointing to incorrect Jira instance)
+
+**Solution Steps**:
+
+1. **Verify your environment file**:
+   ```bash
+   cat ~/.rh-jira-mcp.env
+   ```
+   
+   Should contain:
+   ```bash
+   JIRA_URL=https://issues.redhat.com
+   JIRA_EMAIL=your.email@redhat.com
+   JIRA_API_TOKEN=your_actual_api_token_here
+   ```
+
+2. **Generate a new API token**:
+   - Go to your Jira profile settings
+   - Navigate to **Security** → **API Tokens**
+   - Click **Create API Token**
+   - Give it a descriptive name (e.g., "Cursor Jira MCP Agent")
+   - Copy the generated token
+
+3. **Update your environment file**:
+   ```bash
+   # Edit the file
+   nano ~/.rh-jira-mcp.env
+   # Update JIRA_API_TOKEN with your new token
+   ```
+
+4. **Rebuild and restart**:
+   ```bash
+   cd <your-mymcp-cloned-repo-path>/jira-mcp
+   make build
+   ```
+   
+5. **Fully quit and restart Cursor** (Ctrl+Q)
+
+**Note**: API tokens can expire or become invalid due to security policies. If a query worked previously but now returns 401, regenerate your token.
 
 #### Issue: Agent not appearing in Cursor
 **Problem**: Cursor hasn't loaded the agent yet or the configuration is incorrect.
