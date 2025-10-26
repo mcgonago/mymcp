@@ -2,6 +2,8 @@
 
 An MCP (Model Context Protocol) agent for Cursor that analyzes GitHub Pull Requests.
 
+> **Note**: The steps below can be executed from within the repository where the `server.sh` and `server.py` files are located.
+
 ## Background
 
 That's a fantastic idea! Building a specialized agent for code review is one of the most powerful uses of a custom LLM environment like Cursor. While Cursor doesn't have a direct *Agent Builder UI*, you can achieve this by creating a **custom Model Context Protocol (MCP) server** that provides GitHub pull request data as a *Tool* to the AI.

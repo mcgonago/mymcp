@@ -2,6 +2,8 @@
 
 An MCP (Model Context Protocol) agent for Cursor that analyzes OpenDev Gerrit code reviews for OpenStack projects.
 
+> **Note**: The steps below can be executed from within the repository where the `server.sh` and `server.py` files are located.
+
 ## Background
 
 The OpenDev review system uses Gerrit, which is different from GitHub's pull request model. Building a specialized agent for OpenDev reviews allows us to analyze OpenStack code changes using Cursor's AI capabilities. This agent leverages Gerrit's REST API to fetch review metadata, file changes, and comments.
