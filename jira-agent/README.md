@@ -1,5 +1,9 @@
 # Building a Jira MCP Agent
 
+> [!NOTE]
+> **Attribution**  
+> I have taken some of the well documented steps at https://github.com/redhat-community-ai-tools/jira-mcp and added them here as part of my learning to program MCP agents. To get much more information, please see the original https://github.com/redhat-community-ai-tools/jira-mcp
+
 I wanted to build an agent for Cursor that provides access to Jira issues, projects, boards, and sprints. Here's the step-by-step process.
 
 ## Background

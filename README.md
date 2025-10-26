@@ -30,16 +30,6 @@ An agent for analyzing OpenDev Gerrit code reviews for OpenStack projects.
 - **Comprehensive Data**: Retrieves change metadata, file statistics, and comments
 - **URL Parsing**: Extracts change numbers from standard OpenDev review URLs
 
-### Quick Start
-
-```bash
-cd opendev-review-agent
-python3 -m venv venv
-source venv/bin/activate
-pip install requests fastmcp
-chmod +x server.sh
-```
-
 **For detailed setup instructions, see [opendev-review-agent/README.md](opendev-review-agent/README.md).**
 
 ---
@@ -55,17 +45,6 @@ An agent for analyzing GitHub Pull Requests with real GitHub API integration.
 - **Comprehensive Data**: Retrieves PR metadata, file changes, comments, and reviews
 - **Security**: Environment file for token management (never committed to Git)
 
-### Quick Start
-
-```bash
-cd github-agent
-python3 -m venv venv
-source venv/bin/activate
-pip install requests fastmcp PyGithub
-chmod +x server.sh
-# Create .env file with your GitHub token
-```
-
 **For detailed setup instructions, see [github-agent/README.md](github-agent/README.md).**
 
 ---
@@ -80,14 +59,6 @@ An agent that provides access to Jira from Cursor with containerized deployment.
 - 20+ Jira tools (issue search, project management, board & sprint management, user management)
 - Production-ready setup with proper authentication
 - Secure credential management
-
-### Quick Start
-
-```bash
-cd jira-agent
-make build
-# Configure ~/.rh-jira-mcp.env with your Jira credentials
-```
 
 **For detailed setup instructions, see [jira-agent/README.md](jira-agent/README.md).**
 
