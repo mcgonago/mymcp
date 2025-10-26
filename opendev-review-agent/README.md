@@ -112,7 +112,7 @@ At the Cursor prompt, enter:
 @opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/960204
 ```
 
-![Review OpenDev 963261](../images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_opendev_963261.png)
+![Review OpenDev 963261](../images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_opendev_960204.png)
 
 ## Verifying OpenDev Review Agent is Operational
 
