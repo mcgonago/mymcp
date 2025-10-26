@@ -24,7 +24,7 @@ An MCP agent for Cursor that analyzes OpenDev Gerrit reviews for OpenStack proje
    {
      "mcpServers": {
        "opendev-reviewer-agent": {
-         "command": "/absolute/path/to/cursor-opendev-review-agent/server.sh",
+         "command": "/absolute/path/to/opendev-review-agent/server.sh",
          "description": "Analyzes OpenDev Gerrit reviews to perform automated code review."
        }
      }

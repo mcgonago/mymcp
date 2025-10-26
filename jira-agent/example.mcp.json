@@ -8,7 +8,7 @@
         "--rm",
         "--env-file",
         "~/.rh-jira-mcp.env",
-        "localhost/jira-mcp:latest"
+        "localhost/jira-agent:latest"
       ],
       "description": "A containerized MCP server to query Jira issues"
     }

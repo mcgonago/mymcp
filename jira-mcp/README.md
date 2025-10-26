@@ -1,3 +1,2642 @@
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
+I need the directory names to change
+
+cursor-opendev-review-agent to opendev-review-agent
+cursor-github-agent to github-agent
+jira-mcp to jira-agent
+
+Please find and change any references to the old directory names to use the new ones
 # Building a Jira MCP Agent
 
 I wanted to build an agent for Cursor that provides access to Jira issues, projects, boards, and sprints. Here's the step-by-step process.

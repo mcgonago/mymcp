@@ -18,7 +18,7 @@
 Copy the example environment file and add your token:
 
 ```bash
-cd /home/omcgonag/Work/mymcp/cursor-github-agent
+cd /home/omcgonag/Work/mymcp/github-agent
 cp example.env .env
 ```
 
@@ -47,7 +47,7 @@ In Cursor chat, try:
 
 ### "GITHUB_TOKEN environment variable not set"
 
-- Make sure you created the `.env` file in the `cursor-github-agent` directory
+- Make sure you created the `.env` file in the `github-agent` directory
 - Make sure the `.env` file contains: `GITHUB_TOKEN=your_token_here`
 - Restart Cursor completely
 

@@ -12,17 +12,17 @@ The repository contains three MCP agents for Cursor with complete documentation.
 mymcp/
 ├── .gitignore                          # Git ignore file
 ├── README.md                           # Main documentation (converted from .org)
-├── cursor-github-agent/                # GitHub PR review agent
+├── github-agent/                # GitHub PR review agent
 │   ├── README.md                       # Agent-specific setup guide
 │   ├── requirements.txt                # Python dependencies
 │   ├── server.py                       # Main MCP server
 │   └── server.sh                       # Launch script
-├── cursor-opendev-review-agent/        # OpenDev Gerrit review agent
+├── opendev-review-agent/        # OpenDev Gerrit review agent
 │   ├── README.md                       # Agent-specific setup guide
 │   ├── requirements.txt                # Python dependencies
 │   ├── server.py                       # Main MCP server
 │   └── server.sh                       # Launch script
-├── jira-mcp/                           # Jira integration agent
+├── jira-agent/                           # Jira integration agent
 │   ├── Containerfile                   # Container definition
 │   ├── example.env                     # Environment variables template
 │   ├── example.mcp.json                # MCP configuration template
@@ -57,7 +57,7 @@ Command output: (empty - success)
 #+END_SRC
 
 #+BEGIN_SRC bash
-cd /home/omcgonag/Work/mymcp && mkdir -p cursor-github-agent cursor-opendev-review-agent jira-mcp images
+cd /home/omcgonag/Work/mymcp && mkdir -p github-agent opendev-review-agent jira-agent images
 #+END_SRC
 
 #+BEGIN_SRC
@@ -65,20 +65,11 @@ Exit code: 0
 Command output: (empty - success)
 #+END_SRC
 
-** Step 2: Copy Files from cursor-github-agent
+** Step 2: Copy Files from github-agent
 
 #+BEGIN_SRC bash
-cd /home/omcgonag/Work/mymcp-content-for-repo/cursor-github-agent && \
-  cp server.py server.sh /home/omcgonag/Work/mymcp/cursor-github-agent/
-#+END_SRC
-
-#+BEGIN_SRC
-Exit code: 0
-Command output: (empty - success)
-#+END_SRC
-
-#+BEGIN_SRC bash
-cd /home/omcgonag/Work/mymcp/cursor-github-agent && chmod +x server.sh
+cd /home/omcgonag/Work/mymcp-content-for-repo/github-agent && \
+  cp server.py server.sh /home/omcgonag/Work/mymcp/github-agent/
 #+END_SRC
 
 #+BEGIN_SRC
@@ -87,7 +78,16 @@ Command output: (empty - success)
 #+END_SRC
 
 #+BEGIN_SRC bash
-cd /home/omcgonag/Work/mymcp/cursor-github-agent && \
+cd /home/omcgonag/Work/mymcp/github-agent && chmod +x server.sh
+#+END_SRC
+
+#+BEGIN_SRC
+Exit code: 0
+Command output: (empty - success)
+#+END_SRC
+
+#+BEGIN_SRC bash
+cd /home/omcgonag/Work/mymcp/github-agent && \
   echo -e "requests\nfastmcp\nPyGithub" > requirements.txt
 #+END_SRC
 
@@ -96,11 +96,11 @@ Exit code: 0
 Command output: (empty - success)
 #+END_SRC
 
-** Step 3: Copy Files from cursor-opendev-review-agent
+** Step 3: Copy Files from opendev-review-agent
 
 #+BEGIN_SRC bash
-cd /home/omcgonag/Work/mymcp-content-for-repo/cursor-opendev-review-agent && \
-  cp server.py server.sh /home/omcgonag/Work/mymcp/cursor-opendev-review-agent/
+cd /home/omcgonag/Work/mymcp-content-for-repo/opendev-review-agent && \
+  cp server.py server.sh /home/omcgonag/Work/mymcp/opendev-review-agent/
 #+END_SRC
 
 #+BEGIN_SRC
@@ -109,7 +109,7 @@ Command output: (empty - success)
 #+END_SRC
 
 #+BEGIN_SRC bash
-cd /home/omcgonag/Work/mymcp/cursor-opendev-review-agent && chmod +x server.sh
+cd /home/omcgonag/Work/mymcp/opendev-review-agent && chmod +x server.sh
 #+END_SRC
 
 #+BEGIN_SRC
@@ -118,7 +118,7 @@ Command output: (empty - success)
 #+END_SRC
 
 #+BEGIN_SRC bash
-cd /home/omcgonag/Work/mymcp/cursor-opendev-review-agent && \
+cd /home/omcgonag/Work/mymcp/opendev-review-agent && \
   echo -e "requests\nfastmcp" > requirements.txt
 #+END_SRC
 
@@ -127,12 +127,12 @@ Exit code: 0
 Command output: (empty - success)
 #+END_SRC
 
-** Step 4: Copy Files from jira-mcp
+** Step 4: Copy Files from jira-agent
 
 #+BEGIN_SRC bash
-cd /home/omcgonag/Work/mymcp-content-for-repo/jira-mcp && \
+cd /home/omcgonag/Work/mymcp-content-for-repo/jira-agent && \
   cp server.py requirements.txt example.env example.mcp.json Containerfile Makefile LICENSE \
-     /home/omcgonag/Work/mymcp/jira-mcp/
+     /home/omcgonag/Work/mymcp/jira-agent/
 #+END_SRC
 
 #+BEGIN_SRC
@@ -183,7 +183,7 @@ Content includes:
 - Virtual environments (venv/, env/, etc.)
 - IDE files (.vscode/, .idea/, etc.)
 - OS files (.DS_Store, Thumbs.db)
-- Environment files (.env, .rh-jira-mcp.env)
+- Environment files (.env, .rh-jira-agent.env)
 - Backup files (*~, *.bak)
 
 ** Step 7: Create Main README.md
@@ -210,9 +210,9 @@ wc -l /home/omcgonag/Work/mymcp/README.md
 ** Step 8: Create Individual Agent READMEs
 
 Created three additional README.md files:
-- =cursor-github-agent/README.md= - Setup and usage for GitHub agent
-- =cursor-opendev-review-agent/README.md= - Setup and usage for OpenDev agent
-- =jira-mcp/README.md= - Setup and usage for Jira agent
+- =github-agent/README.md= - Setup and usage for GitHub agent
+- =opendev-review-agent/README.md= - Setup and usage for OpenDev agent
+- =jira-agent/README.md= - Setup and usage for Jira agent
 
 Each includes:
 - Quick setup instructions
@@ -272,14 +272,14 @@ Changes to be committed:
   (use "git rm --cached <file>..." to unstage)
 	new file:   .gitignore
 	new file:   README.md
-	new file:   cursor-github-agent/README.md
-	new file:   cursor-github-agent/requirements.txt
-	new file:   cursor-github-agent/server.py
-	new file:   cursor-github-agent/server.sh
-	new file:   cursor-opendev-review-agent/README.md
-	new file:   cursor-opendev-review-agent/requirements.txt
-	new file:   cursor-opendev-review-agent/server.py
-	new file:   cursor-opendev-review-agent/server.sh
+	new file:   github-agent/README.md
+	new file:   github-agent/requirements.txt
+	new file:   github-agent/server.py
+	new file:   github-agent/server.sh
+	new file:   opendev-review-agent/README.md
+	new file:   opendev-review-agent/requirements.txt
+	new file:   opendev-review-agent/server.py
+	new file:   opendev-review-agent/server.sh
 	new file:   images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server.png
 	new file:   images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402.png
 	new file:   images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402_fetch_pull_reqeust_not_found.png
@@ -287,14 +287,14 @@ Changes to be committed:
 	new file:   images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_template.png
 	new file:   images/howto_use_cursor_mcp_ageng_github_search_for_mcp_servers.png
 	new file:   images/howto_use_cursor_mcp_ageng_github_settings.png
-	new file:   jira-mcp/Containerfile
-	new file:   jira-mcp/LICENSE
-	new file:   jira-mcp/Makefile
-	new file:   jira-mcp/README.md
-	new file:   jira-mcp/example.env
-	new file:   jira-mcp/example.mcp.json
-	new file:   jira-mcp/requirements.txt
-	new file:   jira-mcp/server.py
+	new file:   jira-agent/Containerfile
+	new file:   jira-agent/LICENSE
+	new file:   jira-agent/Makefile
+	new file:   jira-agent/README.md
+	new file:   jira-agent/example.env
+	new file:   jira-agent/example.mcp.json
+	new file:   jira-agent/requirements.txt
+	new file:   jira-agent/server.py
 #+END_SRC
 
 ** Step 12: Verify Final Structure
@@ -308,12 +308,12 @@ Exit code: 0
 
 Command output:
 .
-├── cursor-github-agent
+├── github-agent
 │   ├── README.md
 │   ├── requirements.txt
 │   ├── server.py
 │   └── server.sh
-├── cursor-opendev-review-agent
+├── opendev-review-agent
 │   ├── README.md
 │   ├── requirements.txt
 │   ├── server.py
@@ -326,7 +326,7 @@ Command output:
 │   ├── howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_template.png
 │   ├── howto_use_cursor_mcp_ageng_github_search_for_mcp_servers.png
 │   └── howto_use_cursor_mcp_ageng_github_settings.png
-├── jira-mcp
+├── jira-agent
 │   ├── Containerfile
 │   ├── example.env
 │   ├── example.mcp.json
@@ -344,26 +344,26 @@ Command output:
 
 #+BEGIN_SRC bash
 cd /home/omcgonag/Work/mymcp && \
-  ls -lh cursor-github-agent/ cursor-opendev-review-agent/ jira-mcp/
+  ls -lh github-agent/ opendev-review-agent/ jira-agent/
 #+END_SRC
 
 #+BEGIN_SRC
 Exit code: 0
 
 Command output:
-cursor-github-agent/:
+github-agent/:
 total 12K
 -rw-r--r--. 1 omcgonag omcgonag   26 Oct 23 10:29 requirements.txt
 -rw-r--r--. 1 omcgonag omcgonag 1.5K Oct 23 10:29 server.py
 -rwxr-xr-x. 1 omcgonag omcgonag  129 Oct 23 10:29 server.sh
 
-cursor-opendev-review-agent/:
+opendev-review-agent/:
 total 16K
 -rw-r--r--. 1 omcgonag omcgonag   17 Oct 23 10:29 requirements.txt
 -rw-r--r--. 1 omcgonag omcgonag 7.2K Oct 23 10:29 server.py
 -rwxr-xr-x. 1 omcgonag omcgonag  308 Oct 23 10:29 server.sh
 
-jira-mcp/:
+jira-agent/:
 total 36K
 -rw-r--r--. 1 omcgonag omcgonag  252 Oct 23 10:30 Containerfile
 -rw-r--r--. 1 omcgonag omcgonag  121 Oct 23 10:30 example.env
@@ -384,9 +384,9 @@ The repository is now ready to be pushed to GitHub. Here are the commands:
 cd /home/omcgonag/Work/mymcp
 git commit -m "Initial commit: Three MCP agents with documentation
 
-- cursor-github-agent: GitHub PR review agent
-- cursor-opendev-review-agent: OpenDev Gerrit review agent  
-- jira-mcp: Jira integration agent with containerized deployment
+- github-agent: GitHub PR review agent
+- opendev-review-agent: OpenDev Gerrit review agent  
+- jira-agent: Jira integration agent with containerized deployment
 - Complete documentation converted from org-mode
 - All images and setup instructions included"
 #+END_SRC

@@ -24,7 +24,7 @@ A simple MCP agent for Cursor that analyzes GitHub Pull Requests.
    {
      "mcpServers": {
        "github-reviewer-agent": {
-         "command": "/absolute/path/to/cursor-github-agent/server.sh",
+         "command": "/absolute/path/to/github-agent/server.sh",
          "description": "Analyzes GitHub pull requests to perform automated code review."
        }
      }

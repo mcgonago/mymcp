@@ -3,7 +3,7 @@ _default: run
 
 SHELL := /bin/bash
 SCRIPT_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-IMG := localhost/jira-mcp:latest
+IMG := localhost/jira-agent:latest
 ENV_FILE := $(HOME)/.rh-jira-mcp.env
 VENV_DIR := venv
 

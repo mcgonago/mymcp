@@ -14,9 +14,9 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 ## TL;DR
 
 This document describes how I built my MCP agents for Cursor, including:
-- **cursor-github-agent**: Analyzes GitHub Pull Requests
-- **cursor-opendev-review-agent**: Analyzes OpenDev Gerrit reviews  
-- **jira-mcp**: Provides access to Jira issues from Cursor
+- **github-agent**: Analyzes GitHub Pull Requests
+- **opendev-review-agent**: Analyzes OpenDev Gerrit reviews  
+- **jira-agent**: Provides access to Jira issues from Cursor
 
 ## Table of Contents
 
@@ -33,7 +33,7 @@ This document describes how I built my MCP agents for Cursor, including:
   - [Create the Server Launcher](#create-the-server-launcher-2)
   - [Configure Cursor](#configure-cursor-2)
   - [Testing the Agent](#testing-the-agent-2)
-- [Jira MCP Agent](#jira-mcp-agent)
+- [Jira Agent](#jira-agent)
 - [Additional Resources](#additional-resources)
 
 ---
@@ -50,11 +50,11 @@ This agent will be a tool that the LLM uses to answer the prompt: **"Review this
 
 ### Set Up the Environment
 
-First, set up a minimal Python environment for your MCP server, you can do this from directory `cursor-opendev-review-agent` of your repo:
+First, set up a minimal Python environment for your MCP server, you can do this from directory `opendev-review-agent` of your repo:
 
 ```bash
-mkdir cursor-opendev-review-agent
-cd cursor-opendev-review-agent
+mkdir opendev-review-agent
+cd opendev-review-agent
 python3 -m venv venv
 source venv/bin/activate
 pip install requests fastmcp
@@ -68,7 +68,7 @@ Create a file named `server.py`. This script will host the MCP server and define
 - **Tool Name**: `gerrit_review_fetcher`
 - **Tool Action**: Retrieve review metadata, file changes, and comments from Gerrit API.
 
-**See the complete implementation:** [`cursor-opendev-review-agent/server.py`](cursor-opendev-review-agent/server.py)
+**See the complete implementation:** [`opendev-review-agent/server.py`](opendev-review-agent/server.py)
 
 **Key Features:**
 - **Gerrit API Integration**: Fetches review details from OpenDev's Gerrit REST API
@@ -161,11 +161,11 @@ This agent will be a tool that the LLM uses to answer the prompt: **"Review this
 
 ### Set Up the Environment
 
-First, set up a minimal Python environment for your MCP server, you can do this from directory `cursor-github-agent` of your repo:
+First, set up a minimal Python environment for your MCP server, you can do this from directory `github-agent` of your repo:
 
 ```bash
-mkdir cursor-github-agent
-cd cursor-github-agent
+mkdir github-agent
+cd github-agent
 python3 -m venv venv
 source venv/bin/activate
 pip install requests fastmcp
@@ -189,10 +189,10 @@ The GitHub agent requires a personal access token to fetch PR data from the GitH
 
 #### Set Up the Environment File
 
-Create a `.env` file in the `cursor-github-agent` directory:
+Create a `.env` file in the `github-agent` directory:
 
 ```bash
-cd cursor-github-agent
+cd github-agent
 cp example.env .env
 ```
 
@@ -214,7 +214,7 @@ Create a file named `server.py`. This script will host the MCP server and define
 - **Tool Name**: `github_pr_fetcher`
 - **Tool Action**: Retrieve the PR summary, file list, and diff content.
 
-**See the complete implementation:** [`cursor-github-agent/server.py`](cursor-github-agent/server.py)
+**See the complete implementation:** [`github-agent/server.py`](github-agent/server.py)
 
 ### Create the Server Launcher
 
@@ -264,7 +264,7 @@ Paste the below JSON configuration (remember to replace `<your-mymcp-cloned-repo
 {
   "mcpServers": {
     "github-reviewer-agent": {
-      "command": "<your-mymcp-cloned-repo-path>/cursor-github-agent/server.sh",
+      "command": "<your-mymcp-cloned-repo-path>/github-agent/server.sh",
       "description": "Analyzes GitHub pull requests to perform automated code review."
     }
   }
@@ -327,14 +327,14 @@ This confirms the MCP server starts successfully.
 
 ## Jira MCP Agent
 
-The third agent provides access to Jira from Cursor. See the [jira-mcp](jira-mcp/) directory for the complete implementation with containerized deployment.
+The third agent provides access to Jira from Cursor. See the [jira-agent](jira-agent/) directory for the complete implementation with containerized deployment.
 
 This is a more mature implementation that includes:
 - Containerized deployment with Podman
 - 20+ Jira tools (issue search, project management, board & sprint management, user management)
 - Production-ready setup with proper authentication
 
-For detailed setup instructions, see [jira-mcp/README.md](jira-mcp/README.md).
+For detailed setup instructions, see [jira-agent/README.md](jira-agent/README.md).
 
 ---
 
@@ -349,7 +349,7 @@ For detailed setup instructions, see [jira-mcp/README.md](jira-mcp/README.md).
 ```
 mymcp/
 ├── README.md                           # This file
-├── cursor-github-agent/                # GitHub PR review agent
+├── github-agent/                # GitHub PR review agent
 │   ├── server.py                       # Main MCP server
 │   ├── server.sh                       # Launch script
 │   └── requirements.txt                # Python dependencies
@@ -357,7 +357,7 @@ mymcp/
 │   ├── server.py                       # Main MCP server
 │   ├── server.sh                       # Launch script
 │   └── requirements.txt                # Python dependencies
-├── jira-mcp/                           # Jira integration agent
+├── jira-agent/                           # Jira integration agent
 │   ├── server.py                       # Main MCP server
 │   ├── requirements.txt                # Python dependencies
 │   ├── Containerfile                   # Container definition
@@ -378,9 +378,9 @@ If you're attending my demonstration and want to follow along:
    cd mymcp
    ```
 
-2. **Choose an agent to set up** (start with cursor-github-agent for simplest):
+2. **Choose an agent to set up** (start with github-agent for simplest):
    ```bash
-   cd cursor-github-agent
+   cd github-agent
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
@@ -411,15 +411,15 @@ python -c "import fastmcp, requests; print('Dependencies OK')"
 deactivate
 
 # Test GitHub Agent
-cd <your-mymcp-cloned-repo-path>/cursor-github-agent
+cd <your-mymcp-cloned-repo-path>/github-agent
 ls -la server.sh server.py
 source venv/bin/activate
 python -c "import fastmcp, requests; print('Dependencies OK')"
 deactivate
 
 # Test Jira MCP Agent (if using)
-cd <your-mymcp-cloned-repo-path>/jira-mcp
-podman images | grep jira-mcp
+cd <your-mymcp-cloned-repo-path>/jira-agent
+podman images | grep jira-agent
 test -f .env && echo ".env exists" || echo ".env missing"
 ```
 
@@ -439,18 +439,18 @@ To configure all agents in Cursor at once:
       "description": "Analyzes OpenDev Gerrit reviews to perform automated code review."
     },
     "github-reviewer-agent": {
-      "command": "<your-mymcp-cloned-repo-path>/cursor-github-agent/server.sh",
+      "command": "<your-mymcp-cloned-repo-path>/github-agent/server.sh",
       "description": "Analyzes GitHub pull requests to perform automated code review."
     },
-    "jira-mcp": {
+    "jira-agent": {
       "command": "podman",
       "args": [
         "run",
         "--rm",
         "-i",
         "--env-file",
-        "<your-mymcp-cloned-repo-path>/jira-mcp/.env",
-        "jira-mcp:latest"
+        "<your-mymcp-cloned-repo-path>/jira-agent/.env",
+        "jira-agent:latest"
       ],
       "description": "Provides access to Jira issues, projects, boards, and sprints."
     }
@@ -476,11 +476,11 @@ After configuration, test each agent in Cursor:
 
 **Jira MCP Agent:**
 ```
-@jira-mcp Search for issues in project OSPRH
+@jira-agent Search for issues in project OSPRH
 ```
 
 ```
-@jira-mcp Get details for issue OSPRH-18672
+@jira-agent Get details for issue OSPRH-18672
 ```
 
 #### Removing and Re-adding Agents
@@ -509,7 +509,7 @@ To test the complete setup process:
 - Restart Cursor after configuration changes
 
 **For Jira MCP specifically:**
-- Verify container image is built: `podman images | grep jira-mcp`
+- Verify container image is built: `podman images | grep jira-agent`
 - Check `.env` file has `JIRA_URL` and `JIRA_API_TOKEN`
 - Ensure `--env-file` path is absolute
 
@@ -538,7 +538,7 @@ This repository is primarily for educational purposes and demonstration. Feel fr
 
 ### License
 
-- `jira-mcp` is licensed under the MIT License
+- `jira-agent` is licensed under the MIT License
 - Other agents are provided as examples for educational purposes
 
 ---
