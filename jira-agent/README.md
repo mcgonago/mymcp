@@ -10,9 +10,6 @@
 
 A containerized Python MCP server for Cursor that provides access to Jira issues, projects, boards, and sprints.
 
-> [!IMPORTANT]
-> This project is experimental and was initially created as a learning exercise.
-
 ## What This Agent Does
 
 This agent provides 20+ tools that enable Cursor's AI to interact with Jira, such as:
@@ -121,26 +118,6 @@ Click **+ Add new global MCP server** and paste this JSON configuration.
         "-i",
         "--env-file",
         "<your-home-directory>/.rh-jira-agent.env",
-        "jira-agent:latest"
-      ],
-      "description": "Provides access to Jira issues, projects, boards, and sprints."
-    }
-  }
-}
-```
-
-**Example with actual path:**
-```json
-{
-  "mcpServers": {
-    "jiraMcp": {
-      "command": "podman",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--env-file",
-        "/home/omcgonag/.rh-jira-agent.env",
         "jira-agent:latest"
       ],
       "description": "Provides access to Jira issues, projects, boards, and sprints."
