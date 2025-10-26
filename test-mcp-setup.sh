@@ -197,9 +197,9 @@ echo
 echo "Next steps:"
 echo "1. Fully quit Cursor (Ctrl+Q) and restart"
 echo "2. Test agents in Cursor:"
-echo "   - @opendev-reviewer-agent Analyze https://review.opendev.org/c/..."
-echo "   - @github-reviewer-agent Review https://github.com/.../pull/..."
-echo "   - @jiraMcp Get details for issue ..."
+echo "   - @opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/960204"
+echo "   - @github-reviewer-agent Review the PR at https://github.com/openstack-k8s-operators/horizon-operator/pull/402 How do I test this?"
+echo "   - @jiraMcp Get details for issue OSPRH-13100"
 echo
 
 # Cleanup
