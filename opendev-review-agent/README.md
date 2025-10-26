@@ -4,6 +4,9 @@ An MCP (Model Context Protocol) agent for Cursor that analyzes OpenDev Gerrit co
 
 > **Note**: The steps below can be executed from within the repository where the `server.sh` and `server.py` files are located.
 
+> **Try This Yourself**: You can also try this on your own by asking the same question I asked Gemini:  
+> *"Please give me the step-by-step instructions for building an MCP agent that analyzes review.opendev.org reviews"*
+
 ## Background
 
 The OpenDev review system uses Gerrit, which is different from GitHub's pull request model. Building a specialized agent for OpenDev reviews allows us to analyze OpenStack code changes using Cursor's AI capabilities. This agent leverages Gerrit's REST API to fetch review metadata, file changes, and comments.
@@ -95,7 +98,7 @@ Click **+ Add new global MCP server** and paste this JSON configuration (remembe
 
 ### Step 4: Save and Reload Cursor
 
-**Save your new mcp.json configuration**
+**Save your new mcp.json configuration**  
 Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
 
 > **Note**: Alternatively, you can fully exit Cursor (**Ctrl+Q**) and restart it, which will also reload the new settings.
@@ -104,7 +107,7 @@ Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer
 
 ### Invoke the OpenDev Cursor Agent on Review 960204
 
-I tested my OpenDev Cursor agent on [Review 960204: Remove all dependencies/connections of old integration test code](https://review.opendev.org/c/openstack/horizon/+/960204)
+I tested my OpenDev Cursor agent on [Review 960204: Validate token before revoking in keystone_client](https://review.opendev.org/c/openstack/horizon/+/960204)
 
 At the Cursor prompt, enter:
 
@@ -112,7 +115,7 @@ At the Cursor prompt, enter:
 @opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/960204
 ```
 
-![Review OpenDev 963261](../images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_opendev_960204.png)
+![Review OpenDev 963261](../images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_opendev_963261.png)
 
 ## Verifying OpenDev Review Agent is Operational
 
@@ -126,22 +129,24 @@ bash server.sh <<< '{"jsonrpc": "2.0", "method": "exit"}' 2>&1 | head -20
 If working correctly, you should see output like:
 
 ```
-╭──────────────────────────────────────────────────────────────────────────────╮
-│                                                                              │
-│                         ▄▀▀ ▄▀█ █▀▀ ▀█▀ █▀▄▀█ █▀▀ █▀█                        │
-│                         █▀  █▀█ ▄▄█  █  █ ▀ █ █▄▄ █▀▀                        │
-│                                                                              │
-│                                FastMCP 2.13.0                                │
-│                                                                              │
-│                                                                              │
-│                    🖥  Server name: opendev-reviewer                          │
-│                                                                              │
-│                    📦 Transport:   STDIO                                     │
-│                                                                              │
-│                    📚 Docs:        https://gofastmcp.com                     │
-│                    🚀 Hosting:     https://fastmcp.cloud                     │
-│                                                                              │
-╰──────────────────────────────────────────────────────────────────────────────╯
+╭────────────────────────────────────────────────────────────────────────────╮
+│                                                                            │
+│        _ __ ___  _____           __  __  _____________    ____    ____     │
+│       _ __ ___ .'____/___ ______/ /_/  |/  / ____/ __ \  |___ \  / __ \    │
+│      _ __ ___ / /_  / __ `/ ___/ __/ /|_/ / /   / /_/ /  ___/ / / / / /    │
+│     _ __ ___ / __/ / /_/ (__  ) /_/ /  / / /___/ ____/  /  __/_/ /_/ /     │
+│    _ __ ___ /_/    \____/____/\__/_/  /_/\____/_/      /_____(*)____/      │
+│                                                                            │
+│                                                                            │
+│                                FastMCP  2.0                                │
+│                                                                            │
+│                                                                            │
+│                 🖥️  Server name:     opendev-reviewer                       │
+│                 📦 Transport:       STDIO                                  │
+│                                                                            │
+│                 🏎️  FastMCP version: 2.12.5                                 │
+│                 🤝 MCP SDK version: 1.16.0                                 │
+│                                                                            │
 ```
 
 This confirms the MCP server starts successfully.
@@ -151,3 +156,7 @@ This confirms the MCP server starts successfully.
 - `server.py` - Main MCP server implementation
 - `server.sh` - Launch script
 - `requirements.txt` - Python dependencies
+
+## Related Documentation
+
+- [OpenDev MCP Agent Setup Guide](opendev-mcp-agent-setup.org) - Detailed setup documentation in org-mode format
