@@ -104,7 +104,7 @@ Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer
 
 ### Invoke the OpenDev Cursor Agent on Review 960204
 
-I tested my OpenDev Cursor agent on [Review 960204: Validate token before revoking in keystone_client](https://review.opendev.org/c/openstack/horizon/+/960204)
+I tested my OpenDev Cursor agent on [Review 960204: Remove all dependencies/connections of old integration test code](https://review.opendev.org/c/openstack/horizon/+/960204)
 
 At the Cursor prompt, enter:
 
