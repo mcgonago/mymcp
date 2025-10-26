@@ -98,6 +98,8 @@ Click **+ Add new global MCP server** and paste this JSON configuration (remembe
 **Save your new mcp.json configuration**  
 Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
 
+> **Note**: Alternatively, you can fully exit Cursor (**Ctrl+Q**) and restart it, which will also reload the new settings.
+
 ## Testing the Agent
 
 ### Invoke the OpenDev Cursor Agent on Review 960204
@@ -136,10 +138,10 @@ If working correctly, you should see output like:
 │                                FastMCP  2.0                                │
 │                                                                            │
 │                                                                            │
-│                 🖥️  Server name:     opendev-reviewer                       │
+│                 🖥️  Server name:     opendev-reviewer                      │
 │                 📦 Transport:       STDIO                                  │
 │                                                                            │
-│                 🏎️  FastMCP version: 2.12.5                                 │
+│                 🏎️  FastMCP version: 2.12.5                                │
 │                 🤝 MCP SDK version: 1.16.0                                 │
 │                                                                            │
 ```

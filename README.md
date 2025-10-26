@@ -108,6 +108,8 @@ To configure all three agents in Cursor at once:
 
 4. **Save your new mcp.json configuration**  
    Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
+   
+   > **Note**: Alternatively, you can fully exit Cursor (**Ctrl+Q**) and restart it, which will also reload the new settings.
 
 ### Testing Each Agent
 

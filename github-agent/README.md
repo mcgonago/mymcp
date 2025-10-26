@@ -136,6 +136,8 @@ Paste the below JSON configuration (remember to replace `<your-mymcp-cloned-repo
 **Save your new mcp.json configuration**  
 Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
 
+> **Note**: Alternatively, you can fully exit Cursor (**Ctrl+Q**) and restart it, which will also reload the new settings.
+
 ## Testing the Agent
 
 ### Invoke the GitHub Cursor Agent on PR-402
