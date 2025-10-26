@@ -2,15 +2,6 @@
 
 This repository demonstrates how to build custom MCP (Model Context Protocol) agents for Cursor. It contains three MCP agents that I built to analyze different types of code reviews.
 
-> [!IMPORTANT]
-> **Path Placeholder Convention**  
-> Throughout this document, you'll see `<your-mymcp-cloned-repo-path>` used in code examples and configuration snippets.  
-> **Replace this placeholder with the absolute path to where you cloned this repository.**  
->   
-> For example:
-> - Linux/Mac: `/home/username/projects/mymcp` or `/Users/username/projects/mymcp`
-> - Windows: `C:\Users\username\projects\mymcp`
-
 ## TL;DR
 
 This document describes how I built my MCP agents for Cursor, including:

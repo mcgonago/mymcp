@@ -22,7 +22,7 @@ First, ensure you have the prerequisites installed and build the container image
 
 ### Build the Container Image
 
-Navigate to the `jira-agent` directory and build the image:
+Navigate to the `jira-agent` directory and build the image (remember to replace `<your-mymcp-cloned-repo-path>`):
 
 ```bash
 cd <your-mymcp-cloned-repo-path>/jira-agent
