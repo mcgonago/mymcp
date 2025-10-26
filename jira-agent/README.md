@@ -1,23 +1,28 @@
-# Building a Jira MCP Agent
+# Jira MCP Agent
 
 > [!NOTE]
-> **Attribution**  
-> I have taken some of the well documented steps at https://github.com/redhat-community-ai-tools/jira-mcp and added them here as part of my learning to program MCP agents. To get much more information, please see the original https://github.com/redhat-community-ai-tools/jira-mcp
+> **About This Document**  
+> This document was created by following the well-documented steps at https://github.com/redhat-community-ai-tools/jira-mcp for creating a Jira MCP agent.
+>
+> The steps below document the process of building a simple Jira MCP agent based on that repository. For comprehensive documentation, advanced features, and the complete implementation, please refer to the original: https://github.com/redhat-community-ai-tools/jira-mcp
 
-I wanted to build an agent for Cursor that provides access to Jira issues, projects, boards, and sprints. Here's the step-by-step process.
+## Overview
 
-## Background
-
-Many development teams use Jira for issue tracking and project management. Building a specialized agent for Jira allows us to query issues, search projects, and manage sprints directly from Cursor's AI interface. This agent uses a containerized approach with Podman for easy deployment and isolation, and leverages Jira's REST API for comprehensive access to Jira resources.
-
-This agent provides 20+ tools that the LLM can use to answer prompts like: **"Get details for Jira issue OSPRH-13100"** or **"Search for issues assigned to me"**
+A containerized Python MCP server for Cursor that provides access to Jira issues, projects, boards, and sprints.
 
 > [!IMPORTANT]
 > This project is experimental and was initially created as a learning exercise.
 
-## Set Up the Environment
+## What This Agent Does
 
-First, ensure you have the prerequisites installed and build the container image:
+This agent provides 20+ tools that enable Cursor's AI to interact with Jira, such as:
+- Get details for Jira issues
+- Search issues using JQL
+- List projects and boards
+- Query sprint information
+- Search and manage users
+
+## Set Up the Environment
 
 ### Prerequisites
 
@@ -33,7 +38,7 @@ cd <your-mymcp-cloned-repo-path>/jira-agent
 make build
 ```
 
-This will create a container image named `jira-agent:latest` with all required dependencies.
+This creates a container image named `jira-agent:latest` with all required dependencies.
 
 ## Configure Jira Authentication
 
@@ -62,66 +67,37 @@ JIRA_API_TOKEN=your-actual-jira-token-here
 ```
 
 > [!WARNING]
-> **Never commit this file to Git!** It contains your personal API token.  
-> Keep it in your home directory (`~/.rh-jira-agent.env`) outside the repository.
+> **Security Note**  
+> Keep the `.rh-jira-agent.env` file in your home directory (outside the repository) to protect your credentials. The file contains your personal API token.
 
-## Define the MCP Server Script
+## MCP Server Implementation
 
-This agent uses a containerized approach with Podman. The main server is implemented in `server.py` and packaged into a container image.
+The server implementation uses FastMCP and the Jira Python library to provide tools for interacting with Jira.
 
-**See the complete implementation:** [`jira-agent/server.py`](server.py)
+**Implementation:** [`server.py`](server.py)
 
-**Key Features:**
-- **20+ Jira Tools**: Comprehensive access to issues, projects, boards, sprints, and users
-- **Containerized Deployment**: Isolated environment with all dependencies
-- **JQL Support**: Search issues using Jira Query Language
-- **Authentication**: Secure token-based authentication
+**Key Components:**
+- **FastMCP Framework**: Provides the MCP protocol implementation
+- **Jira Client**: Connects to Jira REST API using credentials from environment
+- **20+ Tools**: Implements various Jira operations as MCP tools
 
-### Available Tools
+**Container Setup:**
+- **Base Image**: Python 3.11-slim
+- **Dependencies**: Defined in [`requirements.txt`](requirements.txt)
+- **Build**: Automated via [`Makefile`](Makefile)
+- **Configuration**: Uses Podman with environment file for credentials
 
-The MCP server provides these tool categories:
-
-#### Issue Management
-- `get_jira` - Get details for a specific Jira issue
-- `search_issues` - Search issues using JQL
-- `create_issue` - Create a new issue
-- `update_issue` - Update an existing issue
-- And more...
-
-#### Project Management
-- `list_projects` - List all projects
-- `get_project` - Get project details
-- `get_project_components` - Get components for a project
-- `get_project_versions` - Get versions for a project
-
-#### Board & Sprint Management
-- `list_boards` - List all boards
-- `get_board` - Get board details
-- `list_sprints` - List sprints for a board
-- `get_sprint_issues` - Get issues in a sprint
-
-#### User Management
-- `search_users` - Search users by query
-- `get_user` - Get user details
-- `get_current_user` - Get current user info
-
-## Create the Container Image
-
-The agent is packaged using a `Containerfile` (Podman/Docker format) for easy deployment.
-
-**Container definition:** [`jira-agent/Containerfile`](Containerfile)
-
-The container image is built with the `make build` command (see "Set Up the Environment" above).
+**Container definition:** [`Containerfile`](Containerfile)
 
 ## Configure Cursor
 
-Now, tell Cursor where to find and how to run your Jira agent.
+Add the Jira agent to Cursor's MCP configuration.
 
 ### Step 1: Open Cursor Settings
 
 Open Cursor's settings (**Cmd/Ctrl + Comma** or **File -> Settings**).
 
-### Step 2: Search for MCP Servers
+### Step 2: Navigate to MCP Servers
 
 Search for **MCP Servers** or go to **Features -> MCP Servers**.
 
@@ -182,46 +158,71 @@ Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer
 
 ### Test from Terminal
 
-You can test the container directly before using it in Cursor:
+Test the container directly before using it in Cursor:
 
 ```bash
 cd <your-mymcp-cloned-repo-path>/jira-agent
-make run
+podman run --rm -i --env-file ~/.rh-jira-agent.env jira-agent:latest <<< '{"jsonrpc": "2.0", "method": "tools/list"}'
 ```
 
-This will start the container interactively and show you the MCP server banner with available tools.
+Expected output should list available Jira tools.
 
-**To exit**: Press `Ctrl+D`
+### Test in Cursor
 
-### Test from Cursor
+After configuring the agent in Cursor, test it with these prompts:
 
-Once Cursor is restarted, test the agent by entering commands at the Cursor prompt:
-
+**Get issue details:**
 ```
 @jiraMcp Get details for issue OSPRH-13100
 ```
 
-or
-
+**Search issues:**
 ```
-@jiraMcp Search for issues assigned to me in the current sprint
+@jiraMcp Search for issues in project OSPRH
 ```
 
-or
-
+**List projects:**
 ```
 @jiraMcp List all projects I have access to
 ```
 
-The agent will query your Jira instance and return the requested information.
+## Available Tools
 
----
+The MCP server provides these tools for interacting with Jira:
+
+### Issue Search
+- `get_jira` - Get details for a specific Jira issue by key
+- `search_issues` - Search issues using JQL
+
+### Project Management
+- `list_projects` - List all projects
+- `get_project` - Get project details by key
+- `get_project_components` - Get components for a project
+- `get_project_versions` - Get versions for a project
+- `get_project_roles` - Get roles for a project
+- `get_project_permission_scheme` - Get permission scheme for a project
+- `get_project_issue_types` - Get issue types for a project
+
+### User Management
+- `search_users` - Search users by query
+- `get_user` - Get user details by account ID
+- `get_current_user` - Get current user info
+- `get_assignable_users_for_project` - Get assignable users for a project
+- `get_assignable_users_for_issue` - Get assignable users for an issue
+
+### Board & Sprint Management
+- `list_boards` - List all boards
+- `get_board` - Get board details by ID
+- `list_sprints` - List sprints for a board
+- `get_sprint` - Get sprint details by ID
+- `get_issues_for_board` - Get issues for a board
+- `get_issues_for_sprint` - Get issues for a sprint in a board
 
 ## Troubleshooting
 
 ### Verifying Jira MCP Agent is Operational
 
-To test if your Jira MCP agent is working correctly, run this command from your terminal:
+To test if the Jira MCP agent is working correctly, run this command from your terminal:
 
 ```bash
 timeout 5 podman run --rm -i --env-file ~/.rh-jira-agent.env jira-agent:latest <<< '{"jsonrpc": "2.0", "method": "exit"}' 2>&1 | head -20
@@ -257,7 +258,7 @@ cp <your-mymcp-cloned-repo-path>/jira-agent/example.env ~/.rh-jira-agent.env
 ```
 
 #### Issue: "Authentication failed" or "401 Unauthorized"
-**Problem**: Your Jira API token is incorrect, expired, or your credentials are misconfigured.
+**Problem**: Jira API token is incorrect, expired, or credentials are misconfigured.
 
 **Error Message**:
 ```
@@ -340,5 +341,3 @@ If you want to modify or extend the agent:
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
-
-
