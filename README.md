@@ -182,34 +182,6 @@ mymcp/
 └── use-case/                           # Example use cases and reviews
 ```
 
-### Setup Instructions for Participants
-
-If you're attending my demonstration and want to follow along:
-
-1. **Clone this repository**:
-   ```bash
-   git clone https://github.com/mcgonago/mymcp.git
-   cd mymcp
-   ```
-
-2. **Choose an agent to set up** (start with github-agent for simplest):
-   ```bash
-   cd github-agent
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   chmod +x server.sh
-   ```
-
-3. **Configure Cursor**:
-   - Open Cursor Settings (Cmd/Ctrl + ,)
-   - Navigate to Features → MCP Servers
-   - Add your agent configuration (see examples above)
-
-4. **Test your agent**:
-   - Try asking Cursor to review a PR or issue
-   - Use the `@agent-name` syntax in your prompts
-
 ### Troubleshooting
 
 **If an agent doesn't respond:**

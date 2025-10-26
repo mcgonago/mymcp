@@ -1,5 +1,21 @@
 # Review 960464: Add integration tests for region selection and switching
 
+## Table of Contents
+
+- [Review Information](#review-information)
+- [High-Level Description of Changes](#high-level-description-of-changes)
+- [What Problem Does This Solve?](#what-problem-does-this-solve)
+- [How to Test This Change](#how-to-test-this-change)
+- [Top Challenges in Reviewing This Change](#top-challenges-in-reviewing-this-change)
+- [Recommended Steps for Completing the Review](#recommended-steps-for-completing-the-review)
+- [Key Areas of Concern](#key-areas-of-concern)
+- [Technology and Testing Framework Background](#technology-and-testing-framework-background)
+- [Estimated Review Time](#estimated-review-time)
+- [Questions to Ask the Author](#questions-to-ask-the-author)
+- [Follow-Up Actions](#follow-up-actions)
+
+---
+
 ## Review Information
 
 - **Change ID**: 960464
