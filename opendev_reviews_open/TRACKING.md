@@ -64,45 +64,24 @@ This document tracks the systematic analysis of open reviews for the openstack/h
 
 ### 📋 Pending Reviews (24 remaining)
 
-#### Queue (by last updated date):
+| # | Review ID | Description | Created | Last Updated | My Status |
+|---|-----------|-------------|---------|--------------|-----------|
+| 2 | [963263](https://review.opendev.org/c/openstack/horizon/+/963263) | Fix TOTP view redirection | TBD | 2025-10-24 | Pending Analysis |
+| 3 | [964474](https://review.opendev.org/c/openstack/horizon/+/964474) | Replace DOMNodeInserted events with a mutation observer | TBD | 2025-10-23 | Pending Analysis |
+| 4 | [963468](https://review.opendev.org/c/openstack/horizon/+/963468) | Use server filter mode for volumes and snapshots tables | TBD | 2025-10-22 | Pending Analysis |
+| 5 | [961099](https://review.opendev.org/c/openstack/horizon/+/961099) | feat(dashboard): add microversion support for Nova live migration | TBD | 2025-10-22 | Pending Analysis |
+| 6 | [964456](https://review.opendev.org/c/openstack/horizon/+/964456) | Hide enable_port_security checkbox when disallowed by policy | TBD | 2025-10-21 | Pending Analysis |
+| 7 | [964336](https://review.opendev.org/c/openstack/horizon/+/964336) | Remove all references to INTEGRATION_TESTS_SUPPORT | TBD | 2025-10-21 | Pending Analysis |
+| 8 | [964167](https://review.opendev.org/c/openstack/horizon/+/964167) | [WIP] Add multi-realm federation tests | TBD | 2025-10-15 | Pending Analysis |
+| 9 | [963576](https://review.opendev.org/c/openstack/horizon/+/963576) | Force scope in all appcreds API calls | TBD | 2025-10-13 | Pending Analysis |
+| 10 | [927478](https://review.opendev.org/c/openstack/horizon/+/927478) | Add SWIFT_PANEL_FULL_LISTING config option | TBD | 2025-10-09 | Pending Analysis |
+| 11-25 | - | [Additional reviews to be listed after fetching from OpenDev] | - | - | Pending Analysis |
 
-2. **Review 963263** - Fix TOTP view redirection
-   - Last Updated: 2025-10-24 08:05:24
-   - Status: Awaiting analysis
-   
-3. **Review 964474** - Replace DOMNodeInserted events with a mutation observer
-   - Last Updated: 2025-10-23 10:48:38
-   - Status: Awaiting analysis
-   
-4. **Review 963468** - Use server filter mode for volumes and snapshots tables
-   - Last Updated: 2025-10-22 13:15:03
-   - Status: Awaiting analysis
-   
-5. **Review 961099** - feat(dashboard): add microversion support for Nova live migration
-   - Last Updated: 2025-10-22 13:09:24
-   - Status: Awaiting analysis
-   
-6. **Review 964456** - Hide enable_port_security checkbox when disallowed by policy
-   - Last Updated: 2025-10-21 15:37:57
-   - Status: Awaiting analysis
-   
-7. **Review 964336** - Remove all references to INTEGRATION_TESTS_SUPPORT
-   - Last Updated: 2025-10-21 14:47:37
-   - Status: Awaiting analysis
-   
-8. **Review 964167** - [WIP] Add multi-realm federation tests
-   - Last Updated: 2025-10-15 18:47:57
-   - Status: Awaiting analysis
-   
-9. **Review 963576** - Force scope in all appcreds API calls
-   - Last Updated: 2025-10-13 17:02:55
-   - Status: Awaiting analysis
-   
-10. **Review 927478** - Add SWIFT_PANEL_FULL_LISTING config option
-    - Last Updated: 2025-10-09 19:49:32
-    - Status: Awaiting analysis
-
-11-25. [Additional reviews to be listed after analysis]
+**Status Legend:**
+- **Pending Analysis**: Not yet analyzed
+- **Analyzed**: Analysis complete, documented
+- **Under Review**: Currently being reviewed/tested
+- **Reviewed**: Review complete, feedback provided
 
 ---
 
