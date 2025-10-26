@@ -95,7 +95,7 @@ Click **+ Add new global MCP server** and paste this JSON configuration (remembe
 
 ### Step 4: Save and Reload Cursor
 
-**Save your new mcp.json configuration**  
+**Save your new mcp.json configuration**
 Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
 
 > **Note**: Alternatively, you can fully exit Cursor (**Ctrl+Q**) and restart it, which will also reload the new settings.
@@ -151,7 +151,3 @@ This confirms the MCP server starts successfully.
 - `server.py` - Main MCP server implementation
 - `server.sh` - Launch script
 - `requirements.txt` - Python dependencies
-
-## Related Documentation
-
-- [OpenDev MCP Agent Setup Guide](opendev-mcp-agent-setup.org) - Detailed setup documentation in org-mode format
