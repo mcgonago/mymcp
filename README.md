@@ -60,14 +60,17 @@ An agent for analyzing GitHub Pull Requests with real GitHub API integration.
 
 ## GitLab RH Agent
 
-An agent for analyzing GitLab Issues and Merge Requests from internal Red Hat GitLab (gitlab.cee.redhat.com).
+An agent for analyzing GitLab Issues, Merge Requests, and Commits from internal Red Hat GitLab (gitlab.cee.redhat.com).
 
 ### Features
 
-- **GitLab API Integration**: Fetches issues and merge requests from internal Red Hat GitLab
+- **GitLab API Integration**: Fetches issues, merge requests, and commits from internal Red Hat GitLab
 - **Authentication**: Uses personal access tokens with `read_api` scope
-- **Supports Both Issues and MRs**: Analyze both issues and merge requests with a single agent
+- **Supports Issues, MRs, and Commits**: Analyze issues, merge requests, and individual commits
+- **Full URL Support**: Paste GitLab URLs directly from your browser
 - **Project Path Handling**: Properly URL-encodes project paths for API calls
+- **Commit Analysis**: Fetches diffs, file changes, and statistics for security review
+- **CVE Detection**: Analyzes commits for security implications and vulnerability fixes
 - **Comprehensive Metadata**: Retrieves title, state, description, assignees, labels, and timestamps
 - **Security**: Environment file for token management (never committed to Git)
 
@@ -150,7 +153,11 @@ After configuration, test each agent in Cursor:
 
 **GitLab Agent:**
 ```
-@gitlab-cee-agent Analyze the state and description of issue platform/osp-director/issues/42
+@gitlab-cee-agent Analyze commit https://gitlab.cee.redhat.com/eng/openstack/python-django/-/commit/848fd870bb51ae6d8ea44512665dab8257f9c27a
+```
+Or for issues/MRs:
+```
+@gitlab-cee-agent Analyze issue openstack-konflux/osp-director-operator-17.1/issues/24
 ```
 
 **Jira Agent:**

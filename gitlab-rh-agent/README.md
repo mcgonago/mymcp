@@ -1,28 +1,30 @@
 # GitLab Review Agent
 
-An MCP (Model Context Protocol) agent for Cursor that analyzes GitLab Issues and Merge Requests from internal Red Hat GitLab (gitlab.cee.redhat.com).
+An MCP (Model Context Protocol) agent for Cursor that analyzes GitLab Issues, Merge Requests, and Commits from internal Red Hat GitLab (gitlab.cee.redhat.com).
 
 > **Note**: The steps below can be executed from within the repository where the `server.sh` and `server.py` files are located.
 
 > **Try This Yourself**: You can also try this on your own by asking the same question I asked Gemini:  
-> *"Please give me the step-by-step instructions for building an MCP agent that analyzes gitlab.cee.redhat.com issues and merge requests"*
+> *"Please give me the step-by-step instructions for building an MCP agent that analyzes gitlab.cee.redhat.com issues, merge requests, and commits"*
 
 ## Background
 
-Building a specialized agent for your internal GitLab instance is an excellent way to integrate code review and issue-tracking directly into the Cursor LLM environment. Since GitLab is an internal service (gitlab.cee.redhat.com), this custom MCP server handles authentication and API calls to fetch issue and merge request data.
+Building a specialized agent for your internal GitLab instance is an excellent way to integrate code review and issue-tracking directly into the Cursor LLM environment. Since GitLab is an internal service (gitlab.cee.redhat.com), this custom MCP server handles authentication and API calls to fetch issue, merge request, and commit data.
 
-This agent will be a tool that the LLM uses to answer the prompt: **"Analyze this issue: group/project/issues/123"**
+This agent will be a tool that the LLM uses to answer prompts like:
+- **"Analyze this issue: group/project/issues/123"**
+- **"Review this merge request: group/project/merge_requests/456"**
+- **"Analyze this commit: https://gitlab.cee.redhat.com/group/project/-/commit/abc123"**
 
 ## Set Up the Environment
 
 First, set up a minimal Python environment for your MCP server, you can do this from directory `gitlab-rh-agent` of your repo:
 
 ```bash
-mkdir gitlab-rh-agent
-cd gitlab-rh-agent
 python3 -m venv venv
 source venv/bin/activate
 pip install requests fastmcp
+pip install --upgrade pip
 ```
 
 ## Configure GitLab Authentication
@@ -44,7 +46,6 @@ The GitLab agent requires a personal access token to fetch data from the GitLab 
 Create a `.env` file in the `gitlab-rh-agent` directory:
 
 ```bash
-cd gitlab-rh-agent
 cp example.env .env
 ```
 
@@ -60,17 +61,19 @@ GITLAB_TOKEN=glpat-your_actual_token_here
 
 ## Create the Server Script (server.py)
 
-The `server.py` file is already provided in this directory. It defines the logic for the `gitlab_issue_fetcher` tool that:
+The `server.py` file is already provided in this directory. It defines the logic for the `gitlab_resource_fetcher` tool that:
 
-- Accepts GitLab issue/MR paths (e.g., `group/project/issues/123`)
+- Accepts GitLab paths or full URLs (e.g., `group/project/issues/123` or `https://gitlab.cee.redhat.com/...`)
 - Fetches data from the GitLab API at `https://gitlab.cee.redhat.com/api/v4`
 - Returns structured data for the LLM to analyze
 
 Key features:
-- ✅ Supports both Issues and Merge Requests
+- ✅ Supports Issues, Merge Requests, **and Commits**
+- ✅ Accepts both path format and full URLs
 - ✅ Handles URL encoding for project paths
-- ✅ Provides detailed metadata (author, state, assignees, labels)
-- ✅ Formats descriptions for easy analysis
+- ✅ Provides detailed metadata (author, state, assignees, labels, stats)
+- ✅ Fetches commit diffs and file change summaries
+- ✅ Formats data for security analysis (CVE detection)
 
 ## Create the Server Launcher (server.sh)
 
@@ -111,18 +114,6 @@ Add this JSON configuration (remember to replace `<your-mymcp-cloned-repo-path>`
 }
 ```
 
-**Example with actual path:**
-```json
-{
-  "mcpServers": {
-    "gitlab-cee-agent": {
-      "command": "/home/omcgonag/Work/mymcp/gitlab-rh-agent/server.sh",
-      "description": "Agent to fetch and analyze issues/MRs from internal Red Hat GitLab."
-    }
-  }
-}
-```
-
 ### Step 4: Save and Reload Cursor
 
 **Save your new mcp.json configuration**  
@@ -136,22 +127,47 @@ Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer
 
 In Cursor's chat box, you can now invoke your custom agent using the `@` symbol:
 
+**Test with an Issue:**
 ```
-@gitlab-cee-agent Analyze the state and description of issue platform/osp-director/issues/42
+@gitlab-cee-agent Analyze the state and description of issue openstack-konflux/osp-director-operator-17.1/issues/24
 ```
 
-**Example paths:**
-- For issues: `group/project/issues/123`
-- For merge requests: `group/project/merge_requests/456`
+**Test with a Merge Request:**
+```
+@gitlab-cee-agent Review merge request openstack-konflux/osp-director-operator-17.1/merge_requests/5
+```
+
+**Test with a Commit (using full URL):**
+```
+@gitlab-cee-agent Analyze commit https://gitlab.cee.redhat.com/eng/openstack/python-django/-/commit/848fd870bb51ae6d8ea44512665dab8257f9c27a
+```
+
+**Test with a Commit (using path format):**
+```
+@gitlab-cee-agent Analyze commit eng/openstack/python-django/commit/848fd870bb51ae6d8ea44512665dab8257f9c27a
+```
+
+**Supported formats:**
+- Issues: `group/project/issues/123`
+- Merge Requests: `group/project/merge_requests/456`
+- Commits: `group/project/commit/abc123` or full URLs
 
 ### Expected Output
 
-The agent will fetch and return:
+**For Issues and Merge Requests**, the agent will fetch:
 - **Title** and **State** (opened, closed, merged)
 - **Description** (first 500 characters)
 - **Author** and **Assignees**
 - **Labels** and timestamps
 - **Analysis prompt** for the LLM to provide insights
+
+**For Commits**, the agent will fetch:
+- **Commit title and full message**
+- **Author and committer** information
+- **Timestamps** (authored and committed dates)
+- **Change statistics** (+additions, -deletions, total lines)
+- **Files changed** (list of modified files)
+- **Analysis prompt** with focus on security implications (CVEs) and technical changes
 
 ### Test from Terminal (Optional)
 
@@ -163,9 +179,16 @@ source venv/bin/activate
 ./server.sh
 ```
 
-Then send JSON input:
+Then send JSON input for different resource types:
+
+**Test an Issue:**
 ```bash
-echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "gitlab_issue_fetcher", "arguments": {"issue_path": "platform/osp-director/issues/42"}}}' | ./server.sh
+echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "gitlab_resource_fetcher", "arguments": {"resource_path": "openstack-konflux/osp-director-operator-17.1/issues/24"}}}' | ./server.sh
+```
+
+**Test a Commit (with full URL):**
+```bash
+echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "gitlab_resource_fetcher", "arguments": {"resource_path": "https://gitlab.cee.redhat.com/eng/openstack/python-django/-/commit/848fd870bb51ae6d8ea44512665dab8257f9c27a"}}}' | ./server.sh
 ```
 
 ## Troubleshooting
@@ -223,14 +246,21 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "gitlab_issu
 
 ✅ **Fetch Issue Details**: Get full information about any GitLab issue you have access to  
 ✅ **Fetch Merge Request Details**: Analyze merge requests with all metadata  
-✅ **Analyze State**: Understand the current status and progress  
+✅ **Analyze Commits**: Review individual commits with diffs and file changes  
+✅ **Security Analysis**: Identify CVEs and security-related changes in commits  
+✅ **Analyze State**: Understand the current status and progress of issues/MRs  
 ✅ **Review Descriptions**: Get summaries of issues and MRs  
 ✅ **Track Assignments**: See who is working on what  
-✅ **View Labels**: Understand categorization and tagging
+✅ **View Labels**: Understand categorization and tagging  
+✅ **Full URL Support**: Paste GitLab URLs directly from your browser
 
 ## Next Steps
 
-- Try analyzing various issues and merge requests from your projects
+- Try analyzing various issues, merge requests, and commits from your projects
+- Use the agent to review security fixes and CVE patches
+- Analyze commit history for specific features or bug fixes
 - Use the agent to get quick summaries during code reviews
 - Combine with other MCP agents for comprehensive project analysis
+
+
 
