@@ -16,11 +16,42 @@ A containerized Python MCP server for Cursor that provides access to Jira issues
 ## What This Agent Does
 
 This agent provides 20+ tools that enable Cursor's AI to interact with Jira, such as:
-- Get details for Jira issues
-- Search issues using JQL
-- List projects and boards
-- Query sprint information
-- Search and manage users
+- ✅ Get details for Jira issues
+- ✅ Search issues using JQL (Jira Query Language)
+- ✅ List projects and boards
+- ✅ Query sprint information
+- ✅ Search and manage users
+- ✅ Access project components, versions, and roles
+- ✅ Get assignable users for projects and issues
+- ✅ Retrieve issue types and permission schemes
+
+## Next Steps
+
+- Try querying different Jira issues and projects in your workspace
+- Use JQL search to find specific issues (e.g., bugs, features, by assignee)
+- Explore sprint and board information for agile project management
+- Combine with other MCP agents to correlate Jira issues with code changes
+- Use for automated status updates and project tracking insights
+
+## Security Notes
+
+- ✅ Environment file stored outside repository (`~/.rh-jira-agent.env`)
+- ✅ Credentials never committed to Git
+- ✅ Uses containerized deployment for isolation
+- ✅ API token with read-only recommended scopes
+- ✅ Jira authentication through official API token mechanism
+
+## Files
+
+- `server.py` - Main MCP server implementation
+- `Containerfile` - Container image definition  
+- `Makefile` - Build and deployment automation
+- `requirements.txt` - Python dependencies
+- `example.env` - Environment variables template
+- `example.mcp.json` - MCP configuration template
+- `LICENSE` - MIT License
+
+---
 
 ## Set Up the Environment
 
@@ -329,16 +360,6 @@ If you want to modify or extend the agent:
 - `make build` - Build the container image
 - `make run` - Run the container locally for testing
 - `make clean` - Clean up the built image
-
-## Files
-
-- `server.py` - Main MCP server implementation
-- `Containerfile` - Container image definition  
-- `Makefile` - Build and deployment automation
-- `requirements.txt` - Python dependencies
-- `example.env` - Environment variables template
-- `example.mcp.json` - MCP configuration template
-- `LICENSE` - MIT License
 
 ## License
 

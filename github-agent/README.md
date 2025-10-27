@@ -9,9 +9,46 @@ An MCP (Model Context Protocol) agent for Cursor that analyzes GitHub Pull Reque
 
 ## Background
 
-That's a fantastic idea! Building a specialized agent for code review is one of the most powerful uses of a custom LLM environment like Cursor. While Cursor doesn't have a direct *Agent Builder UI*, you can achieve this by creating a **custom Model Context Protocol (MCP) server** that provides GitHub pull request data as a *Tool* to the AI.
+Building a specialized agent for code review is one of the most powerful uses of a custom LLM environment like Cursor. While Cursor doesn't have a direct *Agent Builder UI*, you can achieve this by creating a **custom Model Context Protocol (MCP) server** that provides GitHub pull request data as a *Tool* to the AI.
 
 This agent will be a tool that the LLM uses to answer the prompt: **"Review this PR: &lt;GitHub URL&gt;"**
+
+## What This Agent Can Do
+
+✅ **Fetch Pull Request Details**: Get comprehensive PR information including title, description, and state  
+✅ **Analyze File Changes**: Review all modified files with diffs and change statistics  
+✅ **Review Comments**: Access PR comments, review comments, and discussions  
+✅ **Track Reviews**: See approval status and reviewer feedback  
+✅ **Access Metadata**: View labels, milestones, assignees, and timestamps  
+✅ **Support Private Repos**: Works with both public and private repositories (with proper token scopes)  
+✅ **GitHub API Integration**: Uses official PyGithub library for reliable API access
+
+## Next Steps
+
+- Try analyzing different types of PRs (bug fixes, features, refactoring)
+- Use the agent to understand code review feedback and discussions
+- Analyze PR history to understand feature development
+- Combine with other MCP agents for comprehensive project analysis
+- Use for automated PR reviews and getting quick summaries
+
+## Security Notes
+
+- ✅ The `.env` file is excluded from Git via `.gitignore`
+- ✅ Never commit your personal access token
+- ✅ Use minimal token scopes (`public_repo` for public repos only)
+- ✅ Token is loaded from environment file, never hardcoded
+- ✅ Works with GitHub's official API through authenticated requests
+
+## Files
+
+- `server.py` - Main MCP server implementation
+- `server.sh` - Launch script (loads `.env` for GitHub token)
+- `example.env` - Template for environment variables
+- `.gitignore` - Ensures `.env` is not committed
+- `requirements.txt` - Python dependencies
+- `SETUP.md` - Additional setup instructions
+
+---
 
 ## Set Up the Environment
 
@@ -189,26 +226,17 @@ python3 -m venv venv
 
 ## Testing the Agent
 
-### Invoke the GitHub Cursor Agent on PR-510
+### Invoke the GitHub Cursor Agent on PR-402
 
-I tested my GitHub Cursor agent on [PR-510: Add httpd-overrides sample with custom httpd configuration support](https://github.com/openstack-k8s-operators/horizon-operator/pull/510)
+I tested my GitHub Cursor agent on [PR-402: Allow customize http vhost config using HttpdCustomization.CustomConfigSecret](https://github.com/openstack-k8s-operators/horizon-operator/pull/402)
 
 At the Cursor prompt, enter:
 
 ```
-@github-reviewer-agent Review the PR at https://github.com/openstack-k8s-operators/horizon-operator/pull/510 How do I test this?
+@github-reviewer-agent Review the PR at https://github.com/openstack-k8s-operators/horizon-operator/pull/402 How do I test this?
 ```
 
-![Review PR-402](../images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_501.png)
-
-## Files
-
-- `server.py` - Main MCP server implementation
-- `server.sh` - Launch script (loads `.env` for GitHub token)
-- `example.env` - Template for environment variables
-- `.gitignore` - Ensures `.env` is not committed
-- `requirements.txt` - Python dependencies
-- `SETUP.md` - Additional setup instructions
+![Review PR-402](../images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402.png)
 
 ## Related Documentation
 

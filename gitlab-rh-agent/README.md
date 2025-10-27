@@ -16,6 +16,43 @@ This agent will be a tool that the LLM uses to answer prompts like:
 - **"Review this merge request: group/project/merge_requests/456"**
 - **"Analyze this commit: https://gitlab.cee.redhat.com/group/project/-/commit/abc123"**
 
+## What This Agent Can Do
+
+✅ **Fetch Issue Details**: Get full information about any GitLab issue you have access to  
+✅ **Fetch Merge Request Details**: Analyze merge requests with all metadata  
+✅ **Analyze Commits**: Review individual commits with diffs and file changes  
+✅ **Security Analysis**: Identify CVEs and security-related changes in commits  
+✅ **Analyze State**: Understand the current status and progress of issues/MRs  
+✅ **Review Descriptions**: Get summaries of issues and MRs  
+✅ **Track Assignments**: See who is working on what  
+✅ **View Labels**: Understand categorization and tagging  
+✅ **Full URL Support**: Paste GitLab URLs directly from your browser
+
+## Next Steps
+
+- Try analyzing various issues, merge requests, and commits from your projects
+- Use the agent to review security fixes and CVE patches
+- Analyze commit history for specific features or bug fixes
+- Use the agent to get quick summaries during code reviews
+- Combine with other MCP agents for comprehensive project analysis
+
+## Security Notes
+
+- ✅ The `.env` file is excluded from Git via `.gitignore`
+- ✅ Never commit your personal access token
+- ✅ The token only has `read_api` scope (cannot modify data)
+- ✅ This is for internal Red Hat GitLab only (gitlab.cee.redhat.com)
+
+## Files
+
+- `server.py` - Main MCP server implementation
+- `server.sh` - Launch script that loads `.env` for GitLab token
+- `example.env` - Template for environment variables
+- `requirements.txt` - Python dependencies
+- `.gitignore` - Ensures `.env` is not committed
+
+---
+
 ## Set Up the Environment
 
 First, set up a minimal Python environment for your MCP server, you can do this from directory `gitlab-rh-agent` of your repo:
@@ -259,41 +296,3 @@ python3 -m venv venv
    source venv/bin/activate
    pip list | grep -E "requests|fastmcp"
    ```
-
-## Security Notes
-
-- ✅ The `.env` file is excluded from Git via `.gitignore`
-- ✅ Never commit your personal access token
-- ✅ The token only has `read_api` scope (cannot modify data)
-- ✅ This is for internal Red Hat GitLab only (gitlab.cee.redhat.com)
-
-## Files
-
-- `server.py` - Main MCP server implementation
-- `server.sh` - Launch script that loads `.env` for GitLab token
-- `example.env` - Template for environment variables
-- `requirements.txt` - Python dependencies
-- `.gitignore` - Ensures `.env` is not committed
-
-## What This Agent Can Do
-
-✅ **Fetch Issue Details**: Get full information about any GitLab issue you have access to  
-✅ **Fetch Merge Request Details**: Analyze merge requests with all metadata  
-✅ **Analyze Commits**: Review individual commits with diffs and file changes  
-✅ **Security Analysis**: Identify CVEs and security-related changes in commits  
-✅ **Analyze State**: Understand the current status and progress of issues/MRs  
-✅ **Review Descriptions**: Get summaries of issues and MRs  
-✅ **Track Assignments**: See who is working on what  
-✅ **View Labels**: Understand categorization and tagging  
-✅ **Full URL Support**: Paste GitLab URLs directly from your browser
-
-## Next Steps
-
-- Try analyzing various issues, merge requests, and commits from your projects
-- Use the agent to review security fixes and CVE patches
-- Analyze commit history for specific features or bug fixes
-- Use the agent to get quick summaries during code reviews
-- Combine with other MCP agents for comprehensive project analysis
-
-
-
