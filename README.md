@@ -121,12 +121,12 @@ An agent that provides access to Jira from Cursor with containerized deployment.
 ---
 
 ## Complete MCP Configuration
+Here is what your **MCP Servers** configuration looks like after you are done following the setup and configuration steps for each one.
 
-To configure all agents in Cursor at once:
-
+To see this:
 1. Open Cursor Settings (**Ctrl/Cmd + ,**)
 2. Search for: **MCP Servers**
-3. Paste this complete configuration (remember to replace `<your-mymcp-cloned-repo-path>`):
+3. Click edit on any one of them
 
 ```json
 {
