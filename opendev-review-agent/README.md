@@ -13,39 +13,6 @@ The OpenDev review system uses Gerrit, which is different from GitHub's pull req
 
 This agent will be a tool that the LLM uses to answer the prompt: **"Review this change: &lt;OpenDev URL&gt;"**
 
-## What This Agent Can Do
-
-✅ **Fetch Review Details**: Get comprehensive change information from OpenDev Gerrit  
-✅ **Analyze File Changes**: Review all modified files with change statistics  
-✅ **Access Review Comments**: Read reviewer comments and feedback  
-✅ **Track Review State**: See change status (NEW, MERGED, ABANDONED, etc.)  
-✅ **View Commit Messages**: Access detailed commit descriptions  
-✅ **Support OpenStack Projects**: Works with all projects on review.opendev.org  
-✅ **Gerrit API Integration**: Handles Gerrit's unique security prefix and JSON format  
-✅ **URL Parsing**: Extracts change numbers from standard OpenDev review URLs
-
-## Next Steps
-
-- Try analyzing OpenStack reviews across different projects (horizon, nova, keystone, etc.)
-- Use the agent to understand review feedback and technical discussions
-- Analyze review history to learn from accepted and rejected changes
-- Combine with other MCP agents to correlate code changes with issues/bugs
-- Use for understanding OpenStack coding patterns and best practices
-
-## Security Notes
-
-- ✅ No authentication required for public OpenDev reviews
-- ✅ Read-only access to Gerrit REST API
-- ✅ No credentials or tokens needed
-- ✅ Works with all publicly accessible OpenStack projects
-- ✅ Safe to use without any security concerns
-
-## Files
-
-- [`server.py`](server.py) - Main MCP server implementation
-- [`server.sh`](server.sh) - Launch script
-- `requirements.txt` - Python dependencies
-
 ---
 
 ## Set Up the Environment
@@ -192,6 +159,39 @@ If working correctly, you should see output like:
 ```
 
 This confirms the MCP server starts successfully.
+
+## What This Agent Can Do
+
+✅ **Fetch Review Details**: Get comprehensive change information from OpenDev Gerrit  
+✅ **Analyze File Changes**: Review all modified files with change statistics  
+✅ **Access Review Comments**: Read reviewer comments and feedback  
+✅ **Track Review State**: See change status (NEW, MERGED, ABANDONED, etc.)  
+✅ **View Commit Messages**: Access detailed commit descriptions  
+✅ **Support OpenStack Projects**: Works with all projects on review.opendev.org  
+✅ **Gerrit API Integration**: Handles Gerrit's unique security prefix and JSON format  
+✅ **URL Parsing**: Extracts change numbers from standard OpenDev review URLs
+
+## Next Steps
+
+- Try analyzing OpenStack reviews across different projects (horizon, nova, keystone, etc.)
+- Use the agent to understand review feedback and technical discussions
+- Analyze review history to learn from accepted and rejected changes
+- Combine with other MCP agents to correlate code changes with issues/bugs
+- Use for understanding OpenStack coding patterns and best practices
+
+## Security Notes
+
+- ✅ No authentication required for public OpenDev reviews
+- ✅ Read-only access to Gerrit REST API
+- ✅ No credentials or tokens needed
+- ✅ Works with all publicly accessible OpenStack projects
+- ✅ Safe to use without any security concerns
+
+## Files
+
+- [`server.py`](server.py) - Main MCP server implementation
+- [`server.sh`](server.sh) - Launch script
+- `requirements.txt` - Python dependencies
 
 ## Troubleshooting
 

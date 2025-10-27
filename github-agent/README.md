@@ -13,41 +13,6 @@ Building a specialized agent for code review is one of the most powerful uses of
 
 This agent will be a tool that the LLM uses to answer the prompt: **"Review this PR: &lt;GitHub URL&gt;"**
 
-## What This Agent Can Do
-
-✅ **Fetch Pull Request Details**: Get comprehensive PR information including title, description, and state  
-✅ **Analyze File Changes**: Review all modified files with diffs and change statistics  
-✅ **Review Comments**: Access PR comments, review comments, and discussions  
-✅ **Track Reviews**: See approval status and reviewer feedback  
-✅ **Access Metadata**: View labels, milestones, assignees, and timestamps  
-✅ **Support Private Repos**: Works with both public and private repositories (with proper token scopes)  
-✅ **GitHub API Integration**: Uses official PyGithub library for reliable API access
-
-## Next Steps
-
-- Try analyzing different types of PRs (bug fixes, features, refactoring)
-- Use the agent to understand code review feedback and discussions
-- Analyze PR history to understand feature development
-- Combine with other MCP agents for comprehensive project analysis
-- Use for automated PR reviews and getting quick summaries
-
-## Security Notes
-
-- ✅ The `.env` file is excluded from Git via `.gitignore`
-- ✅ Never commit your personal access token
-- ✅ Use minimal token scopes (`public_repo` for public repos only)
-- ✅ Token is loaded from environment file, never hardcoded
-- ✅ Works with GitHub's official API through authenticated requests
-
-## Files
-
-- [`server.py`](server.py) - Main MCP server implementation
-- [`server.sh`](server.sh) - Launch script (loads `.env` for GitHub token)
-- `example.env` - Template for environment variables
-- `.gitignore` - Ensures `.env` is not committed
-- `requirements.txt` - Python dependencies
-- `SETUP.md` - Additional setup instructions
-
 ---
 
 ## Set Up the Environment
@@ -183,6 +148,41 @@ Paste the below JSON configuration (remember to replace `<your-mymcp-cloned-repo
 Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
 
 > **Note**: Alternatively, you can fully exit Cursor (**Ctrl+Q**) and restart it, which will also reload the new settings.
+
+## What This Agent Can Do
+
+✅ **Fetch Pull Request Details**: Get comprehensive PR information including title, description, and state  
+✅ **Analyze File Changes**: Review all modified files with diffs and change statistics  
+✅ **Review Comments**: Access PR comments, review comments, and discussions  
+✅ **Track Reviews**: See approval status and reviewer feedback  
+✅ **Access Metadata**: View labels, milestones, assignees, and timestamps  
+✅ **Support Private Repos**: Works with both public and private repositories (with proper token scopes)  
+✅ **GitHub API Integration**: Uses official PyGithub library for reliable API access
+
+## Next Steps
+
+- Try analyzing different types of PRs (bug fixes, features, refactoring)
+- Use the agent to understand code review feedback and discussions
+- Analyze PR history to understand feature development
+- Combine with other MCP agents for comprehensive project analysis
+- Use for automated PR reviews and getting quick summaries
+
+## Security Notes
+
+- ✅ The `.env` file is excluded from Git via `.gitignore`
+- ✅ Never commit your personal access token
+- ✅ Use minimal token scopes (`public_repo` for public repos only)
+- ✅ Token is loaded from environment file, never hardcoded
+- ✅ Works with GitHub's official API through authenticated requests
+
+## Files
+
+- [`server.py`](server.py) - Main MCP server implementation
+- [`server.sh`](server.sh) - Launch script (loads `.env` for GitHub token)
+- `example.env` - Template for environment variables
+- `.gitignore` - Ensures `.env` is not committed
+- `requirements.txt` - Python dependencies
+- `SETUP.md` - Additional setup instructions
 
 ## Troubleshooting
 
