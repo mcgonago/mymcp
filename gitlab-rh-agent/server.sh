@@ -13,3 +13,4 @@ fi
 source "$SCRIPT_DIR/venv/bin/activate"
 python "$SCRIPT_DIR/server.py"
 
+
