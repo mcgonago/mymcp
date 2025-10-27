@@ -3,7 +3,7 @@
 This repository demonstrates how to build custom MCP (Model Context Protocol) agents for Cursor. It contains four MCP agents that I built to analyze different types of code reviews and project management:
 
 - **github-agent**: Analyzes GitHub Pull Requests
-- **opendev-review-agent**: Analyzes OpenDev Gerrit reviews  
+- **opendev-review-agent**: Analyzes OpenDev Gerrit reviews
 - **gitlab-rh-agent**: Analyzes GitLab Issues, Merge Requests, and Commits from internal Red Hat GitLab
 - **jira-agent**: Provides access to Jira issues, projects, and sprints from Cursor
 
@@ -11,8 +11,8 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 
 - [What These Agents Can Do](#what-these-agents-can-do)
 - [Next Steps](#next-steps)
-- [OpenDev Review Agent](#opendev-review-agent)
 - [GitHub Review Agent](#github-review-agent)
+- [OpenDev Review Agent](#opendev-review-agent)
 - [GitLab RH Agent](#gitlab-rh-agent)
 - [Jira Agent](#jira-agent)
 - [Complete MCP Configuration](#complete-mcp-configuration)
@@ -51,21 +51,6 @@ Once you have these agents set up, you can:
 
 ---
 
-## OpenDev Review Agent
-
-An agent for analyzing OpenDev Gerrit code reviews for OpenStack projects.
-
-### Features
-
-- **Gerrit API Integration**: Fetches review details from OpenDev's Gerrit REST API
-- **Security Prefix Handling**: Strips the `)]}'` prefix that Gerrit adds for security
-- **Comprehensive Data**: Retrieves change metadata, file statistics, and comments
-- **URL Parsing**: Extracts change numbers from standard OpenDev review URLs
-
-**For detailed setup instructions, see [opendev-review-agent/README.md](opendev-review-agent/README.md).**
-
----
-
 ## GitHub Review Agent
 
 An agent for analyzing GitHub Pull Requests with real GitHub API integration.
@@ -78,6 +63,21 @@ An agent for analyzing GitHub Pull Requests with real GitHub API integration.
 - **Security**: Environment file for token management (never committed to Git)
 
 **For detailed setup instructions, see [github-agent/README.md](github-agent/README.md).**
+
+---
+
+## OpenDev Review Agent
+
+An agent for analyzing OpenDev Gerrit code reviews for OpenStack projects.
+
+### Features
+
+- **Gerrit API Integration**: Fetches review details from OpenDev's Gerrit REST API
+- **Security Prefix Handling**: Strips the `)]}'` prefix that Gerrit adds for security
+- **Comprehensive Data**: Retrieves change metadata, file statistics, and comments
+- **URL Parsing**: Extracts change numbers from standard OpenDev review URLs
+
+**For detailed setup instructions, see [opendev-review-agent/README.md](opendev-review-agent/README.md).**
 
 ---
 
@@ -131,13 +131,13 @@ To see this:
 ```json
 {
   "mcpServers": {
-    "opendev-reviewer-agent": {
-      "command": "<your-mymcp-cloned-repo-path>/opendev-review-agent/server.sh",
-      "description": "Analyzes OpenDev Gerrit reviews to perform automated code review."
-    },
     "github-reviewer-agent": {
       "command": "<your-mymcp-cloned-repo-path>/github-agent/server.sh",
       "description": "Analyzes GitHub pull requests to perform automated code review."
+    },
+    "opendev-reviewer-agent": {
+      "command": "<your-mymcp-cloned-repo-path>/opendev-review-agent/server.sh",
+      "description": "Analyzes OpenDev Gerrit reviews to perform automated code review."
     },
     "gitlab-cee-agent": {
       "command": "<your-mymcp-cloned-repo-path>/gitlab-rh-agent/server.sh",
@@ -168,14 +168,14 @@ To see this:
 
 After configuration, test each agent in Cursor:
 
-**OpenDev Agent:**
-```
-@opendev-reviewer-agent Analyze https://review.opendev.org/c/openstack/horizon/+/960204
-```
-
 **GitHub Agent:**
 ```
 @github-reviewer-agent Review https://github.com/openstack-k8s-operators/horizon-operator/pull/402
+```
+
+**OpenDev Agent:**
+```
+@opendev-reviewer-agent Analyze https://review.opendev.org/c/openstack/horizon/+/960204
 ```
 
 **GitLab Agent:**
