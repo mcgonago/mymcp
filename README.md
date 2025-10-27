@@ -14,11 +14,40 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 This document describes how I built my MCP agents for Cursor, including:
 - **github-agent**: Analyzes GitHub Pull Requests
 - **opendev-review-agent**: Analyzes OpenDev Gerrit reviews  
-- **gitlab-rh-agent**: Analyzes GitLab Issues and Merge Requests from internal Red Hat GitLab
-- **jira-agent**: Provides access to Jira issues from Cursor
+- **gitlab-rh-agent**: Analyzes GitLab Issues, Merge Requests, and Commits from internal Red Hat GitLab
+- **jira-agent**: Provides access to Jira issues, projects, and sprints from Cursor
+
+## What These Agents Can Do
+
+These MCP agents enable Cursor's AI to seamlessly interact with your development workflow:
+
+✅ **Code Review Analysis**: Fetch and analyze pull requests, merge requests, and Gerrit reviews  
+✅ **Commit Investigation**: Deep-dive into individual commits with diffs and change statistics  
+✅ **Issue Tracking**: Query and search Jira issues, projects, boards, and sprints  
+✅ **Security Analysis**: Identify CVEs and security-related changes in commits  
+✅ **Comprehensive Metadata**: Access authors, reviewers, assignees, labels, timestamps, and state  
+✅ **Discussion Context**: Review comments, feedback, and technical discussions  
+✅ **Multi-Platform Support**: Works with GitHub, GitLab, OpenDev Gerrit, and Jira  
+✅ **API Integration**: Official API support with proper authentication and security  
+✅ **Private & Public Access**: Support for both public repositories and private/internal systems
+
+## Next Steps
+
+Once you have these agents set up, you can:
+
+- **Analyze Code Changes**: Review PRs, MRs, and commits to understand technical decisions and implementation details
+- **Understand Feedback**: Get AI insights on review comments and discussions across platforms
+- **Track Development**: Follow project history, feature development, and bug fixes
+- **Security Review**: Analyze commits for CVEs and security implications
+- **Project Management**: Query Jira for issue status, sprint progress, and project tracking
+- **Cross-Platform Analysis**: Combine multiple agents to correlate code changes with issues and reviews
+- **Automated Summaries**: Get quick AI-powered summaries of complex reviews and discussions
+- **Learn Best Practices**: Study OpenStack coding patterns and enterprise development workflows
 
 ## Table of Contents
 
+- [What These Agents Can Do](#what-these-agents-can-do)
+- [Next Steps](#next-steps)
 - [OpenDev Review Agent](#opendev-review-agent)
 - [GitHub Review Agent](#github-review-agent)
 - [GitLab RH Agent](#gitlab-rh-agent)

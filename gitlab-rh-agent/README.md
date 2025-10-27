@@ -45,7 +45,7 @@ This agent will be a tool that the LLM uses to answer prompts like:
 
 ## Files
 
-- `server.py` - Ma1in MCP server implementation
+- `server.py` - Main MCP server implementation
 - `server.sh` - Launch script that loads `.env` for GitLab token
 - `example.env` - Template for environment variables
 - `requirements.txt` - Python dependencies
@@ -58,7 +58,7 @@ This agent will be a tool that the LLM uses to answer prompts like:
 First, set up a minimal Python environment for your MCP server, you can do this from directory `gitlab-rh-agent` of your repo:
 
 ```bash
-cd github-rh-agent
+cd gitlab-rh-agent
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
