@@ -14,12 +14,14 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 This document describes how I built my MCP agents for Cursor, including:
 - **github-agent**: Analyzes GitHub Pull Requests
 - **opendev-review-agent**: Analyzes OpenDev Gerrit reviews  
+- **gitlab-rh-agent**: Analyzes GitLab Issues and Merge Requests from internal Red Hat GitLab
 - **jira-agent**: Provides access to Jira issues from Cursor
 
 ## Table of Contents
 
 - [OpenDev Review Agent](#opendev-review-agent)
 - [GitHub Review Agent](#github-review-agent)
+- [GitLab RH Agent](#gitlab-rh-agent)
 - [Jira Agent](#jira-agent)
 - [Complete MCP Configuration](#complete-mcp-configuration)
 - [Additional Resources](#additional-resources)
@@ -56,6 +58,23 @@ An agent for analyzing GitHub Pull Requests with real GitHub API integration.
 
 ---
 
+## GitLab RH Agent
+
+An agent for analyzing GitLab Issues and Merge Requests from internal Red Hat GitLab (gitlab.cee.redhat.com).
+
+### Features
+
+- **GitLab API Integration**: Fetches issues and merge requests from internal Red Hat GitLab
+- **Authentication**: Uses personal access tokens with `read_api` scope
+- **Supports Both Issues and MRs**: Analyze both issues and merge requests with a single agent
+- **Project Path Handling**: Properly URL-encodes project paths for API calls
+- **Comprehensive Metadata**: Retrieves title, state, description, assignees, labels, and timestamps
+- **Security**: Environment file for token management (never committed to Git)
+
+**For detailed setup instructions, see [gitlab-rh-agent/README.md](gitlab-rh-agent/README.md).**
+
+---
+
 ## Jira Agent
 
 An agent that provides access to Jira from Cursor with containerized deployment.
@@ -73,7 +92,7 @@ An agent that provides access to Jira from Cursor with containerized deployment.
 
 ## Complete MCP Configuration
 
-To configure all three agents in Cursor at once:
+To configure all agents in Cursor at once:
 
 1. Open Cursor Settings (**Ctrl/Cmd + ,**)
 2. Search for: **MCP Servers**
@@ -89,6 +108,10 @@ To configure all three agents in Cursor at once:
     "github-reviewer-agent": {
       "command": "<your-mymcp-cloned-repo-path>/github-agent/server.sh",
       "description": "Analyzes GitHub pull requests to perform automated code review."
+    },
+    "gitlab-cee-agent": {
+      "command": "<your-mymcp-cloned-repo-path>/gitlab-rh-agent/server.sh",
+      "description": "Analyzes GitLab issues and merge requests from internal Red Hat GitLab."
     },
     "jiraMcp": {
       "command": "podman",
@@ -123,6 +146,11 @@ After configuration, test each agent in Cursor:
 **GitHub Agent:**
 ```
 @github-reviewer-agent Review https://github.com/openstack-k8s-operators/horizon-operator/pull/402
+```
+
+**GitLab Agent:**
+```
+@gitlab-cee-agent Analyze the state and description of issue platform/osp-director/issues/42
 ```
 
 **Jira Agent:**
@@ -169,6 +197,11 @@ mymcp/
 │   ├── server.sh                       # Launch script
 │   ├── README.md                       # Detailed setup guide
 │   └── requirements.txt                # Python dependencies
+├── gitlab-rh-agent/                    # GitLab issue/MR agent (Red Hat internal)
+│   ├── server.py                       # Main MCP server
+│   ├── server.sh                       # Launch script
+│   ├── README.md                       # Detailed setup guide
+│   └── example.env                     # Environment template
 ├── jira-agent/                         # Jira integration agent
 │   ├── server.py                       # Main MCP server
 │   ├── README.md                       # Detailed setup guide
@@ -204,10 +237,11 @@ mymcp/
 
 ### Key Differences Between Agents
 
-**OpenDev & GitHub Agents:**
+**OpenDev, GitHub & GitLab Agents:**
 - Simple shell script execution
 - Uses `venv` for Python dependencies
 - Direct server.py execution
+- Environment files for API tokens (.env)
 
 **Jira Agent:**
 - Containerized deployment with Podman
