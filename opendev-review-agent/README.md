@@ -42,8 +42,8 @@ This agent will be a tool that the LLM uses to answer the prompt: **"Review this
 
 ## Files
 
-- `server.py` - Main MCP server implementation
-- `server.sh` - Launch script
+- [`server.py`](server.py) - Main MCP server implementation
+- [`server.sh`](server.sh) - Launch script
 - `requirements.txt` - Python dependencies
 
 ---
@@ -67,7 +67,7 @@ Alternatively, install packages directly into the venv without activating it:
 
 ## Define the MCP Server Script
 
-Create a file named `server.py`. This script will host the MCP server and define the **gerrit_review_fetcher** tool.
+Create a file named [`server.py`](server.py). This script will host the MCP server and define the **gerrit_review_fetcher** tool.
 
 **Tool Definition:**
 - **Tool Name**: `gerrit_review_fetcher`
@@ -83,7 +83,7 @@ Create a file named `server.py`. This script will host the MCP server and define
 
 ## Create the Server Launcher
 
-Create a file named `server.sh`. This simple bash script activates the Python environment and runs the server script.
+Create a file named [`server.sh`](server.sh). This simple bash script activates the Python environment and runs the server script.
 
 ```bash
 #!/bin/bash
@@ -104,6 +104,8 @@ Make it executable:
 ```bash
 chmod +x server.sh
 ```
+
+**See the complete implementation:** [`server.sh`](server.sh)
 
 ## Configure Cursor
 

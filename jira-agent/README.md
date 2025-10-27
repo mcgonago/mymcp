@@ -43,7 +43,7 @@ This agent provides 20+ tools that enable Cursor's AI to interact with Jira, suc
 
 ## Files
 
-- `server.py` - Main MCP server implementation
+- [`server.py`](server.py) - Main MCP server implementation
 - `Containerfile` - Container image definition  
 - `Makefile` - Build and deployment automation
 - `requirements.txt` - Python dependencies
@@ -105,7 +105,7 @@ JIRA_API_TOKEN=your-actual-jira-token-here
 
 The server implementation uses FastMCP and the Jira Python library to provide tools for interacting with Jira.
 
-**Implementation:** [`server.py`](server.py)
+**See the complete implementation:** [`server.py`](server.py)
 
 **Key Components:**
 - **FastMCP Framework**: Provides the MCP protocol implementation

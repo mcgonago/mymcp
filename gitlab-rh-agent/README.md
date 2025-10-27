@@ -45,8 +45,8 @@ This agent will be a tool that the LLM uses to answer prompts like:
 
 ## Files
 
-- `server.py` - Main MCP server implementation
-- `server.sh` - Launch script that loads `.env` for GitLab token
+- [`server.py`](server.py) - Main MCP server implementation
+- [`server.sh`](server.sh) - Launch script that loads `.env` for GitLab token
 - `example.env` - Template for environment variables
 - `requirements.txt` - Python dependencies
 - `.gitignore` - Ensures `.env` is not committed
@@ -104,7 +104,7 @@ GITLAB_TOKEN=glpat-your_actual_token_here
 
 ## Create the Server Script (server.py)
 
-The `server.py` file is already provided in this directory. It defines the logic for the `gitlab_resource_fetcher` tool that:
+The [`server.py`](server.py) file is already provided in this directory. It defines the logic for the `gitlab_resource_fetcher` tool that:
 
 - Accepts GitLab paths or full URLs (e.g., `group/project/issues/123` or `https://gitlab.cee.redhat.com/...`)
 - Fetches data from the GitLab API at `https://gitlab.cee.redhat.com/api/v4`
@@ -118,9 +118,11 @@ Key features:
 - ✅ Fetches commit diffs and file change summaries
 - ✅ Formats data for security analysis (CVE detection)
 
+**See the complete implementation:** [`server.py`](server.py)
+
 ## Create the Server Launcher (server.sh)
 
-The `server.sh` file is already provided in this directory. It:
+The [`server.sh`](server.sh) file is already provided in this directory. It:
 
 - Loads environment variables from `.env`
 - Activates the virtual environment
@@ -131,6 +133,8 @@ Make the script executable:
 ```bash
 chmod +x server.sh
 ```
+
+**See the complete implementation:** [`server.sh`](server.sh)
 
 ## Configure Cursor MCP
 
