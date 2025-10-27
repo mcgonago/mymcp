@@ -189,17 +189,17 @@ python3 -m venv venv
 
 ## Testing the Agent
 
-### Invoke the GitHub Cursor Agent on PR-402
+### Invoke the GitHub Cursor Agent on PR-510
 
-I tested my GitHub Cursor agent on [PR-402: Allow customize http vhost config using HttpdCustomization.CustomConfigSecret](https://github.com/openstack-k8s-operators/horizon-operator/pull/402)
+I tested my GitHub Cursor agent on [PR-510: Add httpd-overrides sample with custom httpd configuration support](https://github.com/openstack-k8s-operators/horizon-operator/pull/510)
 
 At the Cursor prompt, enter:
 
 ```
-@github-reviewer-agent Review the PR at https://github.com/openstack-k8s-operators/horizon-operator/pull/402 How do I test this?
+@github-reviewer-agent Review the PR at https://github.com/openstack-k8s-operators/horizon-operator/pull/510 How do I test this?
 ```
 
-![Review PR-402](../images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_402.png)
+![Review PR-402](../images/howto_use_cursor_mcp_ageng_github_add_new_global_mcp_server_review_github_pull_request_501.png)
 
 ## Files
 

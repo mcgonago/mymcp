@@ -111,9 +111,58 @@ fi
 
 echo
 
-# Test 3: Jira Agent
+# Test 3: GitLab Agent
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "3. Testing Jira Agent"
+echo "3. Testing GitLab Agent"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if [ ! -d "$REPO_PATH/gitlab-rh-agent" ]; then
+    echo -e "${RED}✗ gitlab-rh-agent directory not found${NC}"
+    exit 1
+fi
+
+cd "$REPO_PATH/gitlab-rh-agent"
+
+if [ ! -f "server.sh" ]; then
+    echo -e "${RED}✗ server.sh not found${NC}"
+    exit 1
+fi
+
+if [ ! -x "server.sh" ]; then
+    echo -e "${RED}✗ server.sh is not executable${NC}"
+    exit 1
+fi
+
+if [ ! -d "venv" ]; then
+    echo -e "${YELLOW}⚠ Virtual environment not found. Creating...${NC}"
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -q requests fastmcp
+else
+    echo -e "${GREEN}✓ Virtual environment exists${NC}"
+fi
+
+if [ ! -f ".env" ]; then
+    echo -e "${YELLOW}⚠ .env file not found (GitLab token required for full functionality)${NC}"
+else
+    echo -e "${GREEN}✓ .env file exists${NC}"
+fi
+
+echo "Testing server startup..."
+timeout 3 bash server.sh <<< '{"jsonrpc": "2.0", "method": "exit"}' 2>&1 | head -20 > /tmp/gitlab-test.log
+if grep -q "FastMCP" /tmp/gitlab-test.log; then
+    echo -e "${GREEN}✓ GitLab Agent is working${NC}"
+else
+    echo -e "${RED}✗ GitLab Agent failed to start${NC}"
+    cat /tmp/gitlab-test.log
+    exit 1
+fi
+
+echo
+
+# Test 4: Jira Agent
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "4. Testing Jira Agent"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 if [ ! -d "$REPO_PATH/jira-agent" ]; then
@@ -157,9 +206,9 @@ fi
 
 echo
 
-# Test 4: Cursor Configuration
+# Test 5: Cursor Configuration
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "4. Checking Cursor Configuration"
+echo "5. Checking Cursor Configuration"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 if [ ! -f "$HOME/.cursor/mcp.json" ]; then
@@ -182,6 +231,12 @@ else
         echo -e "${YELLOW}  ⚠ GitHub agent path not found in mcp.json${NC}"
     fi
     
+    if grep -q "$REPO_PATH/gitlab-rh-agent/server.sh" "$HOME/.cursor/mcp.json"; then
+        echo -e "${GREEN}  ✓ GitLab agent path configured${NC}"
+    else
+        echo -e "${YELLOW}  ⚠ GitLab agent path not found in mcp.json${NC}"
+    fi
+    
     if grep -q "jira-agent:latest" "$HOME/.cursor/mcp.json"; then
         echo -e "${GREEN}  ✓ Jira agent image configured${NC}"
     else
@@ -198,12 +253,13 @@ echo "Next steps:"
 echo "1. Fully quit Cursor (Ctrl+Q) and restart"
 echo "2. Test agents in Cursor:"
 echo "   - @opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/960204"
-echo "   - @github-reviewer-agent Review the PR at https://github.com/openstack-k8s-operators/horizon-operator/pull/402 How do I test this?"
+echo "   - @github-reviewer-agent Review the PR at https://github.com/openstack-k8s-operators/horizon-operator/pull/510 How do I test this?"
+echo "   - @gitlab-cee-agent Analyze commit https://gitlab.cee.redhat.com/eng/openstack/python-django/-/commit/848fd870bb51ae6d8ea44512665dab8257f9c27a"
 echo "   - @jiraMcp Get details for issue OSPRH-13100"
 echo
 
 # Cleanup
-rm -f /tmp/opendev-test.log /tmp/github-test.log /tmp/jira-test.log
+rm -f /tmp/opendev-test.log /tmp/github-test.log /tmp/gitlab-test.log /tmp/jira-test.log
 
 
 

@@ -114,7 +114,7 @@ To configure all agents in Cursor at once:
     },
     "gitlab-cee-agent": {
       "command": "<your-mymcp-cloned-repo-path>/gitlab-rh-agent/server.sh",
-      "description": "Analyzes GitLab issues and merge requests from internal Red Hat GitLab."
+      "description": "Agent to fetch and analyze issues/MRs from internal Red Hat GitLab."
     },
     "jiraMcp": {
       "command": "podman",
