@@ -247,10 +247,39 @@ mymcp/
 │   ├── example.mcp.json                # MCP configuration template
 │   └── LICENSE                         # MIT License
 ├── images/                             # Screenshots and documentation images
+├── workspace/                          # Temporary workspace for code review analysis (gitignored)
+│   ├── README.md                       # Workspace usage guide
+│   └── fetch-review.sh                 # Helper script to fetch reviews/PRs/MRs
 ├── test-mcp-setup.sh                   # Verification script for all agents
 ├── docs/                               # Additional documentation
 └── use-case/                           # Example use cases and reviews
 ```
+
+### Workspace for Code Review Analysis
+
+The `workspace/` directory provides a dedicated space for cloning and analyzing code from reviews, PRs, and MRs:
+
+**Quick Start:**
+```bash
+# Fetch an OpenDev review
+cd workspace
+./fetch-review.sh opendev https://review.opendev.org/c/openstack/horizon/+/964897
+
+# Fetch a GitHub PR
+./fetch-review.sh github https://github.com/openstack-k8s-operators/horizon-operator/pull/402
+
+# Fetch a GitLab MR
+./fetch-review.sh gitlab https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
+```
+
+**Benefits:**
+- ✅ Organized workspace separate from agent code
+- ✅ Full repository context for deeper analysis
+- ✅ Use Cursor's `codebase_search` across review code
+- ✅ Git-ignored to avoid cluttering the repo
+- ✅ Persistent across sessions
+
+See [`workspace/README.md`](workspace/README.md) for detailed usage instructions.
 
 ### Key Differences Between Agents
 

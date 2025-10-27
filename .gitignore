@@ -59,3 +59,7 @@ Makefile~
 #*
 *~
 *.*~
+
+# Review workspace - temporary clones for code review analysis
+workspace/
+reviews/
