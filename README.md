@@ -219,6 +219,7 @@ mymcp/
 │   ├── server.py                       # Main MCP server
 │   ├── server.sh                       # Launch script
 │   ├── README.md                       # Detailed setup guide
+│   ├── TROUBLESHOOTING.md              # Troubleshooting guide
 │   ├── SETUP.md                        # GitHub authentication guide
 │   ├── example.env                     # Environment template
 │   └── requirements.txt                # Python dependencies
@@ -226,15 +227,19 @@ mymcp/
 │   ├── server.py                       # Main MCP server
 │   ├── server.sh                       # Launch script
 │   ├── README.md                       # Detailed setup guide
+│   ├── TROUBLESHOOTING.md              # Troubleshooting guide
 │   └── requirements.txt                # Python dependencies
 ├── gitlab-rh-agent/                    # GitLab issue/MR agent (Red Hat internal)
 │   ├── server.py                       # Main MCP server
 │   ├── server.sh                       # Launch script
 │   ├── README.md                       # Detailed setup guide
-│   └── example.env                     # Environment template
+│   ├── TROUBLESHOOTING.md              # Troubleshooting guide
+│   ├── example.env                     # Environment template
+│   └── requirements.txt                # Python dependencies
 ├── jira-agent/                         # Jira integration agent
 │   ├── server.py                       # Main MCP server
 │   ├── README.md                       # Detailed setup guide
+│   ├── TROUBLESHOOTING.md              # Troubleshooting guide
 │   ├── requirements.txt                # Python dependencies
 │   ├── Containerfile                   # Container definition
 │   ├── Makefile                        # Build and setup automation
