@@ -210,10 +210,6 @@ This script will:
 - Check Cursor configuration
 - Provide troubleshooting guidance
 
-### Related Documentation
-
-- [OpenDev MCP Agent Setup Guide](opendev-review-agent/opendev-mcp-agent-setup.org) - Detailed setup documentation in org-mode format
-
 ### Directory Structure
 
 ```
