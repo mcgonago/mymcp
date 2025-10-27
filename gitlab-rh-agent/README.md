@@ -23,8 +23,13 @@ First, set up a minimal Python environment for your MCP server, you can do this 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install requests fastmcp
-pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Alternatively, install packages directly into the venv without activating it:
+
+```bash
+./venv/bin/pip install -r requirements.txt
 ```
 
 ## Configure GitLab Authentication
@@ -193,6 +198,26 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "gitlab_reso
 
 ## Troubleshooting
 
+### Issue: "ModuleNotFoundError: No module named 'requests'" or similar
+
+**Problem**: The virtual environment is missing required Python packages or has broken internal paths.
+
+**Solution 1 - Install dependencies**:
+```bash
+cd gitlab-rh-agent
+./venv/bin/pip install -r requirements.txt
+```
+
+**Solution 2 - Recreate virtual environment** (if paths are broken):
+```bash
+cd gitlab-rh-agent
+rm -rf venv
+python3 -m venv venv
+./venv/bin/pip install -r requirements.txt
+```
+
+> **Tip**: Using `./venv/bin/pip` installs packages directly into the virtual environment without needing to activate it first. This prevents installation issues when the venv has broken paths.
+
 ### Issue: "GITLAB_TOKEN environment variable not set"
 
 **Solution**: 
@@ -241,6 +266,14 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "gitlab_reso
 - ✅ Never commit your personal access token
 - ✅ The token only has `read_api` scope (cannot modify data)
 - ✅ This is for internal Red Hat GitLab only (gitlab.cee.redhat.com)
+
+## Files
+
+- `server.py` - Main MCP server implementation
+- `server.sh` - Launch script that loads `.env` for GitLab token
+- `example.env` - Template for environment variables
+- `requirements.txt` - Python dependencies
+- `.gitignore` - Ensures `.env` is not committed
 
 ## What This Agent Can Do
 
