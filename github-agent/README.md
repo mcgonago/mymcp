@@ -55,7 +55,6 @@ This agent will be a tool that the LLM uses to answer the prompt: **"Review this
 First, set up a minimal Python environment for your MCP server, you can do this from directory `github-agent` of your repo:
 
 ```bash
-mkdir github-agent
 cd github-agent
 python3 -m venv venv
 source venv/bin/activate

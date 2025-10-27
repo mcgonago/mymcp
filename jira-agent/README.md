@@ -160,26 +160,6 @@ Click **+ Add new global MCP server** and paste this JSON configuration.
 }
 ```
 
-**Example with actual path:**
-```json
-{
-  "mcpServers": {
-    "jiraMcp": {
-      "command": "podman",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--env-file",
-        "/home/omcgonag/.rh-jira-agent.env",
-        "jira-agent:latest"
-      ],
-      "description": "Provides access to Jira issues, projects, boards, and sprints."
-    }
-  }
-}
-```
-
 ### Step 4: Save and Reload Cursor
 
 **Save your new mcp.json configuration**  
