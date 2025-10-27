@@ -45,6 +45,10 @@ Once you have these agents set up, you can:
 - **Automated Summaries**: Get quick AI-powered summaries of complex reviews and discussions
 - **Learn Best Practices**: Study OpenStack coding patterns and enterprise development workflows
 
+> [!NOTE]
+> **Explore More MCP Agents**  
+> The [redhat-community-ai-tools](https://github.com/redhat-community-ai-tools) organization maintains several high-quality MCP agents and tools. I highly recommend checking out their repositories to discover other useful agents and learn from their implementations. They provide excellent examples of professional MCP agent development.
+
 ---
 
 ## OpenDev Review Agent
@@ -104,9 +108,6 @@ An agent that provides access to Jira from Cursor with containerized deployment.
 > [!NOTE]
 > **About the Jira Agent**  
 > The `jira-agent` in this repository is based on the excellent work from [redhat-community-ai-tools/jira-mcp](https://github.com/redhat-community-ai-tools/jira-mcp). I followed their well-documented steps as part of my learning journey to build MCP agents.
->
-> **Explore More MCP Agents**  
-> The [redhat-community-ai-tools](https://github.com/redhat-community-ai-tools) organization maintains several high-quality MCP agents and tools. I highly recommend checking out their repositories to discover other useful agents and learn from their implementations. They provide excellent examples of professional MCP agent development.
 
 ### Features
 
