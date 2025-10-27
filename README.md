@@ -1,21 +1,22 @@
 # My MCP Agents Collection
 
-This repository demonstrates how to build custom MCP (Model Context Protocol) agents for Cursor. It contains three MCP agents that I built to analyze different types of code reviews.
+This repository demonstrates how to build custom MCP (Model Context Protocol) agents for Cursor. It contains four MCP agents that I built to analyze different types of code reviews and project management:
 
-> [!NOTE]
-> **About the Jira Agent**  
-> The `jira-agent` in this repository is based on the excellent work from [redhat-community-ai-tools/jira-mcp](https://github.com/redhat-community-ai-tools/jira-mcp). I followed their well-documented steps as part of my learning journey to build MCP agents.
->
-> **Explore More MCP Agents**  
-> The [redhat-community-ai-tools](https://github.com/redhat-community-ai-tools) organization maintains several high-quality MCP agents and tools. I highly recommend checking out their repositories to discover other useful agents and learn from their implementations. They provide excellent examples of professional MCP agent development.
-
-## TL;DR
-
-This document describes how I built my MCP agents for Cursor, including:
 - **github-agent**: Analyzes GitHub Pull Requests
 - **opendev-review-agent**: Analyzes OpenDev Gerrit reviews  
 - **gitlab-rh-agent**: Analyzes GitLab Issues, Merge Requests, and Commits from internal Red Hat GitLab
 - **jira-agent**: Provides access to Jira issues, projects, and sprints from Cursor
+
+## Table of Contents
+
+- [What These Agents Can Do](#what-these-agents-can-do)
+- [Next Steps](#next-steps)
+- [OpenDev Review Agent](#opendev-review-agent)
+- [GitHub Review Agent](#github-review-agent)
+- [GitLab RH Agent](#gitlab-rh-agent)
+- [Jira Agent](#jira-agent)
+- [Complete MCP Configuration](#complete-mcp-configuration)
+- [Additional Resources](#additional-resources)
 
 ## What These Agents Can Do
 
@@ -43,17 +44,6 @@ Once you have these agents set up, you can:
 - **Cross-Platform Analysis**: Combine multiple agents to correlate code changes with issues and reviews
 - **Automated Summaries**: Get quick AI-powered summaries of complex reviews and discussions
 - **Learn Best Practices**: Study OpenStack coding patterns and enterprise development workflows
-
-## Table of Contents
-
-- [What These Agents Can Do](#what-these-agents-can-do)
-- [Next Steps](#next-steps)
-- [OpenDev Review Agent](#opendev-review-agent)
-- [GitHub Review Agent](#github-review-agent)
-- [GitLab RH Agent](#gitlab-rh-agent)
-- [Jira Agent](#jira-agent)
-- [Complete MCP Configuration](#complete-mcp-configuration)
-- [Additional Resources](#additional-resources)
 
 ---
 
@@ -110,6 +100,13 @@ An agent for analyzing GitLab Issues, Merge Requests, and Commits from internal 
 ## Jira Agent
 
 An agent that provides access to Jira from Cursor with containerized deployment.
+
+> [!NOTE]
+> **About the Jira Agent**  
+> The `jira-agent` in this repository is based on the excellent work from [redhat-community-ai-tools/jira-mcp](https://github.com/redhat-community-ai-tools/jira-mcp). I followed their well-documented steps as part of my learning journey to build MCP agents.
+>
+> **Explore More MCP Agents**  
+> The [redhat-community-ai-tools](https://github.com/redhat-community-ai-tools) organization maintains several high-quality MCP agents and tools. I highly recommend checking out their repositories to discover other useful agents and learn from their implementations. They provide excellent examples of professional MCP agent development.
 
 ### Features
 
