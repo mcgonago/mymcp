@@ -16,33 +16,6 @@ This agent will be a tool that the LLM uses to answer prompts like:
 - **"Review this merge request: group/project/merge_requests/456"**
 - **"Analyze this commit: https://gitlab.cee.redhat.com/group/project/-/commit/abc123"**
 
-## What This Agent Can Do
-
-✅ **Fetch Issue Details**: Get full information about any GitLab issue you have access to  
-✅ **Fetch Merge Request Details**: Analyze merge requests with all metadata  
-✅ **Analyze Commits**: Review individual commits with diffs and file changes  
-✅ **Security Analysis**: Identify CVEs and security-related changes in commits  
-✅ **Analyze State**: Understand the current status and progress of issues/MRs  
-✅ **Review Descriptions**: Get summaries of issues and MRs  
-✅ **Track Assignments**: See who is working on what  
-✅ **View Labels**: Understand categorization and tagging  
-✅ **Full URL Support**: Paste GitLab URLs directly from your browser
-
-## Next Steps
-
-- Try analyzing various issues, merge requests, and commits from your projects
-- Use the agent to review security fixes and CVE patches
-- Analyze commit history for specific features or bug fixes
-- Use the agent to get quick summaries during code reviews
-- Combine with other MCP agents for comprehensive project analysis
-
-## Security Notes
-
-- ✅ The `.env` file is excluded from Git via `.gitignore`
-- ✅ Never commit your personal access token
-- ✅ The token only has `read_api` scope (cannot modify data)
-- ✅ This is for internal Red Hat GitLab only (gitlab.cee.redhat.com)
-
 ## Files
 
 - [`server.py`](server.py) - Main MCP server implementation
@@ -167,6 +140,33 @@ Add this JSON configuration (remember to replace `<your-mymcp-cloned-repo-path>`
 Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
 
 > **Note**: Alternatively, you can fully exit Cursor (**Ctrl+Q**) and restart it, which will also reload the new settings.
+
+## What This Agent Can Do
+
+✅ **Fetch Issue Details**: Get full information about any GitLab issue you have access to  
+✅ **Fetch Merge Request Details**: Analyze merge requests with all metadata  
+✅ **Analyze Commits**: Review individual commits with diffs and file changes  
+✅ **Security Analysis**: Identify CVEs and security-related changes in commits  
+✅ **Analyze State**: Understand the current status and progress of issues/MRs  
+✅ **Review Descriptions**: Get summaries of issues and MRs  
+✅ **Track Assignments**: See who is working on what  
+✅ **View Labels**: Understand categorization and tagging  
+✅ **Full URL Support**: Paste GitLab URLs directly from your browser
+
+## Next Steps
+
+- Try analyzing various issues, merge requests, and commits from your projects
+- Use the agent to review security fixes and CVE patches
+- Analyze commit history for specific features or bug fixes
+- Use the agent to get quick summaries during code reviews
+- Combine with other MCP agents for comprehensive project analysis
+
+## Security Notes
+
+- ✅ The `.env` file is excluded from Git via `.gitignore`
+- ✅ Never commit your personal access token
+- ✅ The token only has `read_api` scope (cannot modify data)
+- ✅ This is for internal Red Hat GitLab only (gitlab.cee.redhat.com)
 
 ## Testing the Agent
 

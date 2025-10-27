@@ -13,6 +13,12 @@ The OpenDev review system uses Gerrit, which is different from GitHub's pull req
 
 This agent will be a tool that the LLM uses to answer the prompt: **"Review this change: &lt;OpenDev URL&gt;"**
 
+## Files
+
+- [`server.py`](server.py) - Main MCP server implementation
+- [`server.sh`](server.sh) - Launch script
+- `requirements.txt` - Python dependencies
+
 ---
 
 ## Set Up the Environment
@@ -186,12 +192,6 @@ This confirms the MCP server starts successfully.
 - ✅ No credentials or tokens needed
 - ✅ Works with all publicly accessible OpenStack projects
 - ✅ Safe to use without any security concerns
-
-## Files
-
-- [`server.py`](server.py) - Main MCP server implementation
-- [`server.sh`](server.sh) - Launch script
-- `requirements.txt` - Python dependencies
 
 ## Troubleshooting
 

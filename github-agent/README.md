@@ -13,6 +13,15 @@ Building a specialized agent for code review is one of the most powerful uses of
 
 This agent will be a tool that the LLM uses to answer the prompt: **"Review this PR: &lt;GitHub URL&gt;"**
 
+## Files
+
+- [`server.py`](server.py) - Main MCP server implementation
+- [`server.sh`](server.sh) - Launch script (loads `.env` for GitHub token)
+- `example.env` - Template for environment variables
+- `.gitignore` - Ensures `.env` is not committed
+- `requirements.txt` - Python dependencies
+- `SETUP.md` - Additional setup instructions
+
 ---
 
 ## Set Up the Environment
@@ -174,15 +183,6 @@ Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer
 - ✅ Use minimal token scopes (`public_repo` for public repos only)
 - ✅ Token is loaded from environment file, never hardcoded
 - ✅ Works with GitHub's official API through authenticated requests
-
-## Files
-
-- [`server.py`](server.py) - Main MCP server implementation
-- [`server.sh`](server.sh) - Launch script (loads `.env` for GitHub token)
-- `example.env` - Template for environment variables
-- `.gitignore` - Ensures `.env` is not committed
-- `requirements.txt` - Python dependencies
-- `SETUP.md` - Additional setup instructions
 
 ## Troubleshooting
 

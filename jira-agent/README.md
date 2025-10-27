@@ -13,6 +13,16 @@ A containerized Python MCP server for Cursor that provides access to Jira issues
 > [!IMPORTANT]
 > This project is experimental and was initially created as a learning exercise.
 
+## Files
+
+- [`server.py`](server.py) - Main MCP server implementation
+- `Containerfile` - Container image definition  
+- `Makefile` - Build and deployment automation
+- `requirements.txt` - Python dependencies
+- `example.env` - Environment variables template
+- `example.mcp.json` - MCP configuration template
+- `LICENSE` - MIT License
+
 ---
 
 ## Set Up the Environment
@@ -156,16 +166,6 @@ This agent provides 20+ tools that enable Cursor's AI to interact with Jira, suc
 - ✅ Uses containerized deployment for isolation
 - ✅ API token with read-only recommended scopes
 - ✅ Jira authentication through official API token mechanism
-
-## Files
-
-- [`server.py`](server.py) - Main MCP server implementation
-- `Containerfile` - Container image definition  
-- `Makefile` - Build and deployment automation
-- `requirements.txt` - Python dependencies
-- `example.env` - Environment variables template
-- `example.mcp.json` - MCP configuration template
-- `LICENSE` - MIT License
 
 ## Testing the Agent
 
