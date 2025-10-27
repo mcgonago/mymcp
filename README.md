@@ -251,24 +251,6 @@ mymcp/
 └── use-case/                           # Example use cases and reviews
 ```
 
-### Troubleshooting
-
-**If an agent doesn't respond:**
-- Verify the `command` path is correct and absolute
-- Check that `server.sh` is executable (`chmod +x server.sh`)
-- Ensure virtual environment has all dependencies
-- Restart Cursor after configuration changes
-
-**For Jira agent specifically:**
-- Verify container image is built: `podman images | grep jira-agent`
-- Check `.env` file has `JIRA_URL` and `JIRA_API_TOKEN`
-- Ensure `--env-file` path is absolute (no `~` tilde)
-
-**If you see "Tool not found" errors:**
-- This is often normal during initial connection
-- The agent is connected, but specific tools may not be fully loaded
-- Try the command again after a few seconds
-
 ### Key Differences Between Agents
 
 **OpenDev, GitHub & GitLab Agents:**

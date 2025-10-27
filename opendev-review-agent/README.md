@@ -195,41 +195,7 @@ This confirms the MCP server starts successfully.
 
 ## Troubleshooting
 
-### Issue: "ModuleNotFoundError: No module named 'requests'" or similar
-
-**Problem**: The virtual environment is missing required Python packages or has broken internal paths.
-
-**Solution 1 - Install dependencies**:
-```bash
-cd opendev-review-agent
-./venv/bin/pip install -r requirements.txt
-```
-
-**Solution 2 - Recreate virtual environment** (if paths are broken):
-```bash
-cd opendev-review-agent
-rm -rf venv
-python3 -m venv venv
-./venv/bin/pip install -r requirements.txt
-```
-
-> **Tip**: Using `./venv/bin/pip` installs packages directly into the virtual environment without needing to activate it first. This prevents installation issues when the venv has broken paths.
-
-### Issue: Server fails to start or times out
-
-**Solution**:
-1. Check that `server.sh` is executable: `chmod +x server.sh`
-2. Verify virtual environment exists: `ls -la venv/`
-3. Check that dependencies are installed:
-   ```bash
-   source venv/bin/activate
-   pip list | grep -E "requests|fastmcp"
-   ```
-4. Test the server manually:
-   ```bash
-   cd opendev-review-agent
-   bash server.sh <<< '{"jsonrpc": "2.0", "method": "exit"}' 2>&1 | head -20
-   ```
+For solutions to common issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 ## Related Documentation
 
