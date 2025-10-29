@@ -253,6 +253,9 @@ mymcp/
 │   ├── QUICK_START.md                  # Quick reference commands
 │   ├── fetch-review.sh                 # Helper script to fetch reviews/PRs/MRs
 │   └── review_template.md              # Template for review assessments
+├── results/                            # Review assessment documents (optional git tracking)
+│   ├── README.md                       # Results directory guide
+│   └── review_*.md                     # Generated assessment documents
 ├── analysis/                           # Permanent technical analyses and research
 │   ├── README.md                       # Analysis directory guide
 │   ├── analysis_template.md            # Template for creating new analyses
@@ -273,7 +276,7 @@ cd workspace
 ./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965216
 
 # Ask Cursor to complete the assessment
-"Please analyze review 965216 and complete review_965216.md"
+"Please analyze review 965216 and complete results/review_965216.md"
 ```
 
 **Traditional workflow:**
