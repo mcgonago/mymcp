@@ -36,7 +36,7 @@ The template includes sections for:
    cd <your-mymcp-cloned-repo-path>/analysis
    cp analysis_template.md analysis_<topic-name>.md
    ```
-2. Ask Cursor a question
+2. Ask Cursor a question - example question for analysis_direct_mode.md
 
    Create a new analysis_direct_mode.md from analysis_template.md (copy) and fill in with your answer to:
    search for any work done with respect to Horizon/Glance and the changes made (CORS, httpd.conf, ..) to support direct mode upload by default
@@ -44,7 +44,7 @@ The template includes sections for:
 ## Current Analyses
 
 - **[analysis_template.md](analysis_template.md)** - 📝 Template for creating new analyses (copy this to start)
-- **[analysis_direct_mode.md](analysis_direct_mode.md)** - Horizon/Glance direct mode upload changes (CORS, httpd.conf, etc.) [🔄 In Progress]
+- **[analysis_direct_mode.md](analysis_direct_mode.md)** - Horizon/Glance direct mode upload changes (CORS, httpd.conf, etc.) [✅ Complete - awaiting PR/review searches]
 
 ## Benefits of This Approach
 
