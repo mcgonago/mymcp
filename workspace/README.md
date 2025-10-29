@@ -1,5 +1,7 @@
 # Review Workspace
 
+> **📝 For AI Assistants:** When user asks to "analyze review [URL]", follow the complete 5-step workflow in [README.md](../README.md#ai-assistant-instructions). Run fetch-review.sh, query MCP agent, read code, complete assessment, report findings.
+
 This directory is for temporary code checkouts when analyzing OpenDev reviews, GitHub PRs, GitLab MRs, etc.
 
 ## Purpose

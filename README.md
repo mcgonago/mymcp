@@ -9,6 +9,7 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 
 ## Table of Contents
 
+- [AI Assistant Instructions](#ai-assistant-instructions) ⭐ **START HERE FOR AI**
 - [GitHub Review Agent](#github-review-agent)
 - [OpenDev Review Agent](#opendev-review-agent)
 - [GitLab RH Agent](#gitlab-rh-agent)
@@ -17,6 +18,169 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 - [What These Agents Can Do](#what-these-agents-can-do)
 - [Next Steps](#next-steps)
 - [Additional Resources](#additional-resources)
+
+---
+
+## AI Assistant Instructions
+
+**⭐ For AI Assistants (Cursor, Claude, etc.): Read this section first!**
+
+### When User Asks to Analyze a Review
+
+**User says any of:**
+- "Analyze review [URL]"
+- "Analyze OpenDev review [NUMBER]"
+- "Fetch and analyze review [URL] with full assessment"
+- "Please review https://review.opendev.org/c/openstack/horizon/+/965215"
+
+**You should execute this complete workflow:**
+
+#### Step 1: Fetch the Review Code
+```bash
+cd /home/omcgonag/Work/mymcp/workspace
+./fetch-review.sh --with-assessment opendev [URL]
+```
+
+This creates:
+- `workspace/[project]-[number]/` - The review code
+- `results/review_[number].md` - Assessment template (basic metadata only)
+
+#### Step 2: Query the MCP Agent
+```
+@opendev-reviewer-agent Analyze the review at [URL]
+```
+
+This fetches:
+- Review metadata (author, status, commit message)
+- File changes and statistics
+- Comments and review history
+
+#### Step 3: Analyze the Code
+```bash
+cd workspace/[project]-[number]
+git show HEAD
+git log -1
+```
+
+Examine:
+- What files changed
+- What the code does
+- Potential issues
+- Testing needs
+- Security implications
+
+#### Step 4: Complete the Assessment
+Update `results/review_[number].md` with:
+- **Executive Summary** - What this review does and your recommendation
+- **Code Quality Assessment** - Strengths, concerns, suggestions
+- **Technical Analysis** - File-by-file analysis
+- **Review Checklist** - Code quality, testing, security, performance
+- **Testing Verification** - How to test this change
+- **Recommendations** - What should be addressed before merge
+- **Decision** - Final recommendation (+2/+1/0/-1)
+
+#### Step 5: Report to User
+Provide a summary including:
+- What the review does
+- Key findings (good and bad)
+- Your recommendation
+- Location of full assessment: `results/review_[number].md`
+
+### Examples
+
+#### Example 1: OpenDev Review
+```
+User: "Analyze review https://review.opendev.org/c/openstack/horizon/+/965215"
+
+You do:
+1. cd workspace && ./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965215
+2. @opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/965215
+3. cd horizon-965215 && git show HEAD
+4. Fill in results/review_965215.md completely
+5. Tell user: "✅ Analyzed review 965215. Recommendation: [your verdict]. Full assessment at results/review_965215.md"
+```
+
+#### Example 2: GitHub PR
+```
+User: "Review PR https://github.com/openstack-k8s-operators/horizon-operator/pull/402"
+
+You do:
+1. cd workspace && ./fetch-review.sh --with-assessment github https://github.com/openstack-k8s-operators/horizon-operator/pull/402
+2. @github-reviewer-agent Analyze PR https://github.com/openstack-k8s-operators/horizon-operator/pull/402
+3. cd horizon-operator-pr-402 && git show HEAD
+4. Fill in results/review_pr_402.md completely
+5. Report findings
+```
+
+#### Example 3: GitLab MR
+```
+User: "Analyze GitLab MR https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123"
+
+You do:
+1. cd workspace && ./fetch-review.sh --with-assessment gitlab https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
+2. @gitlab-cee-agent Analyze the merge request at https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
+3. cd python-django-mr-123 && git show HEAD
+4. Fill in results/review_mr_123.md completely
+5. Report findings
+```
+
+### Key Principles
+
+1. **Always run the fetch script first** - Don't just use the MCP agent alone
+2. **Always create the assessment document** - Use `--with-assessment` flag
+3. **Always read the actual code** - Don't rely only on MCP agent data
+4. **Always complete the full template** - Fill in ALL sections of the assessment
+5. **Always provide a recommendation** - +2/+1/0/-1 with reasoning
+
+### Available MCP Agents
+
+- `@opendev-reviewer-agent` - For review.opendev.org (Gerrit)
+- `@github-reviewer-agent` - For github.com Pull Requests
+- `@gitlab-cee-agent` - For gitlab.cee.redhat.com (internal Red Hat)
+- `@jiraMcp` - For Jira issues
+
+### Directory Structure You Should Know
+
+```
+/home/omcgonag/Work/mymcp/
+├── workspace/              # Run fetch-review.sh here (gitignored)
+├── results/                # Assessment documents go here (can commit)
+├── analysis/               # Permanent research (always commit)
+└── README.md              # This file
+```
+
+### Error Handling
+
+**If fetch-review.sh fails:**
+- Check the URL format
+- Try manual git clone and fetch
+
+**If MCP agent fails:**
+- Continue anyway using git show HEAD
+- Note in assessment that MCP data unavailable
+
+**If review is very large:**
+- Focus on changed files only
+- Summarize rather than detail every file
+
+### Quick Reference Commands
+
+```bash
+# Fetch review with assessment
+cd /home/omcgonag/Work/mymcp/workspace
+./fetch-review.sh --with-assessment opendev [URL]
+
+# View changes
+cd [project]-[number]
+git show HEAD
+git log -1
+
+# Run tests
+tox -e pep8
+
+# Complete assessment location
+/home/omcgonag/Work/mymcp/results/review_[number].md
+```
 
 ---
 

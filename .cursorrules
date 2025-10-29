@@ -1,0 +1,75 @@
+# Cursor AI Rules for mymcp Repository
+
+## Code Review Analysis Workflow
+
+When the user asks to analyze a review (e.g., "Analyze review [URL]" or "Review OpenDev 965215"):
+
+### Complete Workflow (5 Steps)
+
+1. **Fetch Review Code**
+   ```bash
+   cd /home/omcgonag/Work/mymcp/workspace
+   ./fetch-review.sh --with-assessment [type] [URL]
+   ```
+   Types: `opendev`, `github`, `gitlab`
+
+2. **Query MCP Agent**
+   - Use `@opendev-reviewer-agent` for OpenDev/Gerrit
+   - Use `@github-reviewer-agent` for GitHub PRs
+   - Use `@gitlab-cee-agent` for GitLab MRs
+
+3. **Read the Code**
+   ```bash
+   cd workspace/[project]-[number]
+   git show HEAD
+   git log -1
+   ```
+
+4. **Complete Assessment Document**
+   - Location: `results/review_[number].md`
+   - Fill in ALL sections (not just metadata):
+     - Executive Summary
+     - Code Quality Assessment  
+     - Technical Analysis
+     - Review Checklist
+     - Testing Verification
+     - Recommendations
+     - Final Decision (+2/+1/0/-1)
+
+5. **Report to User**
+   - Summary of findings
+   - Your recommendation
+   - Location of full assessment
+
+### Key Rules
+
+- ✅ **ALWAYS run all 5 steps** - Don't stop at template creation
+- ✅ **ALWAYS read the actual code** - Don't rely only on MCP data
+- ✅ **ALWAYS complete the full assessment** - Fill in every section
+- ✅ **ALWAYS provide a recommendation** - Give a clear +2/+1/0/-1 verdict
+- ❌ **DON'T just create empty templates** - User expects full analysis
+
+### Example
+
+```
+User: "Analyze review 965215"
+
+You do:
+1. Run fetch script
+2. Query @opendev-reviewer-agent
+3. cd horizon-965215 && git show HEAD
+4. Fill results/review_965215.md completely
+5. Report: "✅ Reviewed 965215: [summary]. Recommendation: +1. Full details: results/review_965215.md"
+```
+
+## Repository Structure
+
+- `workspace/` - Temporary code checkouts (gitignored)
+- `results/` - Review assessments (can commit valuable ones)
+- `analysis/` - Permanent research documentation (always commit)
+- `*-agent/` - MCP agent implementations
+
+## Documentation
+
+Full instructions: [README.md](README.md#ai-assistant-instructions)
+
