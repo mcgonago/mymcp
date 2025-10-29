@@ -85,35 +85,6 @@ results/
 | **results/** | Review assessments | ⚠️ Optional | Keep valuable ones |
 | **analysis/** | Permanent research | ✅ Yes | Permanent |
 
-### When to Promote to Analysis
-
-Move assessment to `analysis/` if it contains:
-- Significant architectural decisions
-- Security implications
-- Performance analysis
-- Breaking changes
-- Team reference material
-
-```bash
-# Promote important assessment to permanent analysis
-cp results/review_965216.md analysis/
-git add analysis/review_965216.md
-```
-
-## Cleanup
-
-```bash
-# Remove old assessments
-cd results
-rm review_*.md
-
-# Keep only recent (last 30 days)
-find . -name "review_*.md" -mtime +30 -delete
-
-# Keep only committed assessments
-git clean -fd results/
-```
-
 ## Benefits
 
 ✅ **Organized** - Assessments separate from code checkouts  
