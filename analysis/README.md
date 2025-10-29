@@ -18,66 +18,51 @@ Each analysis document includes:
 
 ### Creating a New Analysis
 
-1. **Identify the topic** you want to research
-2. **Query the relevant MCP agents** (@github-reviewer-agent, @opendev-reviewer-agent, @gitlab-cee-agent, @jiraMcp)
-3. **Document the inquiry** - Save the exact query used
-4. **Capture the results** - Include all relevant information returned
-5. **Create the analysis file** - Name it descriptively (e.g., `analysis_direct_mode.md`)
+1. **Copy the template**
+   ```bash
+   cd /home/omcgonag/Work/mymcp/analysis
+   cp analysis_template.md analysis_<topic-name>.md
+   ```
+
+2. **Identify the topic** you want to research
+
+3. **Query the relevant MCP agents** (@github-reviewer-agent, @opendev-reviewer-agent, @gitlab-cee-agent, @jiraMcp)
+
+4. **Document the inquiry** - Fill in the "Original Inquiry" section with your exact query
+
+5. **Capture the results** - Fill in all relevant sections as you gather information
+
 6. **Include reproduction steps** - Document how to recreate the research
+
+7. **Update status** - Mark as complete when finished
 
 ### Analysis File Template
 
-```markdown
-# Analysis: [Topic Title]
+A complete template is available at **[analysis_template.md](analysis_template.md)**.
 
-## Original Inquiry
-
-**Date:** YYYY-MM-DD
-**Asked to:** @agent-name
-**Query:**
-```
-[exact query text]
+To start a new analysis:
+```bash
+cp analysis_template.md analysis_<your-topic>.md
+vim analysis_<your-topic>.md
 ```
 
-## Data Sources
-
-- [ ] GitHub PRs
-- [ ] OpenDev Reviews
-- [ ] GitLab MRs
-- [ ] Jira Issues
-- [ ] Other: [specify]
-
-## Executive Summary
-
-[Brief overview of findings]
-
-## Detailed Findings
-
-[Comprehensive analysis]
-
-## Code References
-
-- PR/Review links
-- Commit SHAs
-- File paths
-
-## Related Work
-
-- Links to related analyses
-- Cross-references
-
-## Reproduction Steps
-
-[Commands to verify or reproduce the findings]
-
-## Conclusions
-
-[Key takeaways]
-```
+The template includes sections for:
+- Original inquiry and data sources
+- Executive summary and background
+- Detailed findings with categories
+- Code references (PRs, reviews, commits)
+- Implementation timeline
+- Testing and verification
+- Configuration examples
+- Known issues and workarounds
+- Related work and cross-references
+- Reproduction steps
+- Conclusions and recommendations
 
 ## Current Analyses
 
-- **[analysis_direct_mode.md](analysis_direct_mode.md)** - Horizon/Glance direct mode upload changes (CORS, httpd.conf, etc.)
+- **[analysis_template.md](analysis_template.md)** - 📝 Template for creating new analyses (copy this to start)
+- **[analysis_direct_mode.md](analysis_direct_mode.md)** - Horizon/Glance direct mode upload changes (CORS, httpd.conf, etc.) [🔄 In Progress]
 
 ## Benefits of This Approach
 

@@ -252,6 +252,7 @@ mymcp/
 │   └── fetch-review.sh                 # Helper script to fetch reviews/PRs/MRs
 ├── analysis/                           # Permanent technical analyses and research
 │   ├── README.md                       # Analysis directory guide
+│   ├── analysis_template.md            # Template for creating new analyses
 │   └── analysis_direct_mode.md         # Horizon/Glance direct mode upload analysis
 ├── test-mcp-setup.sh                   # Verification script for all agents
 ├── docs/                               # Additional documentation
@@ -302,12 +303,16 @@ The `analysis/` directory stores permanent technical analyses and research findi
 
 **How to Use:**
 ```bash
-# Create a new analysis
+# Create a new analysis from template
 cd analysis
+cp analysis_template.md analysis_<topic>.md
+
 # Query MCP agents for information
 @github-reviewer-agent search for [topic]
 @opendev-reviewer-agent analyze [review]
-# Document findings in analysis_<topic>.md
+
+# Document findings in your new analysis file
+vim analysis_<topic>.md
 ```
 
 **Benefits:**
