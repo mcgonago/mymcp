@@ -250,6 +250,9 @@ mymcp/
 ├── workspace/                          # Temporary workspace for code review analysis (gitignored)
 │   ├── README.md                       # Workspace usage guide
 │   └── fetch-review.sh                 # Helper script to fetch reviews/PRs/MRs
+├── analysis/                           # Permanent technical analyses and research
+│   ├── README.md                       # Analysis directory guide
+│   └── analysis_direct_mode.md         # Horizon/Glance direct mode upload analysis
 ├── test-mcp-setup.sh                   # Verification script for all agents
 ├── docs/                               # Additional documentation
 └── use-case/                           # Example use cases and reviews
@@ -280,6 +283,40 @@ cd workspace
 - ✅ Persistent across sessions
 
 See [`workspace/README.md`](workspace/README.md) for detailed usage instructions.
+
+### Analysis Directory for Permanent Research
+
+The `analysis/` directory stores permanent technical analyses and research findings:
+
+**Purpose:**
+- Document research methodology and findings
+- Preserve institutional knowledge
+- Provide reproducible research
+- Cross-reference related work
+
+**Example Analyses:**
+- Horizon/Glance direct mode upload implementation
+- CORS configuration changes
+- Feature migrations and deprecations
+- Integration test architecture decisions
+
+**How to Use:**
+```bash
+# Create a new analysis
+cd analysis
+# Query MCP agents for information
+@github-reviewer-agent search for [topic]
+@opendev-reviewer-agent analyze [review]
+# Document findings in analysis_<topic>.md
+```
+
+**Benefits:**
+- ✅ Permanent knowledge base (tracked in git)
+- ✅ All queries and sources documented
+- ✅ Reproducible research methodology
+- ✅ Easy onboarding for new team members
+
+See [`analysis/README.md`](analysis/README.md) for detailed guidelines and templates.
 
 ### Key Differences Between Agents
 
