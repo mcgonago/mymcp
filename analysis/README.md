@@ -18,34 +18,6 @@ Each analysis document includes:
 
 ### Creating a New Analysis
 
-1. **Copy the template**
-   ```bash
-   cd /home/omcgonag/Work/mymcp/analysis
-   cp analysis_template.md analysis_<topic-name>.md
-   ```
-
-2. **Identify the topic** you want to research
-
-3. **Query the relevant MCP agents** (@github-reviewer-agent, @opendev-reviewer-agent, @gitlab-cee-agent, @jiraMcp)
-
-4. **Document the inquiry** - Fill in the "Original Inquiry" section with your exact query
-
-5. **Capture the results** - Fill in all relevant sections as you gather information
-
-6. **Include reproduction steps** - Document how to recreate the research
-
-7. **Update status** - Mark as complete when finished
-
-### Analysis File Template
-
-A complete template is available at **[analysis_template.md](analysis_template.md)**.
-
-To start a new analysis:
-```bash
-cp analysis_template.md analysis_<your-topic>.md
-vim analysis_<your-topic>.md
-```
-
 The template includes sections for:
 - Original inquiry and data sources
 - Executive summary and background
@@ -58,6 +30,16 @@ The template includes sections for:
 - Related work and cross-references
 - Reproduction steps
 - Conclusions and recommendations
+
+1. **Copy the template**
+   ```bash
+   cd <your-mymcp-cloned-repo-path>/analysis
+   cp analysis_template.md analysis_<topic-name>.md
+   ```
+2. Ask Cursor a question
+
+   Create a new analysis_direct_mode.md from analysis_template.md (copy) and fill in with your answer to:
+   search for any work done with respect to Horizon/Glance and the changes made (CORS, httpd.conf, ..) to support direct mode upload by default
 
 ## Current Analyses
 
