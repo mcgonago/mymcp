@@ -249,7 +249,10 @@ mymcp/
 ├── images/                             # Screenshots and documentation images
 ├── workspace/                          # Temporary workspace for code review analysis (gitignored)
 │   ├── README.md                       # Workspace usage guide
-│   └── fetch-review.sh                 # Helper script to fetch reviews/PRs/MRs
+│   ├── REVIEW_ASSESSMENT_GUIDE.md      # Comprehensive assessment feature guide
+│   ├── QUICK_START.md                  # Quick reference commands
+│   ├── fetch-review.sh                 # Helper script to fetch reviews/PRs/MRs
+│   └── review_template.md              # Template for review assessments
 ├── analysis/                           # Permanent technical analyses and research
 │   ├── README.md                       # Analysis directory guide
 │   ├── analysis_template.md            # Template for creating new analyses
@@ -263,12 +266,18 @@ mymcp/
 
 The `workspace/` directory provides a dedicated space for cloning and analyzing code from reviews, PRs, and MRs:
 
-**Quick Start:**
+**Quick Start (with automated assessment):**
 ```bash
-# Fetch an OpenDev review
+# Fetch an OpenDev review with assessment document
 cd workspace
-./fetch-review.sh opendev https://review.opendev.org/c/openstack/horizon/+/964897
+./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965216
 
+# Ask Cursor to complete the assessment
+"Please analyze review 965216 and complete review_965216.md"
+```
+
+**Traditional workflow:**
+```bash
 # Fetch a GitHub PR
 ./fetch-review.sh github https://github.com/openstack-k8s-operators/horizon-operator/pull/402
 
@@ -278,12 +287,13 @@ cd workspace
 
 **Benefits:**
 - ✅ Organized workspace separate from agent code
+- ✅ **NEW:** Automated review assessment document creation
 - ✅ Full repository context for deeper analysis
 - ✅ Use Cursor's `codebase_search` across review code
 - ✅ Git-ignored to avoid cluttering the repo
 - ✅ Persistent across sessions
 
-See [`workspace/README.md`](workspace/README.md) for detailed usage instructions.
+See [`workspace/README.md`](workspace/README.md) and [`workspace/REVIEW_ASSESSMENT_GUIDE.md`](workspace/REVIEW_ASSESSMENT_GUIDE.md) for detailed usage instructions.
 
 ### Analysis Directory for Permanent Research
 
