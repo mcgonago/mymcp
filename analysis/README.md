@@ -46,6 +46,7 @@ The template includes sections for:
 - **[analysis_template.md](analysis_template.md)** - 📝 Template for creating new analyses (copy this to start)
 - **[analysis_direct_mode.md](analysis_direct_mode.md)** - Horizon/Glance direct mode upload changes (CORS, httpd.conf, etc.) [✅ Complete - awaiting PR/review searches]
 - **[analysis_pr_483_verify_horizon_operator_content.md](analysis_pr_483_verify_horizon_operator_content.md)** - Verifying PR #483 inclusion in RHOSO 1.0 operator builds via midstream SHA verification [✅ Complete]
+- **[analysis_revert_horizon_direct_mode.md](analysis_revert_horizon_direct_mode.md)** - FR4 blocker: Direct mode upload causing images stuck in "Queued" status, complete timeline from implementation to emergency revert with all Jira/PR details [✅ Complete - October 31, 2025]
 
 ## Benefits of This Approach
 
