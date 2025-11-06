@@ -1,0 +1,173 @@
+#+OPTIONS: ^:nil num:nil \n:t
+#+TITLE: analysis_osprh_12803_Add_chevrons_to_the_key_pair_table
+#+SETUPFILE: theme-readtheorg.setup
+
+* TL;DR
+This document describes work against [[https://issues.redhat.com/browse/OSPRH-12803][OSPRH_12803: Add chevrons to the key pair table.]]
+
+A few related tickets
+- [[https://issues.redhat.com/browse/OSPRH-12801][OSPRH-12801: Remove angular.js from Horizon]]
+- [[https://issues.redhat.com/browse/OSPRH-12804][OSPRH-12804: Identify all the differences that are missing from the Python views]]
+
+* Idea is to investigate the django collapse feature
+We need to add chevrons to the 
+
+The *Key Pairs* panel defaults to
+: 'key_pairs_panel': True
+
+We need to switch this to *False* and then figure out how to get the python code to support the same *chevrons* that ANGULAR uses
+
+: X
+: iyaml horizon/openstack_dashboard/defaults.py
+:
+: # Dictionary of currently available angular features
+: ANGULAR_FEATURES = {
+:     'images_panel': True,
+:     'key_pairs_panel': True,       <== switch between True and False to toggle Key Pairs panel
+:     'flavors_panel': False,
+:     'domains_panel': False,
+:     'users_panel': False,
+:     'groups_panel': False,
+:     'roles_panel': True
+: }
+
+Here are a few resources that will help in this investigation
+- Bootstrap, a sleek, intuitive, and powerful mobile first front-end framework for faster and easier web development.
+- [[https://getbootstrap.com/docs/3.4/javascript/#collapse][javascript: collaps: toggle behavior]]
+
+We need to change the code here  
+: https://github.com/openstack/horizon/tree/master/openstack_dashboard/dashboards/project/key_pairs
+
+And possibly here:
+: https://github.com/openstack/horizon/tree/master/horizon/tables
+
+We also may need to introduce/use templates to get our python code to add support for this chevrons/collapse panel
+- [[https://docs.djangoproject.com/en/5.2/topics/templates/][docs.djangoproject.com: templates]]
+
+* First step, fire back up local devstack (VM) dev environment
+Can it be that simple? When was last time I had to do this?
+
+file: HOWTO_install_devstack_on_laptop_REVISIT_1.org
+
+A few plcaes for refernce
+- [[https://spaces.redhat.com/spaces/~omcgonag/pages/505089290/HOWTO_install_devstack_on_laptop][HOWTO_install_devstack_on_laptop]]
+- [[https://spaces.redhat.com/spaces/~omcgonag/pages/586844903/HOWTO_install_devstack_on_laptop_REVISIT_1][HOWTO_install_devstack_on_laptop_REVISIT_1]]
+- [[https://spaces.redhat.com/spaces/~omcgonag/pages/574132161/HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views][HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views]]
+- [[https://spaces.redhat.com/spaces/~omcgonag/pages/574132163/HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views_REVISIT_1][HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views_REVISIT_1]]
+
+: $ sudo virsh list --all
+:  Id   Name          State
+: ------------------------------
+:  -    crc           shut off
+:  -    ubuntu24.04   shut off
+
+: $ sudo virsh start ubuntu24.04
+: Domain 'ubuntu24.04' started
+
+: $ sudo virsh list --all
+:  Id   Name          State
+: ------------------------------
+:  1    ubuntu24.04   running
+:  -    crc           shut off
+
+* Fire up virt-manager
+: virt-manager
+
+Force reset:
+: ubuntu24.04 Running [v] force reset
+
+* Can we connect locally still?
+Make sure you are in your development horizon repo
+: cd /home/omcgonag/Work/mymcp/workspace
+: git clone https://github.com/openstack/horizon horizon-osprh-12803
+: cd horizon-osprh-12803
+
+
+* Update local_settings.py
+*REMEMBER* to update your horizon settings before running *tox*
+
+** Create/update openstack_dashboard/local/local_settings.py
+
+: cp openstack_dashboard/local/local_settings.py.example openstack_dashboard/local/local_settings.py
+
+*REMEMBER* to change change OPENSTACK_HOST to IP of your VM, in my case:
+: OPENSTACK_HOST = "192.168.122.140"
+
+: X
+: ipython openstack_dashboard/local/local_settings.py
+: .
+: .
+: .
+: OPENSTACK_HOST = "192.168.122.140"
+: .
+: .
+: .
+: # If horizon is running in production (DEBUG is False), set this
+: # with the list of host/domain names that the application can serve.
+: # For more information see:
+: # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+: #ALLOWED_HOSTS = ['horizon.example.com', ]
+: ALLOWED_HOSTS = ['*']
+: .
+: .
+: # Help URL can be made available for the client. To provide a help URL, edit the
+: # following attribute to the URL of your choice.
+: #HORIZON_CONFIG["help_url"] = "http://openstack.mycompany.org"
+:
+: #OPENSTACK_KEYSTONE_URL = "https://keystone-public-openstack.apps-crc.testing/v3"
+: OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
+: OPENSTACK_SSL_NO_VERIFY = True
+:
+: CACHES = {
+:     'default': {
+:         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+:         'LOCATION': 'unique-snowflake',
+:     }
+: }
+:
+: SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
+Run tox runserver
+: tox -e runserver -- 0.0.0.0:8080
+
+Point your browser at your VM, and login as admin
+: localhost:8080/auth/login/?next=/project/
+: username: admin
+: password: 123456
+
+* Use local_settings.d to toggle between angular and python code
+We can configure the *ANGULAR_FEATURES* toggle between angular vs. python by
+- updating horizon/openstack_dashboard/defaults.py
+- local_settings.d: renaming *_11_toggle_angular_features.example* to *_11_toggle_angular_features.example.py*
+
+** defaults.py
+For example - to inspect the differences for the *key pairs* panel
+- toggle *key_pairs_panel* between *True* and *False*
+- any change to this file triggers a restart of the Horizon dashboard
+- *CAREFUL:* if not careful, this file could get pushed/changed during a commit (local_settings.d changes do not get pushed)
+
+: X
+: iyaml horizon/openstack_dashboard/defaults.py
+:
+: # Dictionary of currently available angular features
+: ANGULAR_FEATURES = {
+:     'images_panel': True,
+:     'key_pairs_panel': True,       <== switch between True and False to toggle Key Pairs panel
+:     'flavors_panel': False,
+:     'domains_panel': False,
+:     'users_panel': False,
+:     'groups_panel': False,
+:     'roles_panel': True
+: }
+
+** local_settings.d (alternative option)
+Rename rename *_11_toggle_angular_features.example* to *_11_toggle_angular_features.example.py*
+
+: ls /root/horizon/openstack_dashboard/local/local_settings.d:
+: drwxr-xr-x 2 root root 4096 Jan 16 20:04 .
+: drwxr-xr-x 4 root root 4096 Jan 16 20:07 ..
+: -rw-r--r-- 1 root root  133 Jan 16 20:04 _10_set_custom_theme.py.example
+: -rw-r--r-- 1 root root   49 Jan 16 20:04 _11_toggle_angular_features.py.example    <== _11_toggle_angular_features.py
+: -rw-r--r-- 1 root root  296 Jan 16 20:04 _2010_integration_tests_deprecated.py.example
+: -rw-r--r-- 1 root root  191 Jan 16 20:04 _20_integration_tests_scaffolds.py.example
+: -rw-r--r-- 1 root root  213 Jan 16 20:04 _9030_profiler_settings.py.example
