@@ -1,0 +1,401 @@
+#+OPTIONS: ^:nil num:nil \n:t
+#+TITLE: analysis_review_966349_patchset_1
+#+SETUPFILE: theme-readtheorg.setup
+
+* TL;DR
+
+This document describes some recent Horizon peer programming sessions.
+
+The (one) goal of all this is to convert all our *angular* panels to use pure *python* instead.
+
+This is phase2 of [[https://spaces.redhat.com/spaces/~omcgonag/pages/721224780/HOWTO_horizon_peer_programming_101][HOWTO_horizon_peer_programming_101]]
+
+Continuing with review at [[https://review.opendev.org/c/openstack/horizon/+/966349][966349: de-angularize Key Pairs]]
+
+Each patchset comes with a document detailing the changes
+: [[xxxx][analysis_review_966349_patchset_1.org]]
+
+Part of this exercise is to figure out what code needs to change in order to get your *python* *Key Tables* panel to look exactly like what we get with the default (enabled) *angular* implementation.
+
+It started with a few tickets on removing some angular code from Horizon
+- [[https://issues.redhat.com/browse/OSPRH-12801][OSPRH-12801: Remove angular.js from Horizon]]
+- [[https://issues.redhat.com/browse/OSPRH-12804][OSPRH-12804: Identify all the differences that are missing from the Python views]]
+
+In particular, one that was recently assigned to me
+- [[https://issues.redhat.com/browse/OSPRH-12803][OSPRH-12803: Add chevrons to the key pair table]]
+
+What is a chevron you ask? What is a key pair table?
+
+Best to show with a picture - here is a clip from our Horizon *Key Pairs* view (form)
+
+[[file:../images/horizon_ui_programming_101_key_pairs_chevrons.png]]
+
+* Patchset 1
+Pulling limitations and summary from all the detail about Patchset 1 (below)
+
+** Current Limitations in Patchset 1
+1. *Always Expanded*: The detail row is always visible; it's not actually collapsible yet
+2. *Simple Content*: Only displays *row.datum* and *row.datum.name* - minimal information
+3. *No Styling*: The detail row has no special CSS classes or styling
+4. *No Interactivity*: No JavaScript to toggle visibility (referenced in docstring but not implemented)
+
+*Note*: The class docstring mentions "chevron functionality," but this is not implemented in Patchset 1. 
+This is likely expanded in later patchsets (particularly Patchset 3 where the template grows from 4 lines to 32 lines).
+
+** Summary
+The addition of *row_class = ExpandableKeyPairRow* combined with the custom template creates a mechanism where:
+- Django Horizon's DataTable framework uses the custom row class for rendering
+- The custom row class uses a custom template instead of the default
+- The custom template includes the normal row rendering AND adds a second *<tr>* element
+- The result is that each keypair appears with TWO rows: the normal data row and an expandable detail row
+- This creates the visual "expandable" effect seen in the dashboard, even though in Patchset 1 the rows are always expanded
+
+This forms the foundation for the de-angularization effort, replacing Angular-based expandable rows with a Django template-based approach.
+
+* Horizon dashboard
+Here is our *Key pairs* dashboard afer the changes below
+
+[[file:../images/horizon_ui_programming_101_key_pairs_new_row.png]]
+
+* Pulling key pieces from analysis_peer_review_day_1_phase_1
+Pulling key pieces in from [[https://github.com/mcgonago/mymcp/blob/main/analysis/analysis_peer_review_day_1_phase_1.md][analysis_peer_review_day_1_phase_1]]
+
+** inlined bsae row template
+
+High level
+- Inlined the base row template from horizon/common/_data_table_row.html
+
+: X
+: iyaml horizon/templates/horizon/common/_data_table_row.html
+:
+: <tr{{ row.attr_string|safe }}>
+:     {% spaceless %}
+:         {% for cell in row %}
+:             {% include "horizon/common/_data_table_cell.html" %}
+:         {% endfor %}
+:     {% endspaceless %}
+: </tr>
+
+** Then added a new row with all the info needed
+
+#+BEGIN_EXAMPLE
+Q: How does just creating this new expandable_row.html get called after whatever gets called today so that we get more info?
+#+END_EXAMPLE
+
+: X
+: iyaml openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
+:
+: {% load i18n %}
+:
+: {# Summary row - inlined from horizon/common/_data_table_row.html #}
+: <tr{{ row.attr_string|safe }}>
+:     {% spaceless %}
+:         {% for cell in row %}
+:             {# Inlined from horizon/common/_data_table_cell.html - simplified #}
+:             <td{{ cell.attr_string|safe }}>
+:                 {% if cell.wrap_list %}<ul>{% endif %}{{ cell.value }}{% if cell.wrap_list %}</ul>{% endif %}
+:             </td>
+:         {% endfor %}
+:     {% endspaceless %}
+: </tr>
+:
+: {# Detail row - shows key pair information #}
+: <tr class="keypair-detail-row">
+:   <td colspan="{{ row.cells|length }}">
+:     <dl class="dl-horizontal">
+:       <dt>{% trans "Key Pair Name" %}</dt>
+:       <dd>{{ row.datum.name }}</dd>
+:
+:       <dt>{% trans "Key Pair Type" %}</dt>
+:       <dd>{{ row.datum.type|default:"ssh" }}</dd>
+:
+:       <dt>{% trans "Fingerprint" %}</dt>
+:       <dd>{{ row.datum.fingerprint }}</dd>
+:
+:       <dt>{% trans "Public Key" %}</dt>
+:       <dd><pre style="word-break: break-all; white-space: pre-wrap; max-width: 100%; overflow-wrap: break-word;">{{ row.datum.public_key|default:"N/A" }}</pre></dd>
+:     </dl>
+:   </td>
+: </tr>
+
+* Detailed Code Analysis
+
+** Before Phase 1
+Original *expandable_row.html* (from peer review)
+
+: X
+: ishell openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
+:
+: {% include "horizon/common/_data_table_row.html" %}
+: <tr><td colspan="5">
+:          {{ row.datum }}
+:          {{ row.datum.name }} </td></tr>
+
+I guess this is considered a *template* which got pulled in from our other code at:
+
+*Compare* this to the original
+
+: $ git clone https://github.com/openstack/horizon horizon-osprh-12803-tip
+: $ cd horizon-osprh-12803-tip
+
+: cd /home/omcgonag/Work/mymcp/workspace/horizon-osprh-12803
+: kdiff3 openstack_dashboard/dashboards/project/key_pairs/tables.py /home/omcgonag/Work/horizon-osprh-12803-tip/openstack_dashboard/dashboards/project/key_pairs/tables.py
+
+* patch set 1
+We want to go one patch set at a time...
+
+: file: horizon-osprh-12803-patchset-analysis.md
+
+**Files Changed:**
+- `openstack_dashboard/dashboards/project/key_pairs/tables.py`
+  - Lines: +8/-1 (net: +7)
+  - Size delta: +351 bytes
+  - Final size: 5,035 bytes
+
+- `openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html` (NEW)
+  - Lines: +4/0
+  - Size delta: +141 bytes
+  - Final size: 141 bytes
+
+* ask:
+
+ask:
+: Please answer this and all questions for rest of day with the necessary format so that I can hit Copy Message and inser it into my document
+:
+: For our changes for patch set 1 we see the following changes
+:
+: I need to understand as much detail as possible on how adding this line to openstack_dashboard/dashboards/project/key_pairs/tables.py
+:   +         row_class = ExpandableKeyPairRow
+:
+: Along with new file openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
+:
+: Results in us seeing a new row for all the key pairs in our Horizon dashboard
+:
+: Project/Compute/Key Pairs
+:
+:
+: API Access     V         Key Pairs
+: Compute        V
+: Overview       V         Displaying 8 items
+: Instances      V
+: Images         V         | [ ] | Key Pair Name                  | Key Pair Type | Fingerprint                                     | Actions |
+: Key Pairs      V         +--------------------------------------+---------------+-------------------------------------------------+---------|
+: Server Groups  V         | [ ] | test1                          | ssh           | 83:9d:ce:a7:b9:10:91:8d:8c:9a:b6:19:16:83:dd:a1 | delete  |
+: Volumes        V         |     | <Keypair: test1> test1         |               |                                                 |         |
+: Network        V         | [ ] | test2                          | ssh           | ae:bb:b6:f7:5b:cc:85:8c:7f:11:ba:e4:1a:77:4f:f3 | delete  |
+: Admin          V         |     | <Keypair: test1> test1         |               |                                                 |         |
+: Identity       V         | [ ] | test3                          | ssh           | 5c:7c:ff:33:ea:af:95:81:e5:22:75:e9:f7:c6:99:ba | delete  |
+:                          |     | <Keypair: test1> test1         |               |                                                 |         |
+:                          | [ ] | test_pair                      | ssh           | 33:c0:60:90:cb:ef:19:82:e5:c5:ab:ad:79:0d:a9:2d | delete  |
+:                          |     | <Keypair: test_pair> test_pair |               |                                                 |         |
+
+: MODIFIED: openstack_dashboard/dashboards/project/key_pairs/tables.py
+:
+:   + class ExpandableKeyPairRow(tables.Row):
+:   +     """Custom row class for expandable key pair rows with chevron functionality."""
+:   +     def render(self):
+:   +         return render_to_string("key_pairs/expandable_row.html",
+:   +                                 {"row": self})
+:
+:     class KeyPairsTable(tables.DataTable):
+:         detail_link = "horizon:project:key_pairs:detail"
+:         name = tables.Column("name", verbose_name=_("Key Pair Name"),
+:                              link=detail_link)
+:         key_type = tables.Column("type", verbose_name=_("Key Pair Type"))
+:         fingerprint = tables.Column("fingerprint", verbose_name=_("Fingerprint"))
+:
+:         def get_object_id(self, keypair):
+:             return parse.quote(keypair.name)
+:
+:         class Meta(object):
+:             name = "keypairs"
+:             verbose_name = _("Key Pairs")
+:   +         row_class = ExpandableKeyPairRow
+:             table_actions = (CreateLinkNG, ImportKeyPair, DeleteKeyPairs,
+:                              KeypairsFilterAction,)
+:             row_actions = (DeleteKeyPairs,)
+:
+:
+:
+: NEW: openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
+:
+:   + {% include "horizon/common/_data_table_row.html" %}
+:   + <tr><td colspan="5">
+:   +          {{ row.datum }}
+:   +          {{ row.datum.name }} </td></tr>
+
+* Detailed Explanation: Patchset 1 - Expandable Key Pair Rows Implementation
+The changes in Patchset 1 introduce a custom row rendering mechanism that displays an additional detail row beneath each key pair entry in the Key Pairs table.
+- this creates the expandable row effect seen in the Horizon dashboard.
+
+** Custom Row Class Creation
+- *Inherits* from *tables.Row*: This is the base class for all table rows in Django Horizon's table framework
+- *Overrides* the *render()* method*: Instead of using Horizon's default row rendering, this custom method takes control of how the row HTML is generated
+- *Calls *render_to_string()*: This Django utility function renders the template *key_pairs/expandable_row.html* and returns the resulting HTML as a string
+- *Passes context* *"row": self*: The row object itself (which contains the keypair data in *self.datum*) is passed to the template for rendering
+
+: X
+: ipython openstack_dashboard/dashboards/project/key_pairs/tables.py
+:
+: class ExpandableKeyPairRow(tables.Row):
+:     """Custom row class for expandable key pair rows with chevron functionality."""
+:     def render(self):
+:         return render_to_string("key_pairs/expandable_row.html",
+:                                 {"row": self})
+
+** Table Configuration
+*row_class = ExpandableKeyPairRow*
+- this tells Django Horizon's DataTable framework to use the custom *ExpandableKeyPairRow* class instead of the default *tables.Row* class when rendering each row in the table
+- *Applies to all rows*: Every key pair in the table will now be rendered using the custom row class
+
+: X
+: ipython openstack_dashboard/dashboards/project/key_pairs/tables.py
+:
+: class KeyPairsTable(tables.DataTable):
+:     # ... column definitions ...
+:
+:     class Meta(object):
+:         name = "keypairs"
+:         verbose_name = _("Key Pairs")
+:         row_class = ExpandableKeyPairRow                                     # ← NEW LINE
+:         table_actions = (CreateLinkNG, ImportKeyPair, DeleteKeyPairs,
+:                          KeypairsFilterAction,)
+:         row_actions = (DeleteKeyPairs,)
+
+** Custom Template
+*Line 1*: include *horizon/common/_data_table_row.html*
+- Includes Horizon's standard data table row template
+- This renders the *normal row* with all the columns: checkbox, Key Pair Name, Key Pair Type, Fingerprint, and Actions
+- This is the first row you see
+: | [ ] | test1 | ssh | 83:9d:ce:... | |
+
+: X
+: ishell openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
+:
+:  1  {% include "horizon/common/_data_table_row.html" %}
+:  2  <tr><td colspan="5">
+:  3           {{ row.datum }}
+:  4           {{ row.datum.name }} </td></tr>
+
+#+BEGIN_EXAMPLE
+Q: What is a <tr> element?
+#+END_EXAMPLE
+
+*Lines 2-4*: Additional *<tr>* element
+Creates a *second row* immediately after the normal row
+: `<td colspan="5">`: Spans across all 5 columns of the table (checkbox + 4 data columns)
+: `{{ row.datum }}`: Displays the string representation of the keypair object (e.g., `<Keypair: test1>`)
+: `{{ row.datum.name }}`: Displays the keypair name (e.g., `test1`)
+
+* How It All Works Together
+
+** The Rendering Flow
+         
+: +------------------------------------------------+
+: |User navigates to Project → Compute → Key Pairs |
+: +------------------------------------------------+
+:               |                                  
+:               V                                                      
+: +--------------------------------------------------------------------+
+: |Django loads KeyPairsTable and sees row_class = ExpandableKeyPairRow|
+: +--------------------------------------------------------------------+
+:               |                                                      
+:               V                                                      
+: +---------------------------------------------+                      
+: |For each keypair in the database:            |                      
+: |- Horizon calls ExpandableKeyPairRow.render()|                      
+: +---------------------------------------------+                      
+:               |                                                      
+:               V                                                      
+: +--------------------------------------------------+                 
+: |render() method loads expandable_row.html template|                 
+: +--------------------------------------------------+                 
+:               |                                                      
+:               V                                                      
+: +------------------------------------------+--------------------+
+: |Template executes:                        |                    |
+: |                                          |                    |
+: |a. {% include "_data_table_row.html" %}   | Renders normal row |
+: |b. <tr><td colspan="5">...</td></tr>      | Adds detail row    |
+: +------------------------------------------+--------------------+
+:               |                                                      
+:               V                                                      
+: +--------------------------------------------------------+           
+: |Final HTML output contains TWO <tr> elements per keypair|           
+: +--------------------------------------------------------+           
+                                       
+Visual Result Explanation              
+For a keypair named *test1*, the HTML structure becomes:
+                                       
+#+BEGIN_EXAMPLE                        
+Q: What does the HTML structure look like from the browser?
+#+END_EXAMPLE                          
+                                       
+This shows the new row:                
+: <tr><td colspan="5">...</td></tr>
+[[file:../images/horizon_ui_programming_101_key_pairs_new_row.png]]
+
+Here is what happens when clicking *<table>*
+[[file:../images/horizon_ui_programming_101_key_pairs_new_row_click_table.png]]
+
+
+** Here is where we can see where the template code gets injected
+This produces the display pattern you see:
+
+: | [ ] | test1                          | ssh | 83:9d:ce:... | Actions |
+: |     | <Keypair: test1> test1         |     |              |         |
+
+: <!-- First row: Normal table row (from included template) -->
+: <tr class="...">
+:     <td><input type="checkbox" ...></td>
+:     <td><a href="...">test1</a></td>
+:     <td>ssh</td>
+:     <td>83:9d:ce:a7:b9:10:91:8d:8c:9a:b6:19:16:83:dd:a1</td>
+:     <td><!-- Actions --></td>
+: </tr>
+: 
+: <!-- Second row: Expandable detail row (from custom template) -->
+: <tr>
+:     <td colspan="5">
+:         <Keypair: test1> test1
+:     </td>
+: </tr>
+
+[[file:../images/horizon_ui_programming_101_key_pairs_show_row.png]]
+
+* Key Concepts
+
+** Django Horizon's DataTable Framework
+- *DataTable*: Container that manages table structure, columns, and rows
+- *Row Class*: Defines how each row is rendered
+- *Default Behavior*: Uses *tables.Row* which renders a single *<tr>* with columns
+- *Custom Behavior*: By setting *row_class*, you can override rendering logic
+
+** Template Inheritance and Inclusion
+
+: {% include %}: Inserts another template's content at that point
+- *Purpose*: Reuse the standard row rendering, then add custom content
+- *Result*: Each keypair gets the normal row PLUS the additional detail row
+
+** Context Variables in Template
+- *row*: The ExpandableKeyPairRow object passed from the *render()* method
+- *row.datum*: The actual keypair object from the OpenStack API
+- *row.datum.name*: The name attribute of the keypair object
+
+** HTML colspan Attribute
+- *colspan="5"*: Makes the single *<td>* span across all 5 columns
+- *Purpose*: Creates a full-width detail row beneath the normal row
+- *Visual Effect*: The detail information appears to "expand" below the main row
+
+* Why This Approach?
+** Advantages
+1. *Non-invasive*: Reuses existing row rendering via *include*
+2. *Maintainable*: Changes to standard row template automatically apply
+3. *Flexible*: Can add any additional content in the detail row
+4. *Framework-compliant*: Uses Django Horizon's designed extension point (*row_class*)
+
+** Design Pattern
+This follows the *Template Method Pattern*:
+- The framework (Django Horizon) defines the structure (DataTable)
+- The developer overrides specific methods (render()) to customize behavior
+- The result integrates seamlessly with the existing system
