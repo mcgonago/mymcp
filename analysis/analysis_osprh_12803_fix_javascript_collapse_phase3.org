@@ -1,0 +1,762 @@
+#+TITLE: Analysis: OSPRH-12803 Chevron Icon Rotation - Phase 3
+#+AUTHOR: AI Assistant
+#+DATE: 2025-11-11
+#+DESCRIPTION: Implementing automatic chevron rotation using Bootstrap's native .collapsed class
+
+* Context
+
+** Review URL
+https://review.opendev.org/c/openstack/horizon/+/966349
+
+** Owen McGonagle's Comment (Patchset 7)
+Location: openstack_dashboard/dashboards/project/key_pairs/tables.py#b125
+
+Comment: "we now need to get it so that chevron rotates."
+
+** Requirements
+- Chevron points RIGHT by default (►) when row is collapsed
+- Chevron points DOWN (▼) when row is expanded
+- Solution should leverage existing Horizon/Bootstrap features
+- Minimize custom code
+- No custom JavaScript if possible
+
+* Problem Analysis
+
+** Current State (After Phase 2)
+
+After Phase 2 refactoring, we have:
+1. Bootstrap's native collapse working via ~data-toggle="collapse"~
+2. ~data-target="#{{ chevron_id }}"~ properly targeting the collapsible div
+3. Bootstrap automatically managing ~aria-expanded~ attribute
+4. But: Chevron icon DOES NOT rotate - stays as ~fa-chevron-right~ in both states
+
+** What We Need
+
+Visual feedback for users:
+- Collapsed state: ► (~fa-chevron-right~)
+- Expanded state: ▼ (rotated chevron or ~fa-chevron-down~)
+
+** The Key Question
+
+"Is there a feature somewhere that gives us this for free?"
+
+Answer: YES! Bootstrap provides the mechanism, and Horizon already uses it.
+
+* Discovery: Horizon's Existing Pattern
+
+** Found in ~horizon/templates/horizon/_sidebar.html~
+
+The sidebar navigation already implements collapsible menus with rotating chevrons!
+
+*** HTML Structure
+#+BEGIN_SRC django
+<a data-toggle="collapse"
+   data-parent="#sidebar-accordion"
+   data-target="#sidebar-accordion-{{ dashboard.slug }}"
+   aria-controls="sidebar-accordion-{{ dashboard.slug }}"
+   {% if current.slug != dashboard.slug %}
+     class="collapsed"
+   {% endif %}>
+  {{ dashboard.name }}
+  <span class="openstack-toggle pull-right fa"></span>
+</a>
+#+END_SRC
+
+Key elements:
+1. Anchor has ~data-toggle="collapse"~ and ~data-target~
+2. Anchor has ~class="collapsed"~ for initially collapsed items
+3. Icon is a ~<span>~ with classes: ~openstack-toggle pull-right fa~
+
+*** CSS Implementation
+Found in ~openstack_dashboard/static/dashboard/scss/components/_sidebar.scss~:
+
+#+BEGIN_SRC scss
+.openstack-toggle.fa {
+  @include transition(transform 0.3s ease 0s);
+  @extend .fa-chevron-down;  // Default icon points DOWN
+}
+
+// Rotate the arrow toggle for closed panels
+.collapsed > .openstack-toggle.fa {
+  @include rotate(-90deg);  // Rotate -90deg = points RIGHT
+}
+#+END_SRC
+
+** How Bootstrap Makes This Work
+
+*** Bootstrap's Automatic .collapsed Class Management
+
+This is the KEY insight:
+
+When you use ~data-toggle="collapse"~, Bootstrap's JavaScript AUTOMATICALLY:
+1. Adds ~.collapsed~ class to the trigger when target is collapsed
+2. Removes ~.collapsed~ class when target is expanded
+3. Updates this class EVERY time the collapse state changes
+
+This happens automatically - NO custom JavaScript needed!
+
+*** The CSS Selector Pattern
+
+The sidebar uses: ~.collapsed > .openstack-toggle.fa~
+
+Breakdown:
+- ~.collapsed~ = the trigger element (when target is collapsed)
+- ~>~ = direct child selector
+- ~.openstack-toggle.fa~ = the icon span inside the trigger
+
+When collapsed: CSS applies rotation
+When expanded: CSS rotation doesn't apply, icon returns to default
+
+** Why This Pattern Is Perfect
+
+1. *Zero Custom JavaScript*
+   - Bootstrap handles ALL the class toggling
+   - We only write CSS
+
+2. *Smooth Animations*
+   - CSS transitions animate the rotation
+   - GPU-accelerated transforms
+
+3. *Already Used in Horizon*
+   - Proven pattern from the sidebar
+   - Consistent with Horizon's design patterns
+   - Maintainers are familiar with this approach
+
+4. *Accessible*
+   - Bootstrap already manages ~aria-expanded~
+   - Screen readers get proper state information
+
+* Proposed Solution
+
+** Approach
+
+Adapt the sidebar pattern for our key pairs table:
+
+1. Update ~_chevron_column.html~ to add ~class="collapsed"~ initially
+2. Update icon structure to match sidebar pattern
+3. Add CSS rules to rotate the icon based on ~.collapsed~ class
+
+** Implementation Details
+
+*** Change 1: Update _chevron_column.html
+
+Current:
+#+BEGIN_SRC django
+{% load i18n %}
+<a role="button"
+   class="chevron-toggle"
+   data-toggle="collapse"
+   data-target="#{{ chevron_id }}"
+   aria-expanded="false"
+   aria-controls="{{ chevron_id }}"
+   aria-label="{% trans 'Toggle key pair details' %}">
+  <span class="fa fa-chevron-right"></span>
+</a>
+#+END_SRC
+
+Proposed:
+#+BEGIN_SRC django
+{% load i18n %}
+<a role="button"
+   class="chevron-toggle collapsed"
+   data-toggle="collapse"
+   data-target="#{{ chevron_id }}"
+   aria-expanded="false"
+   aria-controls="{{ chevron_id }}"
+   aria-label="{% trans 'Toggle key pair details' %}">
+  <span class="fa fa-chevron-right"></span>
+</a>
+#+END_SRC
+
+Changes:
+- Add ~collapsed~ to the anchor's class attribute
+- This tells Bootstrap the initial state is collapsed
+- Bootstrap will toggle this class automatically on click
+
+*** Change 2: Add CSS for Icon Rotation
+
+We need to add CSS rules. The question is WHERE to add them.
+
+**** Option A: Inline <style> in expandable_row.html (Quick Fix)
+
+#+BEGIN_SRC django
+<style>
+/* Chevron rotation for key pair expandable rows */
+.chevron-toggle {
+  transition: all 0.3s ease;
+}
+
+.chevron-toggle .fa-chevron-right {
+  transition: transform 0.3s ease;
+}
+
+.chevron-toggle:not(.collapsed) .fa-chevron-right {
+  transform: rotate(90deg);
+}
+</style>
+#+END_SRC
+
+Pros:
+- Quick to implement
+- Self-contained in template
+- No need to find the right stylesheet
+
+Cons:
+- Not ideal for production (mixing style with markup)
+- Repeated on every page load
+- Harder to maintain long-term
+
+**** Option B: Add to Horizon's Key Pairs Stylesheet (Best Practice)
+
+Location: ~openstack_dashboard/dashboards/project/static/dashboard/project/key_pairs/~
+
+Create or update: ~key_pairs.scss~ or ~key_pairs.css~
+
+#+BEGIN_SRC scss
+/* Key pairs table expandable row chevron toggle */
+.chevron-toggle {
+  transition: all 0.3s ease;
+
+  .fa-chevron-right {
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+
+  /* Rotate chevron when row is expanded (not collapsed) */
+  &:not(.collapsed) .fa-chevron-right {
+    transform: rotate(90deg);
+  }
+}
+#+END_SRC
+
+Or in plain CSS:
+#+BEGIN_SRC css
+/* Key pairs table expandable row chevron toggle */
+.chevron-toggle {
+  transition: all 0.3s ease;
+}
+
+.chevron-toggle .fa-chevron-right {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+/* Rotate chevron when row is expanded (not collapsed) */
+.chevron-toggle:not(.collapsed) .fa-chevron-right {
+  transform: rotate(90deg);
+}
+#+END_SRC
+
+Pros:
+- Follows Horizon conventions
+- Clean separation of concerns
+- Can be minified/cached by Django's static file system
+- Professional approach
+
+Cons:
+- Need to ensure stylesheet is loaded
+- Need to run Django collectstatic after changes
+- Slightly more complex deployment
+
+**** Option C: Extend Horizon's Base Table CSS (Most General)
+
+Location: ~horizon/static/horizon/css/~ or appropriate base stylesheet
+
+This would make the pattern available for ANY table in Horizon.
+
+Pros:
+- Reusable across Horizon
+- Could benefit other developers
+- Most maintainable long-term
+
+Cons:
+- Requires coordination with Horizon core team
+- Out of scope for this specific bug fix
+- May require separate patch
+
+**** Recommendation: Start with Option B
+
+For this patch:
+1. Use Option B (project-specific stylesheet)
+2. If stylesheet doesn't exist, create it
+3. Ensure it's referenced in the key pairs template
+
+If Horizon maintainers want to generalize it later, they can move it to base styles.
+
+** Complete Implementation Plan
+
+*** Step 1: Add .collapsed Class to Template
+
+File: ~_chevron_column.html~
+
+Change line 3 from:
+: class="chevron-toggle"
+
+To:
+: class="chevron-toggle collapsed"
+
+*** Step 2: Create/Update Stylesheet
+
+Check if exists:
+: openstack_dashboard/dashboards/project/static/dashboard/project/key_pairs/key_pairs.css
+
+If not, create it with:
+#+BEGIN_SRC css
+/**
+ * Key Pairs Table Styles
+ * Styling for expandable key pair rows
+ */
+
+/* Chevron toggle animation */
+.chevron-toggle {
+  transition: all 0.3s ease;
+}
+
+.chevron-toggle .fa-chevron-right {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+/* Rotate chevron 90 degrees when row is expanded */
+.chevron-toggle:not(.collapsed) .fa-chevron-right {
+  transform: rotate(90deg);
+}
+#+END_SRC
+
+*** Step 3: Ensure Stylesheet is Loaded
+
+If we created a new CSS file, we need to ensure it's loaded.
+
+Check if there's a template like:
+: openstack_dashboard/dashboards/project/templates/key_pairs/index.html
+
+And add to the ~{% block css %}~ section:
+#+BEGIN_SRC django
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'dashboard/project/key_pairs/key_pairs.css' %}">
+{% endblock %}
+#+END_SRC
+
+Or check if Horizon automatically discovers static files from the app directory.
+
+*** Step 4: Test
+
+1. Run Django collectstatic: ~python manage.py collectstatic --noinput~
+2. Restart Horizon dev server
+3. Navigate to Key Pairs page
+4. Click chevron:
+   - Should rotate from ► to ▼ (90-degree rotation)
+   - Should animate smoothly (0.3s transition)
+   - Should rotate back when clicked again
+
+* Technical Deep Dive
+
+** Bootstrap's .collapsed Class Behavior
+
+From Bootstrap 3.4 documentation and source code:
+
+When ~data-toggle="collapse"~ is used, Bootstrap's collapse plugin:
+
+1. *On initialization:*
+   - Checks if target has ~.in~ class (visible)
+   - If target doesn't have ~.in~, adds ~.collapsed~ to trigger
+   - If target has ~.in~, doesn't add ~.collapsed~
+
+2. *On toggle (click):*
+   - If expanding: removes ~.collapsed~ from trigger
+   - If collapsing: adds ~.collapsed~ to trigger
+
+3. *Events fired:*
+   - ~show.bs.collapse~ - fires when starting to expand
+   - ~shown.bs.collapse~ - fires when fully expanded
+   - ~hide.bs.collapse~ - fires when starting to collapse
+   - ~hidden.bs.collapse~ - fires when fully collapsed
+
+4. *ARIA updates:*
+   - Bootstrap also updates ~aria-expanded="true/false"~
+   - This happens automatically alongside ~.collapsed~ class
+
+** Why We Use :not(.collapsed) Instead of Just .collapsed
+
+Looking at the sidebar, they use:
+: .collapsed > .openstack-toggle.fa { rotate(-90deg); }
+
+Why? Because their default icon is ~fa-chevron-down~ (▼):
+- When expanded (no ~.collapsed~): default ▼ (points down)
+- When collapsed (~.collapsed~): rotate -90deg → ► (points right)
+
+For our case, default icon is ~fa-chevron-right~ (►):
+- When collapsed (~.collapsed~): default ► (points right) - no rotation needed
+- When expanded (no ~.collapsed~): rotate 90deg → ▼ (points down)
+
+So we use ~:not(.collapsed)~ to apply rotation when expanded.
+
+** CSS Transform vs Changing Icon Class
+
+Two approaches to rotate chevron:
+
+*** Approach 1: CSS Transform (RECOMMENDED)
+#+BEGIN_SRC css
+.chevron-toggle:not(.collapsed) .fa-chevron-right {
+  transform: rotate(90deg);
+}
+#+END_SRC
+
+Pros:
+- Smooth CSS animations
+- GPU-accelerated (better performance)
+- No DOM manipulation
+- No JavaScript needed
+
+Cons:
+- Icon is still technically ~fa-chevron-right~, just rotated
+- Screen readers don't know about rotation
+
+*** Approach 2: Toggle Icon Classes with JavaScript
+#+BEGIN_SRC javascript
+$(document).on('shown.bs.collapse', '.collapse', function() {
+  $('[data-target="#' + this.id + '"] .fa')
+    .removeClass('fa-chevron-right')
+    .addClass('fa-chevron-down');
+});
+
+$(document).on('hidden.bs.collapse', '.collapse', function() {
+  $('[data-target="#' + this.id + '"] .fa')
+    .removeClass('fa-chevron-down')
+    .addClass('fa-chevron-right');
+});
+#+END_SRC
+
+Pros:
+- Icon class matches visual state
+- More semantic
+
+Cons:
+- Requires JavaScript
+- More complex
+- DOM manipulation overhead
+- Harder to maintain
+
+** Recommendation: Use Approach 1 (CSS Transform)
+
+Reasons:
+1. Matches Horizon's sidebar implementation
+2. Zero JavaScript required
+3. Better performance
+4. Simpler to maintain
+5. Horizon already uses this pattern
+
+* Alternative Considered: Using aria-expanded Instead of .collapsed
+
+Could we use ~aria-expanded~ attribute instead of ~.collapsed~ class?
+
+#+BEGIN_SRC css
+.chevron-toggle[aria-expanded="true"] .fa-chevron-right {
+  transform: rotate(90deg);
+}
+#+END_SRC
+
+This would work! But:
+
+1. *Bootstrap uses .collapsed as the primary mechanism*
+   - ~.collapsed~ is added/removed first
+   - ~aria-expanded~ is secondary (for accessibility)
+
+2. *Horizon's pattern uses .collapsed*
+   - Consistency with existing codebase
+   - Proven pattern
+
+3. *Attribute selectors are slightly slower*
+   - Class selectors are faster than attribute selectors
+   - Negligible in practice, but why not use the faster one?
+
+**Verdict:** Stick with ~.collapsed~ class for consistency with Horizon.
+
+* Files to Modify
+
+** Required Changes
+
+1. ~openstack_dashboard/dashboards/project/templates/key_pairs/_chevron_column.html~
+   - Add ~collapsed~ to anchor's class attribute
+
+2. ~openstack_dashboard/dashboards/project/static/dashboard/project/key_pairs/key_pairs.css~ (create if needed)
+   - Add CSS rules for chevron rotation
+
+** Optional Changes
+
+3. ~openstack_dashboard/dashboards/project/templates/key_pairs/index.html~ (if needed)
+   - Add stylesheet reference if not auto-loaded
+
+* Testing Checklist
+
+After implementation:
+
+- [ ] Chevron starts pointing RIGHT (►) when page loads
+- [ ] Clicking chevron expands row AND rotates chevron to DOWN (▼)
+- [ ] Rotation is smooth (animated transition)
+- [ ] Clicking again collapses row AND rotates chevron back to RIGHT (►)
+- [ ] Each row's chevron works independently
+- [ ] Multiple rows can be expanded simultaneously
+- [ ] Chevron rotation works in all supported browsers
+- [ ] No JavaScript errors in console
+- [ ] ~aria-expanded~ still updates correctly
+- [ ] Screen readers can still detect expanded/collapsed state
+- [ ] Keyboard navigation still works (Tab + Enter)
+
+* Benefits of This Solution
+
+1. *Zero Custom JavaScript*
+   - Leverages Bootstrap's automatic ~.collapsed~ class management
+   - Only requires CSS
+
+2. *Follows Horizon Conventions*
+   - Uses exact same pattern as sidebar navigation
+   - Maintainers immediately recognize this pattern
+
+3. *Clean and Maintainable*
+   - CSS is simple and self-documenting
+   - Easy to modify animation speed or rotation angle
+
+4. *Performant*
+   - CSS transforms are GPU-accelerated
+   - No JavaScript execution overhead
+   - Smooth 60fps animations
+
+5. *Accessible*
+   - Doesn't interfere with Bootstrap's ARIA management
+   - Visual feedback supplements, doesn't replace semantic attributes
+
+6. *Future-Proof*
+   - Uses standard CSS features
+   - Compatible with future Bootstrap versions
+   - No fragile JavaScript dependencies
+
+* Risk Assessment
+
+** Potential Issues
+
+*** Issue 1: Stylesheet Not Loading
+
+*Problem:* CSS file created but not loaded on page.
+
+*Symptoms:* Chevron appears but doesn't rotate.
+
+*Solution:*
+- Check browser DevTools → Network tab
+- Verify CSS file is loaded
+- Check for 404 errors
+- May need to add explicit ~<link>~ tag
+- Run ~python manage.py collectstatic~
+- Clear browser cache
+
+*** Issue 2: CSS Specificity Conflicts
+
+*Problem:* Another CSS rule overriding our rotation.
+
+*Symptoms:* Chevron doesn't rotate or rotates incorrectly.
+
+*Solution:*
+- Use browser DevTools → Inspect element
+- Check computed styles
+- Identify conflicting rule
+- Increase specificity if needed:
+  : table.datatable .chevron-toggle:not(.collapsed) .fa-chevron-right
+
+*** Issue 3: Transform Not Supported
+
+*Problem:* Old browsers don't support CSS transforms.
+
+*Symptoms:* Chevron doesn't rotate in IE9 or older.
+
+*Solution:*
+- Check Horizon's browser support requirements
+- If IE9 support needed, add vendor prefixes:
+#+BEGIN_SRC css
+.chevron-toggle:not(.collapsed) .fa-chevron-right {
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+#+END_SRC
+
+*** Issue 4: Icon Appears Blurry After Rotation
+
+*Problem:* Rotated icon looks blurry or pixelated.
+
+*Symptoms:* Visual quality degradation after rotation.
+
+*Solution:*
+- Force hardware acceleration:
+#+BEGIN_SRC css
+.chevron-toggle .fa-chevron-right {
+  transform: translateZ(0);  /* Force GPU acceleration */
+}
+#+END_SRC
+
+** Mitigation Strategies
+
+All of these issues are well-known CSS challenges with documented solutions.
+The benefits far outweigh the minimal risk.
+
+* Commit Message Suggestion
+
+#+BEGIN_SRC text
+Add automatic chevron rotation for key pair expandable rows
+
+Implement chevron icon rotation using Bootstrap's automatic .collapsed
+class management and CSS transforms, following the pattern already
+established in Horizon's sidebar navigation.
+
+Changes:
+- Add 'collapsed' class to chevron toggle anchor initially
+- Bootstrap automatically toggles this class on expand/collapse
+- CSS rule rotates chevron 90 degrees when row is expanded
+- Uses CSS transforms for smooth, GPU-accelerated animation
+
+The chevron now:
+- Points RIGHT (►) when row is collapsed
+- Points DOWN (▼) when row is expanded
+- Rotates smoothly with 0.3s CSS transition
+
+This solution:
+- Requires zero custom JavaScript
+- Uses existing Horizon/Bootstrap patterns
+- Follows Horizon's sidebar implementation
+- Provides smooth, performant animations
+- Maintains full accessibility
+
+Addresses: Owen McGonagle's feedback on Patchset 7
+Partial-Bug: #OSPRH-12803
+#+END_SRC
+
+* Sources and References
+
+** Bootstrap 3.4 Documentation
+
+1. *Collapse JavaScript Plugin*
+   URL: https://getbootstrap.com/docs/3.4/javascript/#collapse
+   - Core documentation for data-toggle="collapse"
+   - Explains automatic .collapsed class management
+   - Documents events and methods
+
+2. *Collapse via Data Attributes*
+   URL: https://getbootstrap.com/docs/3.4/javascript/#collapse-usage
+   - Shows data-toggle and data-target usage
+   - Explains initial state configuration
+
+3. *Collapse Options*
+   URL: https://getbootstrap.com/docs/3.4/javascript/#collapse-options
+   - Documents available configuration options
+   - parent, toggle, etc.
+
+** Horizon Codebase
+
+1. *Sidebar Navigation Template*
+   File: ~horizon/templates/horizon/_sidebar.html~
+   - Existing implementation of collapsible navigation
+   - Uses data-toggle="collapse" with rotating chevron
+   - Proven pattern we're adapting
+
+2. *Sidebar Styles*
+   File: ~openstack_dashboard/static/dashboard/scss/components/_sidebar.scss~
+   Lines: 60-69
+   - CSS implementation of chevron rotation
+   - Uses .collapsed > .openstack-toggle.fa selector
+   - rotate(-90deg) mixin for rotation
+   - transition for smooth animation
+
+3. *DataTable Documentation*
+   URL: https://docs.openstack.org/horizon/latest/contributor/topics/tables.html
+   - General context about Horizon tables
+   - Row and column classes
+
+** CSS Transform References
+
+1. *MDN: CSS transform Property*
+   URL: https://developer.mozilla.org/en-US/docs/Web/CSS/transform
+   - Complete reference for CSS transforms
+   - rotate() function documentation
+   - Browser compatibility information
+
+2. *MDN: CSS Transitions*
+   URL: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions
+   - Explains CSS transition property
+   - How to animate transforms smoothly
+
+3. *CSS Tricks: rotate()*
+   URL: https://css-tricks.com/almanac/properties/t/transform/
+   - Practical examples of CSS rotation
+   - Common patterns and best practices
+
+** Bootstrap Class Management
+
+1. *Bootstrap Collapse Source Code*
+   URL: https://github.com/twbs/bootstrap/blob/v3.4.1/js/collapse.js
+   Lines: 70-75, 130-135
+   - Shows how Bootstrap adds/removes .collapsed class
+   - Confirms automatic management
+   - No custom code needed
+
+2. *Stack Overflow: Bootstrap Collapse Collapsed Class*
+   URL: https://stackoverflow.com/questions/18325779/bootstrap-3-collapse-show-state-with-chevron-icon
+   - Community discussion of this exact pattern
+   - Multiple implementations shown
+   - Confirms this is standard approach
+
+** Browser Compatibility
+
+1. *Can I Use: CSS Transforms*
+   URL: https://caniuse.com/transforms2d
+   - 97.7% global browser support
+   - Supported in all modern browsers
+   - IE9+ support
+
+2. *Can I Use: CSS Transitions*
+   URL: https://caniuse.com/css-transitions
+   - 97.9% global browser support
+   - Smooth animation support
+   - Graceful degradation in old browsers
+
+** Font Awesome Icons
+
+1. *Font Awesome 4.x Chevrons*
+   URL: https://fontawesome.com/v4/icons/
+   - fa-chevron-right: &#xf054; (►)
+   - fa-chevron-down: &#xf078; (▼)
+   - Available in Horizon by default
+
+** Additional Reading
+
+1. *CSS Transform Performance*
+   URL: https://www.html5rocks.com/en/tutorials/speed/high-performance-animations/
+   - Why transforms are faster than other animations
+   - GPU acceleration explanation
+
+2. *Bootstrap Events for Accessibility*
+   URL: https://getbootstrap.com/docs/3.4/javascript/#collapse-events
+   - show.bs.collapse, shown.bs.collapse events
+   - hide.bs.collapse, hidden.bs.collapse events
+   - Could be used for future enhancements
+
+* Conclusion
+
+The chevron rotation problem has a clean, simple solution using Bootstrap's
+built-in ~.collapsed~ class management combined with CSS transforms.
+
+This approach:
+- ✅ Requires NO custom JavaScript
+- ✅ Uses patterns already in Horizon's codebase
+- ✅ Provides smooth, performant animations
+- ✅ Maintains full accessibility
+- ✅ Is easy to understand and maintain
+
+The implementation is straightforward:
+1. Add ~collapsed~ class to the anchor element
+2. Write 10 lines of CSS to rotate based on that class
+3. Done!
+
+Bootstrap handles all the complexity of toggling the ~.collapsed~ class
+automatically - we just leverage it with CSS.
+
