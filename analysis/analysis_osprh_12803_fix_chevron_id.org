@@ -1,0 +1,1097 @@
+#+TITLE: Analysis: OSPRH-12803 - Fixing Unique chevron_id Generation
+#+AUTHOR: Analysis of chevron_id Uniqueness Problem
+#+DATE: 2025-11-10
+#+OPTIONS: toc:2 num:t
+
+* Executive Summary
+
+The current implementation of ~ExpandableKeyPairColumn.get_data()~ generates the same ~chevron_id~ for ALL rows in the table, causing only the first row's expand/collapse functionality to work. This is because ~self.creation_counter~ is a class-level attribute that identifies the column instance, not individual rows.
+
+** Critical Problem
+Every key pair row receives ~chevron_id = "keypairs_table_chevron1"~, violating HTML ID uniqueness and breaking Bootstrap collapse for all rows except the first.
+
+** Root Cause
+The ~datum~ (row data) is not being used in ID generation. The code only uses table-level and column-level identifiers.
+
+** Solution
+Use row-specific data from ~datum~ (e.g., keypair name) to generate unique IDs for each row.
+
+* Current Implementation Analysis
+
+** The Problematic Code
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    def get_data(self, datum):
+        chevron_id = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+** What Each Component Means
+
+*** ~self.table.name~
+- Type: String
+- Value: ~"keypairs"~ (from ~KeyPairsTable.Meta.name~)
+- Scope: *Table-level* - same for all rows
+- Purpose: Identifies which table this column belongs to
+
+*** ~self.creation_counter~
+- Type: Integer
+- Value: Sequential counter assigned when column is created
+- Scope: *Column-level* - same for all rows
+- Purpose: Distinguishes between multiple column instances in the same table
+- Increments: Only when a new Column class instance is created
+
+*** ~datum~
+- Type: Object (Keypair instance from OpenStack API)
+- Value: The actual keypair data for this specific row
+- Scope: *Row-level* - unique for each row
+- Available attributes:
+  - ~datum.name~ - keypair name (e.g., "test1", "test2", "test3")
+  - ~datum.fingerprint~ - unique fingerprint
+  - ~datum.type~ - keypair type (e.g., "ssh")
+  - ~datum.public_key~ - public key (if available)
+
+** Example with 3 Key Pairs
+
+Given a table with 3 keypairs:
+1. test1
+2. test2  
+3. test3
+
+*** Current Behavior (Broken)
+
+#+BEGIN_SRC text
+Table: KeyPairsTable (name = "keypairs")
+Column: chevron (creation_counter = 1)
+
+Row 1 (datum.name = "test1"):
+  chevron_id = "keypairs_table_chevron1"
+  
+Row 2 (datum.name = "test2"):
+  chevron_id = "keypairs_table_chevron1"  ← DUPLICATE!
+  
+Row 3 (datum.name = "test3"):
+  chevron_id = "keypairs_table_chevron1"  ← DUPLICATE!
+#+END_SRC
+
+*** Generated HTML (Broken)
+
+#+BEGIN_SRC html
+<!-- Row 1 -->
+<tr>
+  <td><a href="#keypairs_table_chevron1">▶</a></td>
+  <td>test1</td>
+  ...
+</tr>
+<tr id="keypairs_table_chevron1">  <!-- Detail row 1 -->
+  <td colspan="5">Details for test1</td>
+</tr>
+
+<!-- Row 2 -->
+<tr>
+  <td><a href="#keypairs_table_chevron1">▶</a></td>  <!-- WRONG! -->
+  <td>test2</td>
+  ...
+</tr>
+<tr id="keypairs_table_chevron1">  <!-- DUPLICATE ID! -->
+  <td colspan="5">Details for test2</td>
+</tr>
+
+<!-- Row 3 -->
+<tr>
+  <td><a href="#keypairs_table_chevron1">▶</a></td>  <!-- WRONG! -->
+  <td>test3</td>
+  ...
+</tr>
+<tr id="keypairs_table_chevron1">  <!-- DUPLICATE ID! -->
+  <td colspan="5">Details for test3</td>
+</tr>
+#+END_SRC
+
+*** What Happens When User Clicks
+
+#+BEGIN_SRC text
+User clicks chevron on row 2:
+  1. Browser finds <a href="#keypairs_table_chevron1">
+  2. Bootstrap looks for id="keypairs_table_chevron1"
+  3. Bootstrap finds the FIRST matching element (row 1's detail)
+  4. Bootstrap toggles row 1's detail
+  5. Row 2's detail never opens!
+
+Result: Clicking any chevron only toggles row 1's details
+#+END_SRC
+
+* Why This Approach Doesn't Work
+
+** Problem 1: HTML ID Uniqueness Violation
+
+*** HTML Specification Requirement
+The HTML spec requires that ~id~ attributes be unique within a document:
+
+#+BEGIN_QUOTE
+"The id attribute specifies a unique id for an HTML element. 
+The value must be unique within the HTML document."
+- W3C HTML5 Specification
+#+END_QUOTE
+
+*** Current Violation
+#+BEGIN_SRC html
+<tr id="keypairs_table_chevron1">...</tr>
+<tr id="keypairs_table_chevron1">...</tr>  <!-- INVALID! -->
+<tr id="keypairs_table_chevron1">...</tr>  <!-- INVALID! -->
+#+END_SRC
+
+*** Consequences
+1. *Browser behavior undefined* - Which element should ~getElementById()~ return?
+2. *CSS selectors break* - ~#keypairs_table_chevron1~ matches multiple elements
+3. *JavaScript fails* - Bootstrap collapse only finds the first match
+4. *Accessibility issues* - Screen readers get confused by duplicate IDs
+5. *HTML validation fails* - W3C validator reports errors
+
+** Problem 2: Bootstrap Collapse Mechanism Failure
+
+*** How Bootstrap Collapse Works
+
+#+BEGIN_SRC javascript
+// Bootstrap's collapse logic (simplified)
+$('[data-toggle="collapse"]').on('click', function() {
+  var target = $(this).attr('href');  // e.g., "#keypairs_table_chevron1"
+  var element = $(target);             // jQuery selector
+  element.collapse('toggle');          // Toggle visibility
+});
+#+END_SRC
+
+*** What jQuery Returns
+
+#+BEGIN_SRC javascript
+// With duplicate IDs
+$('#keypairs_table_chevron1')
+// Returns: Only the FIRST element with this ID
+// Ignores: All other elements with the same ID
+#+END_SRC
+
+*** Result
+- Clicking chevron on row 1: ✅ Works (toggles row 1 detail)
+- Clicking chevron on row 2: ❌ Toggles row 1 detail (wrong!)
+- Clicking chevron on row 3: ❌ Toggles row 1 detail (wrong!)
+
+** Problem 3: Missing Row Context
+
+*** Why datum Is Not Used
+
+The current implementation ignores the most important parameter:
+
+#+BEGIN_SRC python
+def get_data(self, datum):  # ← datum has row-specific data!
+    # But we don't use it...
+    chevron_id = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+    # No reference to datum anywhere!
+#+END_SRC
+
+*** What datum Contains
+
+#+BEGIN_SRC python
+# datum is a Keypair object with attributes:
+datum.name         # "test1", "test2", "test3" - UNIQUE!
+datum.fingerprint  # "83:9d:ce:..." - UNIQUE!
+datum.type         # "ssh"
+datum.public_key   # "ssh-rsa AAAA..." - UNIQUE!
+#+END_SRC
+
+*** Why This Matters
+- ~datum.name~ is unique per keypair
+- ~datum.name~ is already used as the object ID in Horizon
+- Using ~datum.name~ would give us unique IDs per row
+
+** Problem 4: creation_counter Misunderstanding
+
+*** What creation_counter Actually Is
+
+#+BEGIN_SRC python
+class Column:
+    creation_counter = 0  # Class variable
+    
+    def __init__(self, ...):
+        # Increment global counter when column is instantiated
+        Column.creation_counter += 1
+        self.creation_counter = Column.creation_counter
+#+END_SRC
+
+*** When It's Set
+
+#+BEGIN_SRC python
+class KeyPairsTable(tables.DataTable):
+    # These run ONCE when the class is defined
+    chevron = ExpandableKeyPairColumn(...)  # creation_counter = 1
+    name = tables.Column(...)                # creation_counter = 2
+    key_type = tables.Column(...)            # creation_counter = 3
+    fingerprint = tables.Column(...)         # creation_counter = 4
+#+END_SRC
+
+*** Key Point
+- ~creation_counter~ is set when the *column is created*
+- Columns are created when the *table class is defined*
+- This happens *once* at import time
+- It does NOT increment per row!
+
+*** Lifecycle
+
+#+BEGIN_SRC text
+1. Python imports tables.py
+   └─> KeyPairsTable class is defined
+       └─> Column instances created
+           └─> creation_counter values assigned
+           
+2. User requests Key Pairs page (100 times)
+   └─> Table instance created (100 times)
+       └─> Rows rendered (100 times)
+           └─> get_data() called per row
+               └─> creation_counter value: STILL THE SAME!
+#+END_SRC
+
+* Solutions: How to Generate Unique IDs
+
+** Solution 1: Use Keypair Name (Recommended)
+
+*** Implementation
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    def get_data(self, datum):
+        # Use the keypair name to create unique ID
+        chevron_id = "%s_chevron_%s" % (self.table.name, datum.name)
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+*** Example Output
+
+#+BEGIN_SRC text
+Row 1 (datum.name = "test1"):
+  chevron_id = "keypairs_chevron_test1"
+  
+Row 2 (datum.name = "test2"):
+  chevron_id = "keypairs_chevron_test2"  ← UNIQUE!
+  
+Row 3 (datum.name = "test3"):
+  chevron_id = "keypairs_chevron_test3"  ← UNIQUE!
+#+END_SRC
+
+*** Benefits
+- ✅ Uses existing unique identifier (keypair name)
+- ✅ Simple and readable
+- ✅ Consistent with how Horizon identifies keypairs
+- ✅ No need for additional data or complexity
+- ✅ Name is already URL-safe (validated by OpenStack)
+
+*** Potential Issue: Special Characters
+
+Keypair names might contain characters invalid in HTML IDs.
+
+*** Fix: URL Encoding
+
+#+BEGIN_SRC python
+from django.utils.http import urlquote
+
+class ExpandableKeyPairColumn(tables.Column):
+    def get_data(self, datum):
+        # Encode the name to make it HTML ID-safe
+        safe_name = urlquote(datum.name, safe='')
+        chevron_id = "%s_chevron_%s" % (self.table.name, safe_name)
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+** Solution 2: Use get_object_id() Method (Most Correct)
+
+*** How Horizon Identifies Table Objects
+
+Horizon's DataTable framework has a built-in method for getting unique row IDs:
+
+#+BEGIN_SRC python
+class KeyPairsTable(tables.DataTable):
+    def get_object_id(self, keypair):
+        return parse.quote(keypair.name)
+#+END_SRC
+
+This is already implemented in the table!
+
+*** Implementation
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    def get_data(self, datum):
+        # Use the table's own method for getting unique object ID
+        object_id = self.table.get_object_id(datum)
+        chevron_id = "%s_chevron_%s" % (self.table.name, object_id)
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+*** Benefits
+- ✅ Uses Horizon's official mechanism for row identification
+- ✅ Automatically handles URL encoding (~parse.quote~)
+- ✅ Consistent with rest of Horizon framework
+- ✅ Already tested and validated
+- ✅ Respects table's own ID logic
+
+*** This Is The Best Approach
+This solution:
+1. Leverages existing table functionality
+2. Handles edge cases (special characters, encoding)
+3. Follows Horizon patterns
+4. Matches how row checkboxes are identified
+
+** Solution 3: Use Cell Rendering Context (Complex)
+
+*** The "cell id" Approach Mentioned
+
+You mentioned "expose the unique cell id" - this would require changes to Horizon's table framework itself.
+
+*** How It Would Work
+
+#+BEGIN_SRC python
+# Would require modifying Horizon's tables.py core
+class Column:
+    def get_data(self, datum, row_index=None):  # Add row_index param
+        # Now we could use row_index
+        pass
+
+# Or add cell context
+class Column:
+    def get_data(self, datum, cell=None):  # Add cell param
+        # cell.row_number or cell.unique_id
+        pass
+#+END_SRC
+
+*** Why This Is Not Necessary
+- Horizon already provides ~get_object_id()~
+- Adding row index would require framework changes
+- ~datum~ already contains unique data
+- No need to modify core Horizon code
+
+*** When This Would Be Useful
+- If datum had no unique identifiers
+- If we needed sequential numbering
+- If we were rendering static data without objects
+
+*But:* None of these apply to our case.
+
+** Solution 4: Use Fingerprint (Alternative)
+
+*** Implementation
+
+#+BEGIN_SRC python
+import hashlib
+
+class ExpandableKeyPairColumn(tables.Column):
+    def get_data(self, datum):
+        # Use fingerprint hash for ID
+        fp_hash = hashlib.md5(datum.fingerprint.encode()).hexdigest()[:8]
+        chevron_id = "%s_chevron_%s" % (self.table.name, fp_hash)
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+*** When to Use
+- If keypair names are not guaranteed unique
+- If names contain problematic characters
+- If you want shorter IDs
+
+*** Drawbacks
+- Less readable in HTML source
+- Unnecessary complexity
+- Fingerprint is already unique, but less semantic than name
+
+* Recommended Implementation
+
+** Final Code (Solution 2 - Using get_object_id)
+
+*** File: openstack_dashboard/dashboards/project/key_pairs/tables.py
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    """Column that renders a chevron toggle for expandable rows."""
+    
+    def get_data(self, datum):
+        # Use the table's get_object_id to ensure consistency with
+        # how Horizon identifies rows (already handles URL encoding)
+        object_id = self.table.get_object_id(datum)
+        chevron_id = "%s_chevron_%s" % (self.table.name, object_id)
+        
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+*** Why This Works
+
+#+BEGIN_SRC python
+# For datum.name = "test1"
+self.table.get_object_id(datum)
+# Returns: "test1" (URL-encoded via parse.quote)
+
+chevron_id = "keypairs_chevron_test1"
+#+END_SRC
+
+#+BEGIN_SRC python
+# For datum.name = "test with spaces"
+self.table.get_object_id(datum)
+# Returns: "test%20with%20spaces" (URL-encoded)
+
+chevron_id = "keypairs_chevron_test%20with%20spaces"
+#+END_SRC
+
+*** Corresponding Row Changes
+
+The ~ExpandableKeyPairRow~ also needs updating:
+
+#+BEGIN_SRC python
+class ExpandableKeyPairRow(tables.Row):
+    """Custom row class for expandable key pair rows."""
+    
+    def render(self):
+        # Use the same ID generation logic
+        object_id = self.table.get_object_id(self.datum)
+        chevron_id = "%s_chevron_%s" % (self.table.name, object_id)
+        
+        return render_to_string(
+            "key_pairs/expandable_row.html",
+            {"row": self, "chevron_id": chevron_id}
+        )
+#+END_SRC
+
+** Complete Working Example
+
+*** Generated HTML (Correct)
+
+#+BEGIN_SRC html
+<!-- Row 1: test1 -->
+<tr>
+  <td><a href="#keypairs_chevron_test1">▶</a></td>
+  <td>test1</td>
+  ...
+</tr>
+<tr id="keypairs_chevron_test1" class="collapse">
+  <td colspan="5">Details for test1</td>
+</tr>
+
+<!-- Row 2: test2 -->
+<tr>
+  <td><a href="#keypairs_chevron_test2">▶</a></td>  ← UNIQUE!
+  <td>test2</td>
+  ...
+</tr>
+<tr id="keypairs_chevron_test2" class="collapse">  ← UNIQUE!
+  <td colspan="5">Details for test2</td>
+</tr>
+
+<!-- Row 3: test3 -->
+<tr>
+  <td><a href="#keypairs_chevron_test3">▶</a></td>  ← UNIQUE!
+  <td>test3</td>
+  ...
+</tr>
+<tr id="keypairs_chevron_test3" class="collapse">  ← UNIQUE!
+  <td colspan="5">Details for test3</td>
+</tr>
+#+END_SRC
+
+*** User Interaction (Correct)
+
+#+BEGIN_SRC text
+User clicks chevron on row 1:
+  → Opens/closes details for test1 ✅
+
+User clicks chevron on row 2:
+  → Opens/closes details for test2 ✅
+
+User clicks chevron on row 3:
+  → Opens/closes details for test3 ✅
+
+Each chevron controls its own detail row!
+#+END_SRC
+
+* Technical Deep Dive: Why datum Is The Answer
+
+** Understanding the get_data() Method Signature
+
+#+BEGIN_SRC python
+class Column:
+    def get_data(self, datum):
+        """
+        Get the data to display in this column for the given datum.
+        
+        Args:
+            datum: The object for this row (e.g., Keypair instance)
+                   This is THE row-specific data!
+        
+        Returns:
+            The value to display in this cell
+        """
+        pass
+#+END_SRC
+
+** How Tables Call get_data()
+
+#+BEGIN_SRC python
+# Simplified Horizon table rendering logic
+class DataTable:
+    def render_rows(self):
+        for datum in self.data:  # For each keypair object
+            row = Row(table=self, datum=datum)
+            
+            for column in self.columns:
+                # Call get_data with THIS ROW'S datum
+                cell_value = column.get_data(datum)
+                row.add_cell(cell_value)
+#+END_SRC
+
+** The Key Insight
+
+#+BEGIN_SRC text
+Table has 3 keypairs:
+  
+Iteration 1:
+  datum = Keypair(name="test1", ...)
+  column.get_data(datum) called
+    → datum.name = "test1"
+    → chevron_id = "keypairs_chevron_test1"
+  
+Iteration 2:
+  datum = Keypair(name="test2", ...)
+  column.get_data(datum) called
+    → datum.name = "test2"  ← DIFFERENT!
+    → chevron_id = "keypairs_chevron_test2"  ← UNIQUE!
+  
+Iteration 3:
+  datum = Keypair(name="test3", ...)
+  column.get_data(datum) called
+    → datum.name = "test3"  ← DIFFERENT!
+    → chevron_id = "keypairs_chevron_test3"  ← UNIQUE!
+#+END_SRC
+
+** Why Current Code Fails
+
+#+BEGIN_SRC python
+def get_data(self, datum):
+    # Uses only class-level attributes
+    chevron_id = "%s_table_chevron%d" % (
+        self.table.name,        # "keypairs" - same for all rows
+        self.creation_counter   # 1 - same for all rows
+    )
+    # Result: Always "keypairs_table_chevron1"
+#+END_SRC
+
+** Why Fixed Code Works
+
+#+BEGIN_SRC python
+def get_data(self, datum):
+    # Uses row-specific data
+    object_id = self.table.get_object_id(datum)  # CHANGES per row!
+    chevron_id = "%s_chevron_%s" % (
+        self.table.name,  # "keypairs" - same
+        object_id         # "test1", "test2", "test3" - DIFFERENT!
+    )
+    # Result: Different ID for each row
+#+END_SRC
+
+* Testing the Fix
+
+** Test Case 1: Three Key Pairs
+
+*** Setup
+#+BEGIN_SRC python
+keypairs = [
+    Keypair(name="test1", fingerprint="83:9d:ce:..."),
+    Keypair(name="test2", fingerprint="ae:bb:b6:..."),
+    Keypair(name="test3", fingerprint="5c:7c:ff:..."),
+]
+#+END_SRC
+
+*** Expected IDs
+#+BEGIN_SRC text
+Row 1: chevron_id = "keypairs_chevron_test1"
+       detail_row_id = "keypairs_chevron_test1"
+       
+Row 2: chevron_id = "keypairs_chevron_test2"
+       detail_row_id = "keypairs_chevron_test2"
+       
+Row 3: chevron_id = "keypairs_chevron_test3"
+       detail_row_id = "keypairs_chevron_test3"
+#+END_SRC
+
+*** Verification
+#+BEGIN_SRC python
+# Check uniqueness
+ids = [f"keypairs_chevron_{kp.name}" for kp in keypairs]
+assert len(ids) == len(set(ids))  # All unique
+#+END_SRC
+
+** Test Case 2: Special Characters in Names
+
+*** Setup
+#+BEGIN_SRC python
+keypairs = [
+    Keypair(name="test 1", ...),       # Space
+    Keypair(name="test-2", ...),       # Hyphen
+    Keypair(name="test_3", ...),       # Underscore
+    Keypair(name="test.4", ...),       # Period
+]
+#+END_SRC
+
+*** Expected IDs (After URL Encoding)
+#+BEGIN_SRC text
+Row 1: "keypairs_chevron_test%201"  (space → %20)
+Row 2: "keypairs_chevron_test-2"    (hyphen OK)
+Row 3: "keypairs_chevron_test_3"    (underscore OK)
+Row 4: "keypairs_chevron_test.4"    (period OK)
+#+END_SRC
+
+*** Why URL Encoding Matters
+HTML ID attributes have restrictions:
+- Must start with a letter
+- Can contain letters, digits, hyphens, underscores, periods
+- Spaces and special characters need encoding
+
+~parse.quote()~ in ~get_object_id()~ handles this automatically.
+
+** Test Case 3: Bootstrap Collapse Functionality
+
+*** Manual Testing Steps
+
+1. *Navigate to Key Pairs page*
+   #+BEGIN_SRC bash
+   # In Horizon dashboard
+   Project → Compute → Key Pairs
+   #+END_SRC
+
+2. *Verify multiple keypairs are displayed*
+   - Should see at least 3 key pairs
+
+3. *Click chevron on first row*
+   - Detail row should expand
+   - Should show keypair details (name, type, fingerprint, public key)
+
+4. *Click chevron on first row again*
+   - Detail row should collapse
+
+5. *Click chevron on second row*
+   - Second detail row should expand
+   - First detail row should remain in its current state
+
+6. *Click chevron on third row*
+   - Third detail row should expand
+   - Other rows remain in their current state
+
+7. *Verify independent operation*
+   - Each chevron should only control its own detail row
+   - Multiple detail rows can be open simultaneously
+
+*** Automated Testing
+
+#+BEGIN_SRC python
+# In a Selenium/pytest test
+def test_keypair_chevron_unique_ids(browser, keypairs_page):
+    # Get all chevron links
+    chevrons = browser.find_elements_by_css_selector('.chevron-toggle')
+    
+    # Verify each has unique href
+    hrefs = [c.get_attribute('href') for c in chevrons]
+    assert len(hrefs) == len(set(hrefs)), "Chevron hrefs must be unique"
+    
+    # Get all detail rows
+    details = browser.find_elements_by_css_selector('.keypair-detail-row')
+    
+    # Verify each has unique id
+    ids = [d.get_attribute('id') for d in details]
+    assert len(ids) == len(set(ids)), "Detail row IDs must be unique"
+    
+    # Verify hrefs match ids
+    for href, id in zip(hrefs, ids):
+        assert href.endswith(f"#{id}"), "Chevron href must match detail row id"
+#+END_SRC
+
+** Test Case 4: HTML Validation
+
+*** Check for Duplicate IDs
+
+#+BEGIN_SRC bash
+# Use W3C HTML validator
+curl -s https://horizon-instance/project/key_pairs/ | \
+  python -c "
+import sys
+from html.parser import HTMLParser
+
+class IDChecker(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.ids = []
+    
+    def handle_starttag(self, tag, attrs):
+        for attr, value in attrs:
+            if attr == 'id':
+                self.ids.append(value)
+
+checker = IDChecker()
+checker.feed(sys.stdin.read())
+
+# Check for duplicates
+if len(checker.ids) != len(set(checker.ids)):
+    print('ERROR: Duplicate IDs found!')
+    print('IDs:', checker.ids)
+    sys.exit(1)
+else:
+    print('OK: All IDs are unique')
+"
+#+END_SRC
+
+* Comparison: Before and After
+
+** Before (Broken)
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    def get_data(self, datum):
+        chevron_id = "%s_table_chevron%d" % (
+            self.table.name,        # ← Table-level
+            self.creation_counter   # ← Column-level
+        )
+        # datum is IGNORED!
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+| Aspect | Status |
+|--------|--------|
+| Uses datum | ❌ No |
+| Unique per row | ❌ No |
+| HTML valid | ❌ No (duplicate IDs) |
+| Bootstrap works | ❌ Only first row |
+| All chevrons work | ❌ No |
+
+** After (Fixed)
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    def get_data(self, datum):
+        object_id = self.table.get_object_id(datum)  # ← Uses datum!
+        chevron_id = "%s_chevron_%s" % (
+            self.table.name,  # ← Table-level
+            object_id         # ← Row-level (from datum)
+        )
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+| Aspect | Status |
+|--------|--------|
+| Uses datum | ✅ Yes |
+| Unique per row | ✅ Yes |
+| HTML valid | ✅ Yes |
+| Bootstrap works | ✅ All rows |
+| All chevrons work | ✅ Yes |
+
+* Complete Fixed Implementation
+
+** File 1: tables.py (Full Implementation)
+
+#+BEGIN_SRC python
+from django import urls
+from django.template.loader import render_to_string
+from django.utils.text import format_lazy
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext_lazy
+from urllib import parse
+
+from horizon import tables
+from openstack_dashboard import api
+from openstack_dashboard.usage import quotas
+
+
+class ExpandableKeyPairRow(tables.Row):
+    """Custom row class for expandable key pair rows."""
+    
+    def render(self):
+        # Generate unique chevron ID using the datum's unique identifier
+        object_id = self.table.get_object_id(self.datum)
+        chevron_id = "%s_chevron_%s" % (self.table.name, object_id)
+        
+        return render_to_string(
+            "key_pairs/expandable_row.html",
+            {"row": self, "chevron_id": chevron_id}
+        )
+
+
+class ExpandableKeyPairColumn(tables.Column):
+    """Column that renders a chevron toggle for expandable rows."""
+    
+    def get_data(self, datum):
+        # Generate unique chevron ID using the datum's unique identifier
+        # This ensures each row gets a unique ID
+        object_id = self.table.get_object_id(datum)
+        chevron_id = "%s_chevron_%s" % (self.table.name, object_id)
+        
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+
+
+class KeyPairsTable(tables.DataTable):
+    detail_link = "horizon:project:key_pairs:detail"
+    chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+    name = tables.Column("name", verbose_name=_("Key Pair Name"),
+                         link=detail_link)
+    key_type = tables.Column("type", verbose_name=_("Key Pair Type"))
+    fingerprint = tables.Column("fingerprint", 
+                                verbose_name=_("Fingerprint"))
+
+    def get_object_id(self, keypair):
+        # This method already exists and handles URL encoding
+        return parse.quote(keypair.name)
+
+    class Meta(object):
+        name = "keypairs"
+        verbose_name = _("Key Pairs")
+        row_class = ExpandableKeyPairRow
+        table_actions = (CreateLinkNG, ImportKeyPair, DeleteKeyPairs,
+                         KeypairsFilterAction,)
+        row_actions = (DeleteKeyPairs,)
+#+END_SRC
+
+** File 2: _chevron_column.html (Template)
+
+#+BEGIN_SRC django
+{% load i18n %}
+<a role="button"
+   class="chevron-toggle"
+   data-toggle="collapse"
+   href="#{{ chevron_id }}"
+   aria-expanded="false"
+   aria-controls="{{ chevron_id }}"
+   aria-label="{% trans 'Toggle key pair details' %}">
+  <span class="fa fa-chevron-right"></span>
+</a>
+#+END_SRC
+
+** File 3: expandable_row.html (Template)
+
+#+BEGIN_SRC django
+{% load i18n %}
+
+{% include "horizon/common/_data_table_row.html" %}
+
+{# Detail row - shows key pair information #}
+<tr class="keypair-detail-row collapse" id="{{ chevron_id }}">
+  <td colspan="{{ row.cells|length }}">
+    <dl class="dl-horizontal">
+      <dt>{% trans "Key Pair Name" %}</dt>
+      <dd>{{ row.datum.name }}</dd>
+
+      <dt>{% trans "Key Pair Type" %}</dt>
+      <dd>{{ row.datum.type|default:"ssh" }}</dd>
+
+      <dt>{% trans "Fingerprint" %}</dt>
+      <dd>{{ row.datum.fingerprint }}</dd>
+
+      <dt>{% trans "Public Key" %}</dt>
+      <dd><pre style="word-break: break-all; white-space: pre-wrap; max-width: 100%; overflow-wrap: break-word;">{{ row.datum.public_key|default:"N/A" }}</pre></dd>
+    </dl>
+  </td>
+</tr>
+#+END_SRC
+
+*Note:* Added ~collapse~ class to detail row so it starts hidden.
+
+* Key Takeaways
+
+** The Core Problem
+
+~creation_counter~ is a *column-level* attribute, not a *row-level* attribute.
+
+#+BEGIN_SRC text
+❌ WRONG: Using column attributes for row identification
+✅ RIGHT: Using datum attributes for row identification
+#+END_SRC
+
+** The Core Solution
+
+Use ~datum~ (the row data) to generate unique IDs:
+
+#+BEGIN_SRC python
+# The datum parameter IS the row-specific data!
+def get_data(self, datum):
+    object_id = self.table.get_object_id(datum)  # ← Extract unique identifier
+    chevron_id = "%s_chevron_%s" % (self.table.name, object_id)
+#+END_SRC
+
+** Why get_object_id() Is Best
+
+1. *Already exists* in the table
+2. *Already tested* by Horizon
+3. *Handles encoding* automatically
+4. *Consistent* with how Horizon identifies rows
+5. *Respects table logic* for unique identification
+
+** General Principle
+
+When you need a unique identifier per row in a Horizon table:
+1. Use ~datum~ (the row object)
+2. Extract a unique attribute (~datum.name~, ~datum.id~, etc.)
+3. Or use ~table.get_object_id(datum)~ for consistency
+
+* Debugging Guide
+
+** How to Verify the Fix
+
+*** Step 1: Check Generated HTML
+
+#+BEGIN_SRC bash
+# View page source in browser
+# Search for "keypairs_chevron"
+# Should see DIFFERENT IDs for each row:
+#   id="keypairs_chevron_test1"
+#   id="keypairs_chevron_test2"
+#   id="keypairs_chevron_test3"
+#+END_SRC
+
+*** Step 2: Use Browser DevTools
+
+#+BEGIN_SRC javascript
+// In browser console
+document.querySelectorAll('[id^="keypairs_chevron"]')
+// Should return array with unique IDs
+
+// Check for duplicates
+const ids = [...document.querySelectorAll('[id^="keypairs_chevron"]')]
+  .map(el => el.id);
+new Set(ids).size === ids.length
+// Should return: true (all unique)
+#+END_SRC
+
+*** Step 3: Test Each Chevron
+
+#+BEGIN_SRC text
+1. Click chevron 1 → Details 1 should toggle
+2. Click chevron 2 → Details 2 should toggle (independently)
+3. Click chevron 3 → Details 3 should toggle (independently)
+4. Click chevron 1 again → Only details 1 should toggle
+#+END_SRC
+
+** Common Issues
+
+*** Issue: Still seeing duplicate IDs
+
+*Cause:* Old code cached
+
+*Solution:*
+#+BEGIN_SRC bash
+# Restart Horizon
+sudo systemctl restart apache2
+# Or for development
+python manage.py runserver
+
+# Clear browser cache
+# Hard refresh: Ctrl+F5 (Linux/Windows) or Cmd+Shift+R (Mac)
+#+END_SRC
+
+*** Issue: IDs contain unencoded special characters
+
+*Cause:* Not using ~get_object_id()~
+
+*Solution:* Use ~self.table.get_object_id(datum)~ instead of ~datum.name~ directly
+
+*** Issue: Chevrons don't expand/collapse
+
+*Cause:* Bootstrap JavaScript not loading
+
+*Solution:*
+1. Check browser console for JavaScript errors
+2. Verify Bootstrap CSS/JS are included
+3. Check if ~data-toggle="collapse"~ is present
+
+* Appendix: Understanding Horizon Table Architecture
+
+** Table Component Hierarchy
+
+#+BEGIN_SRC text
+DataTable
+├── Meta (configuration)
+│   ├── name: "keypairs"
+│   ├── row_class: ExpandableKeyPairRow
+│   └── ...
+├── Columns (defined at class level)
+│   ├── chevron: ExpandableKeyPairColumn (creation_counter=1)
+│   ├── name: Column (creation_counter=2)
+│   ├── key_type: Column (creation_counter=3)
+│   └── fingerprint: Column (creation_counter=4)
+└── Data (provided at runtime)
+    ├── Keypair(name="test1", ...)  ← datum for row 1
+    ├── Keypair(name="test2", ...)  ← datum for row 2
+    └── Keypair(name="test3", ...)  ← datum for row 3
+#+END_SRC
+
+** Rendering Flow
+
+#+BEGIN_SRC text
+1. Table.__init__(request, data)
+   └─> self.data = [keypair1, keypair2, keypair3]
+
+2. Table.render()
+   └─> For each datum in self.data:
+       └─> Row(table=self, datum=datum)
+           └─> For each column in self.columns:
+               └─> cell = Cell(column, row, datum)
+                   └─> value = column.get_data(datum)  ← HERE!
+                       └─> Cell stores value
+#+END_SRC
+
+** Key Insight
+
+~get_data(datum)~ is called *once per cell*, with the *datum for that row*.
+
+This is your opportunity to use row-specific data to generate unique values!
+
+* Summary
+
+** The Problem
+Using ~self.creation_counter~ generates the same ID for all rows because it's a column-level counter, not a row-level identifier.
+
+** The Solution
+Use ~self.table.get_object_id(datum)~ to get a unique identifier for each row based on the keypair's data.
+
+** The Code Change
+#+BEGIN_SRC python
+# OLD (broken)
+chevron_id = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+
+# NEW (fixed)
+object_id = self.table.get_object_id(datum)
+chevron_id = "%s_chevron_%s" % (self.table.name, object_id)
+#+END_SRC
+
+** Why It Works
+- ~datum~ contains the keypair object for THIS specific row
+- ~get_object_id(datum)~ returns the keypair's unique name (URL-encoded)
+- Each row gets a different ~datum~, thus a different ~chevron_id~
+
+#+END_DOCUMENT
+

@@ -12,9 +12,6 @@ This is phase2 of [[https://spaces.redhat.com/spaces/~omcgonag/pages/721224780/H
 
 Continuing with review at [[https://review.opendev.org/c/openstack/horizon/+/966349][966349: de-angularize Key Pairs]]
 
-Each patchset comes with a document detailing the changes
-: [[xxxx][analysis_review_966349_patchset_1.org]]
-
 Part of this exercise is to figure out what code needs to change in order to get your *python* *Key Tables* panel to look exactly like what we get with the default (enabled) *angular* implementation.
 
 It started with a few tickets on removing some angular code from Horizon

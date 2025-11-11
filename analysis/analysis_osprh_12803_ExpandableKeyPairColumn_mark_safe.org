@@ -1,0 +1,771 @@
+#+TITLE: Analysis: OSPRH-12803 Patchset 4 - ExpandableKeyPairColumn and mark_safe() Usage
+#+AUTHOR: Analysis of Horizon De-angularization Changes
+#+DATE: 2025-11-10
+#+OPTIONS: toc:2 num:t
+
+* Executive Summary
+
+Patchset 4 introduces the ~ExpandableKeyPairColumn~ class which embeds HTML directly in Python code using Django's ~mark_safe()~ function. This analysis examines whether this approach follows Horizon best practices and recommends alternative implementations.
+
+** Key Finding
+The inline HTML in ~ExpandableKeyPairColumn.get_data()~ violates Django/Horizon separation of concerns and should be moved to a template.
+
+** Recommendation
+Move the chevron HTML markup to a Django template for better maintainability, testability, and consistency with Horizon patterns.
+
+* Overview of Changes: Patchset 3 → Patchset 4
+
+** Commits
+- *Patchset 3:* ~6737fdbfb~ (Owen McGonagle)
+- *Patchset 4:* ~365530300~ (Radomir Dopieralski - maintainer refactor)
+
+** Files Modified
+1. ~openstack_dashboard/dashboards/project/key_pairs/tables.py~ (+16 lines)
+2. ~openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html~ (-9 lines)
+
+** Summary of Changes
+- Added ~ExpandableKeyPairColumn~ class with inline HTML
+- Refactored ~ExpandableKeyPairRow~ to pass chevron ID to template
+- Simplified template by using ~{% include %}~ for main row
+- Added ~chevron~ column to ~KeyPairsTable~
+
+* Detailed Analysis of ExpandableKeyPairColumn
+
+** The Code in Question
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    def get_data(self, datum):
+        name = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+        return mark_safe("""
+<a role="button" data-toggle="collapse"
+href="#%s" aria-expanded="false" aria-controls="collapseExample">
+<span class="fa fa-chevron-right"></span>
+</a>
+""" % name)
+#+END_SRC
+
+** What This Code Does
+
+*** Purpose
+Creates a clickable chevron icon (▶) that toggles the visibility of the expandable detail row beneath each key pair.
+
+*** Breakdown
+
+1. *Generate Unique ID*
+   #+BEGIN_SRC python
+   name = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+   #+END_SRC
+   - ~self.table.name~ = ~"keypairs"~ (from table Meta)
+   - ~self.creation_counter~ = unique counter for each column instance
+   - Result: ~"keypairs_table_chevron1"~
+
+2. *Return HTML with mark_safe*
+   #+BEGIN_SRC python
+   return mark_safe("""...""" % name)
+   #+END_SRC
+   - ~mark_safe()~ tells Django this HTML is safe and shouldn't be escaped
+   - HTML is embedded directly as a Python string
+   - ~%s~ interpolation inserts the unique ID
+
+3. *HTML Structure*
+   #+BEGIN_SRC html
+   <a role="button" data-toggle="collapse"
+   href="#keypairs_table_chevron1" 
+   aria-expanded="false" 
+   aria-controls="collapseExample">
+     <span class="fa fa-chevron-right"></span>
+   </a>
+   #+END_SRC
+   - ~data-toggle="collapse"~ = Bootstrap JavaScript hook
+   - ~href="#keypairs_table_chevron1"~ = links to detail row with matching ID
+   - ~fa fa-chevron-right~ = Font Awesome icon class (▶)
+
+** How It Connects to the Template
+
+*** In tables.py (Row class)
+#+BEGIN_SRC python
+class ExpandableKeyPairRow(tables.Row):
+    def render(self):
+        name = "%s_table_chevron%d" % (self.table.name,
+                                       self.table.columns['chevron'].creation_counter)
+        return render_to_string("key_pairs/expandable_row.html",
+                                {"row": self, "chevron_id": name})
+#+END_SRC
+
+- Generates the *same ID* as the column
+- Passes it to template as ~chevron_id~ variable
+
+*** In expandable_row.html (Template)
+#+BEGIN_SRC html
+<tr class="keypair-detail-row" id="{{ chevron_id }}">
+  <td colspan="{{ row.cells|length }}">
+    <!-- Detail content -->
+  </td>
+</tr>
+#+END_SRC
+
+- The detail row receives ~id="keypairs_table_chevron1"~
+- Matches the ~href="#keypairs_table_chevron1"~ in the chevron link
+
+*** Bootstrap Collapse Mechanism
+#+BEGIN_SRC text
+User clicks:  <a href="#keypairs_table_chevron1" data-toggle="collapse">
+                    ↓
+Bootstrap finds:  <tr id="keypairs_table_chevron1">
+                    ↓
+Bootstrap toggles:  display: none ↔ display: table-row
+#+END_SRC
+
+* Problem: Inline HTML in Python Code
+
+** Why This Is Problematic
+
+*** 1. Violates Separation of Concerns
+- *Presentation logic* (HTML) mixed with *business logic* (Python)
+- Django's MTV pattern: Models, Templates, Views (keep them separate)
+- Horizon follows this pattern throughout the codebase
+
+*** 2. Maintainability Issues
+- HTML changes require modifying Python code
+- No syntax highlighting for HTML in Python strings
+- Harder to review HTML changes in code diffs
+- Frontend developers can't easily modify the markup
+
+*** 3. Testing Complexity
+- Can't test HTML rendering separately from Python logic
+- Template testing tools don't work on inline strings
+- Harder to verify accessibility attributes
+
+*** 4. Inconsistency with Horizon Patterns
+- Most Horizon tables use templates for custom rendering
+- The ~ExpandableKeyPairRow~ already uses a template (correctly)
+- This column breaks the established pattern
+
+*** 5. Localization Challenges
+- If the chevron needed text labels, they couldn't be easily translated
+- Django template translation tags (~{% trans %}~) unavailable
+
+*** 6. Security Concerns
+- While ~mark_safe()~ is used correctly here, it's error-prone
+- Any future changes must remember to sanitize user input
+- Template auto-escaping is safer by default
+
+** Example of the Problem
+
+If you need to change the icon from ~fa-chevron-right~ to ~fa-angle-right~:
+
+*Bad (Current):*
+1. Open Python file
+2. Find the string in code
+3. Modify Python string
+4. Test Python code
+
+*Good (Template-based):*
+1. Open template file
+2. Change icon class
+3. Reload page (no Python restart needed in development)
+
+* Recommended Approach: Template-Based Column
+
+** Best Practice in Horizon
+
+The recommended way to render custom HTML in Horizon tables is to use a *template-based column*.
+
+** Implementation Option 1: Column with Custom Template
+
+*** Create Column Template
+*File:* ~openstack_dashboard/dashboards/project/templates/key_pairs/_chevron_column.html~
+
+#+BEGIN_SRC django
+{% load i18n %}
+<a role="button" 
+   data-toggle="collapse"
+   href="#{{ chevron_id }}" 
+   aria-expanded="false" 
+   aria-controls="{{ chevron_id }}"
+   aria-label="{% trans 'Toggle key pair details' %}">
+  <span class="fa fa-chevron-right"></span>
+</a>
+#+END_SRC
+
+*** Modify Column Class
+#+BEGIN_SRC python
+from django.template.loader import render_to_string
+
+class ExpandableKeyPairColumn(tables.Column):
+    def get_data(self, datum):
+        chevron_id = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+*** Benefits
+- ✅ HTML in template (proper separation)
+- ✅ No ~mark_safe()~ needed (~render_to_string~ returns safe HTML)
+- ✅ Can add ~aria-label~ for accessibility
+- ✅ Frontend developers can modify easily
+- ✅ Consistent with Horizon patterns
+
+** Implementation Option 2: Transform Function
+
+*** Alternative Approach
+#+BEGIN_SRC python
+def render_chevron(datum, table):
+    chevron_id = "%s_table_chevron%d" % (table.name, table.columns['chevron'].creation_counter)
+    return render_to_string(
+        "key_pairs/_chevron_column.html",
+        {"chevron_id": chevron_id}
+    )
+
+class KeyPairsTable(tables.DataTable):
+    chevron = tables.Column(
+        "chevron",
+        verbose_name="",
+        transform=render_chevron,
+        sortable=False
+    )
+#+END_SRC
+
+*** Benefits
+- ✅ Uses Horizon's ~transform~ pattern
+- ✅ Column rendering logic in standalone function
+- ✅ Template-based HTML
+
+** Implementation Option 3: Horizon WrappingColumn Pattern
+
+*** Using Horizon's Built-in Patterns
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.WrappingColumn):
+    def get_link_url(self, datum):
+        chevron_id = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+        return "#" + chevron_id
+    
+    def get_link_attrs(self, datum):
+        chevron_id = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+        return {
+            'role': 'button',
+            'data-toggle': 'collapse',
+            'aria-expanded': 'false',
+            'aria-controls': chevron_id,
+        }
+#+END_SRC
+
+Then override the column template to render the icon.
+
+* Comparison: Current vs Recommended
+
+** Current Implementation (Patchset 4)
+
+| Aspect | Status |
+|--------+--------|
+| HTML Location | Python string in ~get_data()~ |
+| Safety Mechanism | ~mark_safe()~ (manual) |
+| Maintainability | Low (HTML in code) |
+| Template Separation | No |
+| Accessibility | Basic (could be better) |
+| Localization Ready | No |
+| Horizon Consistency | Inconsistent |
+| Testing | Harder |
+
+** Recommended Implementation (Template-Based)
+
+| Aspect | Status |
+|--------+--------|
+| HTML Location | Django template file |
+| Safety Mechanism | Auto-escaped by Django |
+| Maintainability | High (HTML in template) |
+| Template Separation | Yes |
+| Accessibility | Can add aria-label |
+| Localization Ready | Yes (~{% trans %}~ available) |
+| Horizon Consistency | Consistent |
+| Testing | Easier |
+
+* Security Considerations
+
+** mark_safe() Usage
+
+*** What mark_safe() Does
+#+BEGIN_SRC python
+from django.utils.safestring import mark_safe
+
+html = "<b>Bold</b>"
+safe_html = mark_safe(html)
+# Django will NOT escape this in templates
+#+END_SRC
+
+*** Current Usage (Safe)
+#+BEGIN_SRC python
+return mark_safe("""
+<a role="button" data-toggle="collapse"
+href="#%s" aria-expanded="false">
+<span class="fa fa-chevron-right"></span>
+</a>
+""" % name)
+#+END_SRC
+
+- ✅ *Safe:* The ~name~ variable is generated internally
+- ✅ *Safe:* No user input is included
+- ✅ *Safe:* All HTML is static/controlled
+
+*** Potential Risk Scenario
+If future developer modifies to include user data:
+
+#+BEGIN_SRC python
+# DANGEROUS EXAMPLE (DO NOT USE)
+keypair_name = datum.name  # User-provided name
+return mark_safe("""
+<a href="#%s" title="%s">...</a>
+""" % (name, keypair_name))  # XSS vulnerability!
+#+END_SRC
+
+*** Why Templates Are Safer
+#+BEGIN_SRC django
+{# Django template - auto-escaped #}
+<a href="#{{ chevron_id }}" title="{{ datum.name }}">
+  {# datum.name is automatically escaped #}
+</a>
+#+END_SRC
+
+Django templates escape by default, preventing XSS attacks.
+
+* Examples from Horizon Codebase
+
+** How Other Horizon Tables Handle Custom Rendering
+
+*** Example 1: Instances Table
+*File:* ~openstack_dashboard/dashboards/project/instances/tables.py~
+
+#+BEGIN_SRC python
+# Uses transform function with template
+def render_instance_state(instance):
+    return render_to_string(
+        'project/instances/_instance_state.html',
+        {'instance': instance}
+    )
+
+status = tables.Column(
+    "status",
+    verbose_name=_("Status"),
+    transform=render_instance_state
+)
+#+END_SRC
+
+*** Example 2: Volumes Table
+*File:* ~openstack_dashboard/dashboards/project/volumes/tables.py~
+
+#+BEGIN_SRC python
+# Custom column with template rendering
+class VolumeStatusColumn(tables.Column):
+    def get_data(self, volume):
+        return render_to_string(
+            'project/volumes/_volume_status.html',
+            {'volume': volume}
+        )
+#+END_SRC
+
+*** Example 3: Images Table
+Uses link columns with custom attributes (similar to what we could do):
+
+#+BEGIN_SRC python
+name = tables.Column(
+    "name",
+    link="horizon:project:images:images:detail",
+    verbose_name=_("Image Name"),
+    link_attrs={'data-toggle': 'modal'}
+)
+#+END_SRC
+
+** Pattern Consistency
+All these examples use *templates* for custom HTML, not inline strings with ~mark_safe()~.
+
+* Proposed Refactoring
+
+** Step-by-Step Implementation
+
+*** Step 1: Create Template File
+*File:* ~openstack_dashboard/dashboards/project/templates/key_pairs/_chevron_column.html~
+
+#+BEGIN_SRC django
+{% load i18n %}
+<a role="button" 
+   class="chevron-toggle"
+   data-toggle="collapse"
+   href="#{{ chevron_id }}" 
+   aria-expanded="false" 
+   aria-controls="{{ chevron_id }}"
+   aria-label="{% trans 'Toggle key pair details' %}">
+  <span class="fa fa-chevron-right"></span>
+</a>
+#+END_SRC
+
+*Improvements added:*
+- ~aria-label~ for screen readers
+- ~class="chevron-toggle"~ for CSS/JavaScript targeting
+- Proper use of ~aria-controls~ matching ID
+
+*** Step 2: Refactor Column Class
+*File:* ~openstack_dashboard/dashboards/project/key_pairs/tables.py~
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    """Column that renders a chevron toggle for expandable rows."""
+    
+    def get_data(self, datum):
+        chevron_id = "%s_table_chevron%d" % (
+            self.table.name, 
+            self.creation_counter
+        )
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+*Changes:*
+- Removed ~mark_safe()~ (not needed with ~render_to_string~)
+- Uses template for HTML
+- Added docstring
+- Better variable naming (~name~ → ~chevron_id~)
+
+*** Step 3: Update Imports (if needed)
+#+BEGIN_SRC python
+from django.template.loader import render_to_string
+# mark_safe no longer needed - can be removed
+#+END_SRC
+
+*** Step 4: Keep Row Class (No Changes Needed)
+The ~ExpandableKeyPairRow~ class is already template-based, so no changes needed.
+
+** Complete Refactored Code
+
+*** tables.py (Modified Section)
+#+BEGIN_SRC python
+from django import urls
+from django.template.loader import render_to_string
+from django.utils.text import format_lazy
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext_lazy
+
+from horizon import tables
+from openstack_dashboard import api
+from openstack_dashboard.usage import quotas
+
+
+class ExpandableKeyPairRow(tables.Row):
+    """Custom row class for expandable key pair rows."""
+    
+    def render(self):
+        chevron_id = "%s_table_chevron%d" % (
+            self.table.name,
+            self.table.columns['chevron'].creation_counter
+        )
+        return render_to_string(
+            "key_pairs/expandable_row.html",
+            {"row": self, "chevron_id": chevron_id}
+        )
+
+
+class ExpandableKeyPairColumn(tables.Column):
+    """Column that renders a chevron toggle for expandable rows."""
+    
+    def get_data(self, datum):
+        chevron_id = "%s_table_chevron%d" % (
+            self.table.name, 
+            self.creation_counter
+        )
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+
+
+class KeyPairsTable(tables.DataTable):
+    detail_link = "horizon:project:key_pairs:detail"
+    chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+    name = tables.Column("name", verbose_name=_("Key Pair Name"),
+                         link=detail_link)
+    key_type = tables.Column("type", verbose_name=_("Key Pair Type"))
+    fingerprint = tables.Column("fingerprint", 
+                                verbose_name=_("Fingerprint"))
+
+    # ... rest of table definition ...
+#+END_SRC
+
+*** _chevron_column.html (New File)
+#+BEGIN_SRC django
+{% load i18n %}
+<a role="button" 
+   class="chevron-toggle"
+   data-toggle="collapse"
+   href="#{{ chevron_id }}" 
+   aria-expanded="false" 
+   aria-controls="{{ chevron_id }}"
+   aria-label="{% trans 'Toggle key pair details' %}">
+  <span class="fa fa-chevron-right"></span>
+</a>
+#+END_SRC
+
+* Benefits of Proposed Changes
+
+** Immediate Benefits
+
+1. *Separation of Concerns*
+   - Python handles logic (ID generation)
+   - Template handles presentation (HTML)
+
+2. *No mark_safe() Needed*
+   - ~render_to_string()~ returns safe HTML automatically
+   - Less risk of security issues
+
+3. *Maintainability*
+   - HTML changes don't require Python file modification
+   - Syntax highlighting in template files
+   - Easier code reviews
+
+4. *Accessibility*
+   - Added ~aria-label~ for screen readers
+   - Proper ARIA attributes
+
+5. *Localization Ready*
+   - Can use ~{% trans %}~ for any text
+   - RTL language support possible
+
+6. *Consistency*
+   - Matches Horizon patterns used elsewhere
+   - Frontend team familiarity
+
+** Long-term Benefits
+
+1. *Future Enhancements*
+   - Easy to add animation CSS
+   - Can add JavaScript hooks via class
+   - Template inheritance possible
+
+2. *Testing*
+   - Can test template rendering separately
+   - Can use Django template testing tools
+
+3. *Documentation*
+   - Template files are self-documenting
+   - HTML structure visible without reading Python
+
+* Alternative Considerations
+
+** Why NOT Use a Template?
+
+*** Argument: "It's Just One Line of HTML"
+- *Counter:* It's actually 6 lines formatted properly
+- *Counter:* Principle matters more than size
+- *Counter:* Sets precedent for future code
+
+*** Argument: "Performance"
+- *Counter:* Template rendering is highly optimized in Django
+- *Counter:* Negligible difference for this use case
+- *Counter:* Maintainability > micro-optimization
+
+*** Argument: "Simplicity"
+- *Counter:* One more file, but clearer separation
+- *Counter:* Easier to find and modify HTML
+- *Counter:* Follows established patterns
+
+** When Inline HTML Might Be Acceptable
+
+1. *Truly Trivial Markup*
+   - Single tag: ~<span class="badge">5</span>~
+   - No attributes beyond class
+
+2. *Programmatically Generated*
+   - Complex logic to build HTML structure
+   - Multiple conditional branches
+
+3. *Performance Critical*
+   - Rendered thousands of times per page
+   - Proven bottleneck via profiling
+
+*This case doesn't meet any of these criteria.*
+
+* Recommended Action Plan
+
+** Phase 1: Create Template (Low Risk)
+
+1. Create ~_chevron_column.html~ template
+2. Keep both implementations temporarily
+3. Test template version in development
+
+** Phase 2: Refactor Column Class (Medium Risk)
+
+1. Modify ~ExpandableKeyPairColumn.get_data()~
+2. Remove ~mark_safe()~ usage
+3. Update to use ~render_to_string()~
+
+** Phase 3: Testing
+
+1. Verify chevron appears correctly
+2. Test expand/collapse functionality
+3. Check accessibility with screen readers
+4. Test in different browsers
+
+** Phase 4: Cleanup
+
+1. Remove ~mark_safe~ import if unused elsewhere
+2. Add unit tests for column rendering
+3. Update any related documentation
+
+** Phase 5: Consider CSS Enhancement
+
+Add to Horizon CSS:
+
+#+BEGIN_SRC css
+.chevron-toggle {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.chevron-toggle[aria-expanded="true"] .fa-chevron-right {
+    transform: rotate(90deg);
+}
+#+END_SRC
+
+This would animate the chevron rotation when expanded.
+
+* Conclusion
+
+** Summary of Findings
+
+The current implementation in Patchset 4 uses ~mark_safe()~ with inline HTML, which:
+- ❌ Violates Django/Horizon separation of concerns
+- ❌ Is inconsistent with Horizon patterns
+- ❌ Reduces maintainability
+- ⚠️  Increases security risk (though currently safe)
+- ❌ Limits accessibility improvements
+- ❌ Prevents easy localization
+
+** Recommendation
+
+*Move the chevron HTML to a Django template* using the implementation provided in this analysis. This change:
+- ✅ Follows Django/Horizon best practices
+- ✅ Improves code maintainability
+- ✅ Enhances security through auto-escaping
+- ✅ Enables accessibility improvements
+- ✅ Supports future localization
+- ✅ Maintains consistency with codebase patterns
+
+** Priority
+
+*Medium Priority*
+- Current code functions correctly
+- Not a security vulnerability
+- But should be addressed before merge to maintain code quality standards
+
+** Estimated Effort
+
+- *Time:* 1-2 hours
+- *Risk:* Low (isolated change)
+- *Testing:* Standard functional testing
+- *Files:* 2 files (1 new template, 1 modified Python)
+
+* Next Steps
+
+1. Review this analysis with the development team
+2. Decide on implementation approach (Option 1 recommended)
+3. Create feature branch for refactoring
+4. Implement template-based column
+5. Test thoroughly
+6. Submit as updated patchset or follow-up change
+
+* Appendix: Full Diff Analysis
+
+** Patchset 4 Complete Diff
+
+#+BEGIN_SRC diff
+diff --git a/openstack_dashboard/dashboards/project/key_pairs/tables.py b/openstack_dashboard/dashboards/project/key_pairs/tables.py
+index 20bcd44..365530300 100644
+--- a/openstack_dashboard/dashboards/project/key_pairs/tables.py
++++ b/openstack_dashboard/dashboards/project/key_pairs/tables.py
+@@ -15,13 +15,13 @@
+ from django import urls
++from django.template.loader import render_to_string
++from django.utils.safestring import mark_safe
+ from django.utils.text import format_lazy
+ from django.utils.translation import gettext_lazy as _
+ from django.utils.translation import ngettext_lazy
+-from django.template.loader import render_to_string
+ 
+ from horizon import tables
+ 
+ class ExpandableKeyPairRow(tables.Row):
+-    """Custom row class for expandable key pair rows with chevron functionality."""
+     def render(self):
++        name = "%s_table_chevron%d" % (self.table.name,
++                                       self.table.columns['chevron'].creation_counter)
+         return render_to_string("key_pairs/expandable_row.html",
+-                                {"row": self})
++                                {"row": self, "chevron_id": name})
++
++
++class ExpandableKeyPairColumn(tables.Column):
++    def get_data(self, datum):
++        name = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
++        return mark_safe("""
++<a role="button" data-toggle="collapse"
++href="#%s" aria-expanded="false" aria-controls="collapseExample">
++<span class="fa fa-chevron-right"></span>
++</a>
++""" % name)
+ 
+ class KeyPairsTable(tables.DataTable):
+     detail_link = "horizon:project:key_pairs:detail"
++    chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+     name = tables.Column("name", verbose_name=_("Key Pair Name"),
+                          link=detail_link)
+#+END_SRC
+
+** Key Changes Annotated
+
+1. *Import Reordering*
+   - Moved ~render_to_string~ up
+   - Added ~mark_safe~ import ← *Issue: needed for inline HTML*
+
+2. *ExpandableKeyPairRow Enhancement*
+   - Generates chevron ID
+   - Passes ID to template ← *Good: template-based*
+
+3. *ExpandableKeyPairColumn Addition*
+   - New class with ~get_data()~
+   - Inline HTML with ~mark_safe()~ ← *Issue: should use template*
+
+4. *KeyPairsTable Modification*
+   - Added ~chevron~ column
+   - Uses custom column class
+
+* References
+
+** Django Documentation
+- Template rendering: https://docs.djangoproject.com/en/stable/topics/templates/
+- ~mark_safe()~: https://docs.djangoproject.com/en/stable/ref/utils/#django.utils.safestring.mark_safe
+- Auto-escaping: https://docs.djangoproject.com/en/stable/ref/templates/language/#automatic-html-escaping
+
+** Horizon Documentation
+- Table columns: https://docs.openstack.org/horizon/latest/contributor/ref/tables.html
+- Custom rendering: https://docs.openstack.org/horizon/latest/contributor/tutorials/table_actions.html
+
+** Security Resources
+- XSS Prevention: https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
+- Django Security: https://docs.djangoproject.com/en/stable/topics/security/
+
+* Glossary
+
+- *mark_safe():* Django utility that marks a string as safe for HTML rendering (disables auto-escaping)
+- *render_to_string():* Django utility that renders a template to a string (output is automatically marked safe)
+- *DataTable:* Horizon's table framework class for displaying data
+- *Column:* Horizon table component representing a table column
+- *Row:* Horizon table component representing a table row
+- *Bootstrap Collapse:* JavaScript component for toggling content visibility
+- *Separation of Concerns:* Design principle keeping presentation (HTML) separate from logic (Python)
+- *XSS:* Cross-Site Scripting - security vulnerability from unescaped user input in HTML
+
+#+END_DOCUMENT
+
