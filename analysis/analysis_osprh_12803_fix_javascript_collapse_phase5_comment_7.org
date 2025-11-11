@@ -1,0 +1,739 @@
+#+TITLE: Analysis: OSPRH-12803 Phase 5 Comment 7 - Chevron Column Classes
+#+AUTHOR: AI Assistant
+#+DATE: 2025-11-11
+#+DESCRIPTION: Fix chevron column CSS classes and prevent sorting
+
+* Original Ask
+
+** User Request (Phase 5, Comment 7)
+#+BEGIN_QUOTE
+here is the comment from Radomir:
+
+Radomir Dopieralski Patchset 11
+
+We probably want to give it a different class name than "normal_column sortable",
+and maybe prevent it from being sortable too.
+
+My first question - what/where can I find this "normal_column sortable"?
+
+openstack_dashboard/dashboards/project/key_pairs/tables.py
+
+  157       return render_to_string(
+  158            "key_pairs/_chevron_column.html",
+  159            {"chevron_id": chevron_id}
+  160        )
+  161
+  162
+  163 class KeyPairsTable(tables.DataTable):
+#+END_QUOTE
+
+** Context
+
+Radomir noticed that the chevron column is being rendered with CSS classes
+"normal_column sortable", which doesn't make sense for a chevron toggle column.
+
+The chevron column should:
+1. NOT be sortable (you can't sort by a chevron icon)
+2. Have a more semantic CSS class name (like "chevron_column" instead of "normal_column")
+
+* Investigation: Where Do These Classes Come From?
+
+** Question: What/where is "normal_column sortable"?
+
+These classes are automatically added by Horizon's DataTable framework, NOT by our code.
+
+** Source 1: The "normal_column" Class
+
+Location: ~horizon/tables/base.py~, Line 1191
+
+In the ~DataTableMetaclass.__new__()~ method:
+
+#+BEGIN_SRC python
+# Line 1186-1192
+columns = []
+for attr_name, obj in attrs.items():
+    if isinstance(obj, (opts.column_class, Column)):
+        column_instance = attrs[attr_name]
+        column_instance.name = attr_name
+        column_instance.classes.append('normal_column')  # ← HERE!
+        columns.append((attr_name, column_instance))
+#+END_SRC
+
+*What this does:*
+- The metaclass automatically appends ~'normal_column'~ to EVERY column's classes
+- This happens during class definition, before any instances are created
+- ALL columns get this class by default
+
+*Purpose:*
+- Provides a common CSS class for styling regular data columns
+- Distinguishes from special columns like ~multi_select_column~ or ~actions_column~
+
+** Source 2: The "sortable" Class
+
+Location: ~horizon/tables/base.py~, Lines 363-364
+
+In the ~Column.__init__()~ method:
+
+#+BEGIN_SRC python
+# Line 299: Constructor signature
+def __init__(self, transform, verbose_name=None, sortable=True, ...):
+    ...
+    # Line 330: Store the sortable parameter
+    self.sortable = sortable
+    ...
+    # Lines 363-364: Add "sortable" class if appropriate
+    if self.sortable and not self.auto:
+        self.classes.append("sortable")
+#+END_SRC
+
+*What this does:*
+- If ~sortable=True~ (the default) AND the column is not auto-generated
+- Then ~'sortable'~ is appended to the column's classes
+
+*Default Behavior:*
+- ~sortable~ defaults to ~True~ (see line 299)
+- So by default, all manually-defined columns are sortable
+
+** Our Current Column Definition
+
+File: ~openstack_dashboard/dashboards/project/key_pairs/tables.py~, Line 165
+
+#+BEGIN_SRC python
+chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+#+END_SRC
+
+What happens:
+1. ~ExpandableKeyPairColumn~ inherits from ~tables.Column~
+2. No ~sortable~ parameter specified → defaults to ~True~
+3. No ~classes~ parameter specified → defaults to empty list
+4. Metaclass adds ~'normal_column'~ automatically
+5. ~__init__~ adds ~'sortable'~ because ~sortable=True~
+6. Result: classes = ~['normal_column', 'sortable']~
+
+** How Classes Are Rendered
+
+The classes list is converted to a string and added to the ~<th>~ (header) and
+~<td>~ (cell) HTML elements.
+
+Example rendered HTML:
+
+#+BEGIN_SRC html
+<!-- Header -->
+<th class="normal_column sortable">
+  <span></span>  <!-- Empty because verbose_name="" -->
+</th>
+
+<!-- Cell -->
+<td class="normal_column sortable">
+  <a ...>
+    <span class="fa fa-chevron-right"></span>
+  </a>
+</td>
+#+END_SRC
+
+* The Problem
+
+** Issue 1: The Chevron Column Should Not Be Sortable
+
+Clicking the chevron column header attempts to sort by that column, which doesn't make sense:
+- You can't sort rows by a chevron icon
+- The chevron is a UI control, not data
+- Sorting by this column would be meaningless
+
+Currently, clicking the header might:
+- Attempt to sort (will fail or produce unexpected results)
+- Confuse users (why is this column sortable?)
+
+** Issue 2: "normal_column" Is Not Semantic
+
+The class name "normal_column" is generic and doesn't describe the purpose:
+- Doesn't convey that this is a chevron/toggle column
+- Makes CSS targeting less specific
+- Harder to style or select in tests
+
+Better class names would be:
+- ~chevron_column~ - clearly identifies purpose
+- ~expandable_toggle_column~ - descriptive
+- ~control_column~ - indicates it's a UI control
+
+** Visual Problem
+
+In the rendered table, the chevron column header might show a sort indicator:
+
+#+BEGIN_EXAMPLE
+| ▲ | Key Pair Name ▲ | Key Pair Type ▲ | Fingerprint ▲ |
+     ↑
+  Sort indicator on chevron header (shouldn't be there!)
+#+END_EXAMPLE
+
+* Solution
+
+** Change 1: Disable Sorting
+
+Add ~sortable=False~ to the column definition:
+
+#+BEGIN_SRC python
+chevron = ExpandableKeyPairColumn("chevron", verbose_name="", sortable=False)
+#+END_SRC
+
+*Effect:*
+- ~self.sortable = False~
+- The ~if self.sortable and not self.auto:~ check fails
+- ~'sortable'~ class is NOT added
+- Result: classes = ~['normal_column']~ (sortable removed)
+
+** Change 2: Add Custom Class
+
+Add ~classes=['chevron_column']~ to the column definition:
+
+#+BEGIN_SRC python
+chevron = ExpandableKeyPairColumn("chevron", 
+                                   verbose_name="", 
+                                   sortable=False,
+                                   classes=['chevron_column'])
+#+END_SRC
+
+*Effect:*
+- ~self.classes~ starts with ~['chevron_column']~
+- Metaclass appends ~'normal_column'~ → ~['chevron_column', 'normal_column']~
+- ~'sortable'~ is not added (because ~sortable=False~)
+- Result: classes = ~['chevron_column', 'normal_column']~
+
+** Wait! Do We Want Both Classes?
+
+Having both ~'chevron_column'~ and ~'normal_column'~ might be fine:
+- ~'chevron_column'~ - specific styling for this column
+- ~'normal_column'~ - inherits general column styles
+
+But if we want to REPLACE ~'normal_column'~ entirely, we need a different approach.
+
+** Alternative: Override classes After Metaclass
+
+The ~'normal_column'~ is added by the metaclass, so we can't prevent it in the
+column constructor. Options:
+
+*** Option A: Live with both classes
+- Keep both ~'chevron_column'~ and ~'normal_column'~
+- Use ~'chevron_column'~ for specific styles
+- Accept ~'normal_column'~ for general styles
+
+*** Option B: Remove in __init__
+Override in ~ExpandableKeyPairColumn.__init__()~:
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    """Column that renders a chevron toggle for expandable rows."""
+    
+    def __init__(self, *args, **kwargs):
+        # Set sortable=False by default
+        kwargs.setdefault('sortable', False)
+        # Set custom classes
+        kwargs.setdefault('classes', ['chevron_column'])
+        super().__init__(*args, **kwargs)
+        # Remove 'normal_column' if present
+        if 'normal_column' in self.classes:
+            self.classes.remove('normal_column')
+#+END_SRC
+
+This would give: classes = ~['chevron_column']~ only
+
+*** Option C: Just add the class, don't remove normal_column
+This is the simplest and follows Horizon conventions.
+
+** Recommendation: Option C (Simplest)
+
+Use both classes:
+
+#+BEGIN_SRC python
+chevron = ExpandableKeyPairColumn("chevron", 
+                                   verbose_name="", 
+                                   sortable=False,
+                                   classes=['chevron_column'])
+#+END_SRC
+
+Result: ~class="chevron_column normal_column"~
+
+*Rationale:*
+1. ~'chevron_column'~ - for specific chevron styling
+2. ~'normal_column'~ - inherits standard column styles (padding, etc.)
+3. Follows Horizon conventions (multi_select has both ~'multi_select_column'~ and auto-added ~'normal_column'~)
+4. Simplest implementation (no custom __init__ needed)
+
+* Implementation
+
+** Current Code
+
+File: ~openstack_dashboard/dashboards/project/key_pairs/tables.py~, Line 165
+
+#+BEGIN_SRC python
+class KeyPairsTable(tables.DataTable):
+    detail_link = "horizon:project:key_pairs:detail"
+    chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+    name = tables.Column("name", verbose_name=_("Key Pair Name"),
+                         link=detail_link)
+    ...
+#+END_SRC
+
+** Proposed Change
+
+#+BEGIN_SRC python
+class KeyPairsTable(tables.DataTable):
+    detail_link = "horizon:project:key_pairs:detail"
+    chevron = ExpandableKeyPairColumn("chevron", 
+                                       verbose_name="",
+                                       sortable=False,
+                                       classes=['chevron_column'])
+    name = tables.Column("name", verbose_name=_("Key Pair Name"),
+                         link=detail_link)
+    ...
+#+END_SRC
+
+Changes:
+1. Added ~sortable=False~ - prevents sorting on this column
+2. Added ~classes=['chevron_column']~ - semantic class name
+
+** Complete Updated File Section
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    """Column that renders a chevron toggle for expandable rows."""
+
+    def get_data(self, datum):
+        chevron_id = get_chevron_id(self.table, datum)
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+
+
+class KeyPairsTable(tables.DataTable):
+    detail_link = "horizon:project:key_pairs:detail"
+    chevron = ExpandableKeyPairColumn("chevron",
+                                       verbose_name="",
+                                       sortable=False,
+                                       classes=['chevron_column'])
+    name = tables.Column("name", verbose_name=_("Key Pair Name"),
+                         link=detail_link)
+    key_type = tables.Column("type", verbose_name=_("Key Pair Type"))
+    fingerprint = tables.Column("fingerprint", verbose_name=_("Fingerprint"))
+
+    def get_object_id(self, keypair):
+        return parse.quote(keypair.name)
+
+    class Meta(object):
+        name = "keypairs"
+        verbose_name = _("Key Pairs")
+        row_class = ExpandableKeyPairRow
+        table_actions = (CreateLinkNG, ImportKeyPair, DeleteKeyPairs,
+                         KeypairsFilterAction,)
+        row_actions = (DeleteKeyPairs,)
+#+END_SRC
+
+* Before and After Comparison
+
+** Before (Current)
+
+Column definition:
+#+BEGIN_SRC python
+chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+#+END_SRC
+
+Resulting classes: ~['normal_column', 'sortable']~
+
+Rendered HTML:
+#+BEGIN_SRC html
+<th class="normal_column sortable">
+  <span></span>
+</th>
+<td class="normal_column sortable">
+  <a ...><span class="fa fa-chevron-right"></span></a>
+</td>
+#+END_SRC
+
+Behavior:
+- ❌ Column is sortable (clicking header tries to sort)
+- ❌ Generic "normal_column" class name
+- ❌ Confusing UX (why can you sort a chevron?)
+
+** After (Proposed)
+
+Column definition:
+#+BEGIN_SRC python
+chevron = ExpandableKeyPairColumn("chevron", 
+                                   verbose_name="",
+                                   sortable=False,
+                                   classes=['chevron_column'])
+#+END_SRC
+
+Resulting classes: ~['chevron_column', 'normal_column']~
+
+Rendered HTML:
+#+BEGIN_SRC html
+<th class="chevron_column normal_column">
+  <span></span>
+</th>
+<td class="chevron_column normal_column">
+  <a ...><span class="fa fa-chevron-right"></span></a>
+</td>
+#+END_SRC
+
+Behavior:
+- ✅ Column is NOT sortable (clicking header does nothing)
+- ✅ Semantic "chevron_column" class for specific styling
+- ✅ Still has "normal_column" for general column styles
+- ✅ Clear, expected UX
+
+* CSS Implications
+
+** Using the New Class for Styling
+
+With ~class="chevron_column normal_column"~, you can now target the chevron
+column specifically in CSS:
+
+#+BEGIN_SRC css
+/* Specific styling for chevron column header */
+th.chevron_column {
+  width: 30px;  /* Fixed width for chevron */
+  text-align: center;
+}
+
+/* Specific styling for chevron column cells */
+td.chevron_column {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Don't show sort indicators on chevron column */
+th.chevron_column .sortable {
+  display: none;
+}
+#+END_SRC
+
+** General Column Styles Still Apply
+
+Because ~'normal_column'~ is still present:
+- Inherits padding from ~.normal_column~ styles
+- Inherits borders, backgrounds, etc.
+- Consistent with other columns
+
+This is intentional and desirable.
+
+* Testing
+
+** Verification Steps
+
+After implementing the changes:
+
+1. *Visual Check:*
+   - [ ] Load Key Pairs page
+   - [ ] Look at chevron column header
+   - [ ] Check: Is there a sort indicator? (Should be NO)
+   - [ ] Click the chevron column header
+   - [ ] Check: Does it try to sort? (Should be NO)
+
+2. *Browser DevTools:*
+   - [ ] Inspect chevron column ~<th>~ element
+   - [ ] Verify classes: ~chevron_column normal_column~ (no "sortable")
+   - [ ] Inspect chevron column ~<td>~ element
+   - [ ] Verify classes: ~chevron_column normal_column~ (no "sortable")
+
+3. *Functional Check:*
+   - [ ] Click chevrons in cells (not header)
+   - [ ] Verify: Rows still expand/collapse correctly
+   - [ ] No regressions in existing functionality
+
+4. *Integration Tests:*
+   If Horizon has tests that select columns by class:
+   - [ ] Check if any tests use ~.sortable~ to find columns
+   - [ ] Update if necessary to exclude chevron column
+
+** Expected Behavior
+
+*** Header Interaction
+
+Before:
+- Click header → Attempts to sort
+- Shows sort indicator (arrow)
+
+After:
+- Click header → No action
+- No sort indicator shown
+
+*** Cell Interaction
+
+Before and After (unchanged):
+- Click chevron → Expand/collapse row
+- Visual feedback (rotation)
+
+* Why This Matters
+
+** 1. User Experience
+
+Users should not see sort indicators or sorting behavior on columns that aren't
+data columns. The chevron is a control, not content to sort by.
+
+** 2. Semantic HTML
+
+CSS classes should describe the purpose/content of elements:
+- ~'normal_column'~ - generic
+- ~'chevron_column'~ - specific, meaningful
+- ~'sortable'~ - implies behavior that shouldn't exist
+
+** 3. Maintainability
+
+Future developers (or testers) can easily identify and target the chevron column:
+
+#+BEGIN_SRC python
+# In tests
+chevron_cells = table.find_all('td.chevron_column')
+#+END_SRC
+
+Much clearer than:
+#+BEGIN_SRC python
+# Unclear what this selects
+sortable_cells = table.find_all('td.sortable')
+#+END_SRC
+
+** 4. CSS Specificity
+
+Being able to target ~.chevron_column~ specifically allows for precise styling
+without affecting other columns:
+
+#+BEGIN_SRC css
+/* Only affects chevron column */
+.chevron_column {
+  width: 40px;
+}
+
+/* Would affect ALL columns (too broad) */
+.normal_column {
+  width: 40px;  /* BAD - affects every column */
+}
+#+END_SRC
+
+** 5. Following Horizon Conventions
+
+Horizon's framework uses specific column classes:
+- ~multi_select_column~ - for checkbox column
+- ~actions_column~ - for actions dropdown
+- ~chevron_column~ - for our chevron toggle (follows pattern)
+
+* Alternative Approach: Custom __init__
+
+If we wanted to completely remove ~'normal_column'~, we could override ~__init__~:
+
+#+BEGIN_SRC python
+class ExpandableKeyPairColumn(tables.Column):
+    """Column that renders a chevron toggle for expandable rows.
+    
+    This column is not sortable and uses 'chevron_column' class instead
+    of the default 'normal_column' class.
+    """
+    
+    def __init__(self, transform, **kwargs):
+        # Force sortable=False
+        kwargs['sortable'] = False
+        # Set custom classes
+        kwargs.setdefault('classes', ['chevron_column'])
+        # Call parent
+        super().__init__(transform, **kwargs)
+        # Remove 'normal_column' added by metaclass
+        if 'normal_column' in self.classes:
+            self.classes.remove('normal_column')
+    
+    def get_data(self, datum):
+        chevron_id = get_chevron_id(self.table, datum)
+        return render_to_string(
+            "key_pairs/_chevron_column.html",
+            {"chevron_id": chevron_id}
+        )
+#+END_SRC
+
+Then the column definition could be simpler:
+
+#+BEGIN_SRC python
+chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+#+END_SRC
+
+Result: classes = ~['chevron_column']~ only
+
+*Pros:*
+- Cleaner class list (only ~'chevron_column'~)
+- Defaults baked into the class
+- Simpler usage
+
+*Cons:*
+- More complex implementation
+- Removes general column styling inheritance
+- Might need to duplicate styles that ~'normal_column'~ provided
+
+*Recommendation:* Not necessary. Keeping both classes is fine and follows Horizon patterns.
+
+* Commit Message Suggestion
+
+#+BEGIN_SRC text
+Make chevron column non-sortable and add semantic class
+
+Prevent sorting on the chevron toggle column and add a descriptive
+CSS class for better semantics and styling.
+
+Changes:
+- Set sortable=False on ExpandableKeyPairColumn definition
+- Add classes=['chevron_column'] for semantic HTML
+- Result: class="chevron_column normal_column" (no "sortable")
+
+The chevron column is a UI control, not data that can be sorted.
+Making it sortable was confusing and inappropriate. The new
+'chevron_column' class allows specific CSS targeting while
+maintaining general column styles via 'normal_column'.
+
+Benefits:
+- No sort indicator on chevron column header
+- Clicking header doesn't attempt to sort
+- Clear, semantic CSS class for styling
+- Follows Horizon's column class conventions
+
+Addresses: Radomir Dopieralski's feedback on Patchset 11
+Partial-Bug: #OSPRH-12803
+#+END_SRC
+
+* Sources and References
+
+** Horizon DataTable Framework
+
+1. *Horizon Tables Base Module*
+   File: ~horizon/tables/base.py~
+   Lines: 54-1246 (Column class and DataTableMetaclass)
+   - Line 299: Column.__init__ with sortable parameter
+   - Line 330: self.sortable = sortable
+   - Line 363-364: Auto-add "sortable" class if sortable=True
+   - Line 1191: Metaclass auto-adds "normal_column" to all columns
+
+2. *Horizon Tables Documentation*
+   URL: https://docs.openstack.org/horizon/latest/contributor/topics/tables.html
+   - Column class attributes
+   - sortable attribute
+   - classes attribute
+   - How columns are rendered
+
+3. *Column Class Documentation*
+   File: ~horizon/tables/base.py~, Lines 58-270
+   - Complete docstring for Column class
+   - Line 76-79: sortable attribute documentation
+   - Line 157-160: classes attribute documentation
+
+** DataTable Metaclass Behavior
+
+4. *DataTableMetaclass Implementation*
+   File: ~horizon/tables/base.py~, Lines 1176-1246
+   - How columns are discovered and processed
+   - Automatic class additions
+   - Column ordering and registration
+
+5. *Django Metaclass Patterns*
+   URL: https://docs.djangoproject.com/en/stable/topics/db/models/#metaclasses
+   - How Django uses metaclasses for model definitions
+   - Similar pattern used by Horizon tables
+
+** CSS Classes in Horizon
+
+6. *Horizon Table Styles*
+   File: ~openstack_dashboard/static/dashboard/scss/components/_tables.scss~
+   - Line 51: .normal_column ul styles
+   - General table styling
+
+7. *Integration Test Column Selection*
+   File: ~openstack_dashboard/test/integration_tests/regions/tables.py~
+   - Line 21: NORMAL_COLUMN_CLASS = 'normal_column'
+   - How tests select columns by class
+
+** Similar Patterns in Horizon
+
+8. *Multi-Select Column*
+   File: ~horizon/tables/base.py~, Lines 1221-1226
+   #+BEGIN_SRC python
+   multi_select = opts.column_class("multi_select",
+                                    verbose_name="",
+                                    auto="multi_select")
+   multi_select.classes.append('multi_select_column')
+   #+END_SRC
+   - Shows pattern of adding semantic class alongside 'normal_column'
+
+9. *Actions Column*
+   File: ~horizon/tables/base.py~, Lines 1227-1232
+   #+BEGIN_SRC python
+   actions_column = opts.column_class("actions",
+                                      verbose_name=_("Actions"),
+                                      auto="actions")
+   actions_column.classes.append('actions_column')
+   #+END_SRC
+   - Another example of semantic class addition
+
+** Sortable Columns
+
+10. *Table Sorting Documentation*
+    URL: https://docs.openstack.org/horizon/latest/contributor/topics/tables.html#sortable-columns
+    - How sortable columns work
+    - When to use sortable=False
+
+11. *Column Sorting Implementation*
+    File: ~horizon/tables/base.py~
+    - How sortable attribute affects rendering
+    - Client-side vs server-side sorting
+
+** HTML/CSS Semantics
+
+12. *Semantic HTML Best Practices*
+    URL: https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html
+    - Why semantic class names matter
+    - How to choose meaningful class names
+
+13. *CSS Class Naming Conventions*
+    URL: https://www.smashingmagazine.com/2016/06/battling-bem-extended-edition-common-problems-and-how-to-avoid-them/
+    - Best practices for CSS class names
+    - BEM (Block Element Modifier) methodology
+
+** Testing References
+
+14. *Horizon Integration Tests*
+    File: ~openstack_dashboard/test/integration_tests/regions/tables.py~
+    - How tables are tested
+    - Column selection by class
+
+15. *Unit Test Examples*
+    File: ~horizon/test/unit/tables/test_tables.py~
+    - Lines 642, 1223: Tests checking column classes
+    - Validates that classes are applied correctly
+
+** Gerrit Review Context
+
+16. *OpenDev Gerrit Review*
+    URL: https://review.opendev.org/c/openstack/horizon/+/966349
+    - The actual review being worked on
+    - Radomir's comment on Patchset 11
+    - Context of the discussion
+
+17. *Radomir's Specific Comment*
+    Location: Patchset 11, comment on tables.py
+    - "We probably want to give it a different class name than 'normal_column sortable'"
+    - "and maybe prevent it from being sortable too"
+
+* Conclusion
+
+The solution is straightforward:
+1. Add ~sortable=False~ to prevent sorting
+2. Add ~classes=['chevron_column']~ for semantic HTML
+
+Result:
+- ✅ Chevron column no longer sortable
+- ✅ Semantic ~'chevron_column'~ class for specific styling
+- ✅ Retains ~'normal_column'~ for general column styles
+- ✅ Follows Horizon conventions
+- ✅ Better UX and code clarity
+
+This aligns with Horizon's patterns for special columns (like ~multi_select_column~
+and ~actions_column~) and addresses Radomir's feedback completely.
+
+The implementation is minimal (2 parameter additions) with significant benefits
+for usability, semantics, and maintainability.
+
