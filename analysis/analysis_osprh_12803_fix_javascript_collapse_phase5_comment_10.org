@@ -133,13 +133,13 @@ The ~<style>~ tag is *inside the row template*, so it gets rendered *once per ro
 
 #+BEGIN_EXAMPLE
 ┌─────────────────────────────────────────────────────────────────┐
-│ Page Load: http://localhost:8080/project/key_pairs/            │
+│ Page Load: http://localhost:8080/project/key_pairs/             │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ IndexView.get_data()                                            │
-│ Returns: [keypair1, keypair2, keypair3]  (3 key pairs)         │
+│ Returns: [keypair1, keypair2, keypair3]  (3 key pairs)          │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
                             ▼
@@ -150,30 +150,30 @@ The ~<style>~ tag is *inside the row template*, so it gets rendered *once per ro
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ For each key pair, call ExpandableKeyPairRow.render()          │
+│ For each key pair, call ExpandableKeyPairRow.render()           │
 │                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │ Row 1: keypair1                                         │  │
-│  │   → render_to_string("key_pairs/expandable_row.html")  │  │
-│  │   → OUTPUTS: <tr>...</tr> + <style>...</style>         │  │
-│  └─────────────────────────────────────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ Row 1: keypair1                                         │    │
+│  │   → render_to_string("key_pairs/expandable_row.html")   │    │
+│  │   → OUTPUTS: <tr>...</tr> + <style>...</style>          │    │
+│  └─────────────────────────────────────────────────────────┘    │
 │                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │ Row 2: keypair2                                         │  │
-│  │   → render_to_string("key_pairs/expandable_row.html")  │  │
-│  │   → OUTPUTS: <tr>...</tr> + <style>...</style>         │  │
-│  └─────────────────────────────────────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ Row 2: keypair2                                         │    │
+│  │   → render_to_string("key_pairs/expandable_row.html")   │    │
+│  │   → OUTPUTS: <tr>...</tr> + <style>...</style>          │    │
+│  └─────────────────────────────────────────────────────────┘    │
 │                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │ Row 3: keypair3                                         │  │
-│  │   → render_to_string("key_pairs/expandable_row.html")  │  │
-│  │   → OUTPUTS: <tr>...</tr> + <style>...</style>         │  │
-│  └─────────────────────────────────────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ Row 3: keypair3                                         │    │
+│  │   → render_to_string("key_pairs/expandable_row.html")   │    │
+│  │   → OUTPUTS: <tr>...</tr> + <style>...</style>          │    │
+│  └─────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ PROBLEM: <style> tag appears 3 times in final HTML!            │
+│ PROBLEM: <style> tag appears 3 times in final HTML!             │
 └─────────────────────────────────────────────────────────────────┘
 #+END_EXAMPLE
 
@@ -335,6 +335,8 @@ tox -e runserver
 *** Step 2: Open the Key Pairs Page
 Navigate to: http://localhost:8080/project/key_pairs/
 
+[[file:../images/mymcp_analysis_open_key_pairs_page.png]]
+
 *** Step 3: View Page Source
 **** Method A: Right-Click → "View Page Source"
 1. Right-click anywhere on the page
@@ -355,6 +357,9 @@ In the page source:
 1. Press ~Ctrl+F~ (or ~Cmd+F~ on Mac)
 2. Search for: ~<style>~
 3. You should see multiple matches (one per key pair row)
+
+This style shows up multiple times
+[[file:../images/mymcp_analysis_open_key_pairs_page_source_style.png]]
 
 *** Step 5: Observe the Problem
 You'll see output like this in the HTML source:
@@ -548,7 +553,7 @@ Update ~key_pairs/expandable_row.html~ to remove the style block:
 #+BEGIN_EXAMPLE
 ┌─────────────────────────────────────────────────────────────────┐
 │ IndexView                                                       │
-│   template_name = 'project/key_pairs/index.html'               │
+│   template_name = 'project/key_pairs/index.html'                │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
                             ▼
@@ -559,7 +564,7 @@ Update ~key_pairs/expandable_row.html~ to remove the style block:
 │   <style>                                                       │
 │     /* Chevron styles */                                        │
 │     .chevron-toggle { ... }                                     │
-│   </style>                      ← ✅ STYLE APPEARS ONCE HERE   │
+│   </style>                      ← ✅ STYLE APPEARS ONCE HERE    │
 │                                                                 │
 │   {{ table.render }}                                            │
 │ {% endblock %}                                                  │
@@ -576,7 +581,7 @@ Update ~key_pairs/expandable_row.html~ to remove the style block:
 │ For each key pair:                                              │
 │   ExpandableKeyPairRow.render()                                 │
 │     template: key_pairs/expandable_row.html                     │
-│     outputs: <tr>...</tr> ONLY (no <style> tag)                │
+│     outputs: <tr>...</tr> ONLY (no <style> tag)                 │
 └─────────────────────────────────────────────────────────────────┘
 #+END_EXAMPLE
 
@@ -595,6 +600,10 @@ Update ~key_pairs/expandable_row.html~ to remove the style block:
 - ~<style>~ tag appears in ~<body>~ rather than ~<head>~ (less than ideal, but functional)
 
 * Solution 2: Override the Template for the Entire Table
+After implementing this solution, I now see the style section only showing up once
+
+[[file:../images/mymcp_analysis_open_key_pairs_page_source_style_fixed.png]]
+
 
 ** What Does This Mean?
 
@@ -692,28 +701,28 @@ Same as Solution 1, remove the ~<style>~ block from the row template.
 #+BEGIN_EXAMPLE
 ┌─────────────────────────────────────────────────────────────────┐
 │ IndexView                                                       │
-│   template_name = 'horizon/common/_data_table_view.html'       │
-│   (uses default template)                                      │
+│   template_name = 'horizon/common/_data_table_view.html'        │
+│   (uses default template)                                       │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ KeyPairsTable.render()                                          │
-│   Meta.template = 'key_pairs/_keypairs_table.html'             │
+│   Meta.template = 'key_pairs/_keypairs_table.html'              │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ key_pairs/_keypairs_table.html                                  │
 │                                                                 │
-│ {% include "horizon/common/_data_table.html" %}                │
+│ {% include "horizon/common/_data_table.html" %}                 │
 │   ↑                                                             │
-│   └─ Renders entire table: <table>...</table>                  │
+│   └─ Renders entire table: <table>...</table>                   │
 │      with all rows                                              │
 │                                                                 │
 │ <style>                                                         │
 │   /* Chevron styles */                                          │
-│   .chevron-toggle { ... }     ← ✅ STYLE APPEARS ONCE HERE     │
+│   .chevron-toggle { ... }     ← ✅ STYLE APPEARS ONCE HERE      │
 │ </style>                                                        │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
@@ -722,7 +731,7 @@ Same as Solution 1, remove the ~<style>~ block from the row template.
 │ For each key pair:                                              │
 │   ExpandableKeyPairRow.render()                                 │
 │     template: key_pairs/expandable_row.html                     │
-│     outputs: <tr>...</tr> ONLY (no <style> tag)                │
+│     outputs: <tr>...</tr> ONLY (no <style> tag)                 │
 └─────────────────────────────────────────────────────────────────┘
 #+END_EXAMPLE
 
@@ -863,6 +872,380 @@ By saying "Let's do this" after presenting the two options, Radomir is acknowled
 3. Remove ~<style>~ block from ~expandable_row.html~
 4. Test to verify styles work and appear only once
 5. Add comment in code explaining why this pattern was chosen
+
+* Testing Solution 2: Verifying Single <style> Tag
+
+** Test Execution
+
+After implementing Solution 2, we tested by:
+1. Starting the dev server: ~tox -e runserver~
+2. Navigating to: http://localhost:8080/project/key_pairs/
+3. Viewing page source (Ctrl+U or Right-click → View Page Source)
+4. Searching for ~<style>~ tags in the HTML
+
+** Observed HTML Output
+
+The resulting HTML shows the ~<style>~ block appearing *once* at the end of the table (after the closing ~</table>~ tag):
+
+#+BEGIN_SRC html
+<!-- Last row of the table -->
+<tr class="keypair-detail-row">
+  <td colspan="6">
+    <div id="keypairs_chevron_test_pair" class="collapse">
+      <div class="keypair-details">
+        <dl class="dl-horizontal">
+          <dt>Key Pair Name</dt>
+          <dd>test_pair</dd>
+
+          <dt>Key Pair Type</dt>
+          <dd>ssh</dd>
+
+          <dt>Fingerprint</dt>
+          <dd>33:c0:60:90:cb:ef:19:82:e5:c5:ab:ad:79:0d:a9:2d</dd>
+
+          <dt>Public Key</dt>
+          <dd><pre style="word-break: break-all; white-space: pre-wrap; max-width: 100%; overflow-wrap: break-word;">ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDRaG3dS22NOZKrRfpdaHIdBWOHwOyjUQwhQo8Vnn34JFsitSLy7K/vedGz8+8UogNN7LTfZ5FlUoDkYPdWWyf7v8EhJz3COQKPIg+N1j/uOrRnXI8NPEhagtRyziAlq17uN7VbVa4ysNI1A6/iYYCJVuGTQVrhC8i9oz2UXPSkIxT7LU7jt4YSCYDV/x1K1w0BRcmGktb9172/A1LZpeUvVe6gUAWx+TK8AWMUh2/W96WvWzGcUFPp4oNQ4QkWAGl/VoNWBLJ7LrYxMTxDSNziKwYFxY7wkD1vomQc3abKGjeS1BahhDTbZjZXh3EU37f01V9suLiCAcs3jpQLyA7B Generated-by-Nova</pre></dd>
+        </dl>
+      </div>
+    </div>
+  </td>
+</tr>
+
+    </tbody>
+
+    <tfoot>
+      <tr>
+        <td colspan="6">
+          <span class="table_count">Displaying 4 items</span>
+        </td>
+      </tr>
+    </tfoot>
+
+  </table>
+
+  </form>
+</div>
+
+<!-- ✅ <style> appears ONCE here, after the table -->
+<style>
+/* Chevron rotation for key pair expandable rows
+   Uses Bootstrap's automatic .collapsed class management */
+.chevron-toggle {
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.chevron-toggle .fa-chevron-right {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+/* Rotate chevron 90 degrees when row is expanded (not collapsed) */
+.chevron-toggle:not(.collapsed) .fa-chevron-right {
+  transform: rotate(90deg);
+}
+
+/* Remove padding from detail row cells to eliminate gap when collapsed */
+tr.keypair-detail-row td {
+  padding: 0;
+}
+
+/* Add margin to inner content to maintain spacing when expanded */
+tr.keypair-detail-row td div.keypair-details {
+  margin: 8px;
+}
+</style>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <div id="footer">
+      <!-- Footer content -->
+    </div>
+#+END_SRC
+
+** Key Observation
+
+✅ *The ~<style>~ tag appears exactly ONCE in the entire page*
+- Located after the closing ~</table>~ tag
+- No longer repeated after each key pair row
+- This confirms Solution 2 successfully fixed Radomir's concern
+
+** How Does One <style> Tag Work for All Rows?
+
+*** Understanding CSS Scope
+
+The key to understanding why this works is understanding *CSS scope*:
+
+*CSS styles have GLOBAL scope by default.*
+
+When a browser encounters a ~<style>~ tag anywhere in the HTML document:
+
+1. *The browser parses the CSS rules*
+   - Reads all the selectors (e.g., ~.chevron-toggle~, ~tr.keypair-detail-row td~)
+   - Stores these rules in memory as part of the document's CSSOM (CSS Object Model)
+
+2. *The rules apply to the ENTIRE document*
+   - Not just elements that come after the ~<style>~ tag
+   - Not just elements within a specific container
+   - *ALL matching elements in the DOM*, regardless of when they were rendered
+
+3. *The ~<style>~ tag location doesn't matter for rule application*
+   - Rules can be in ~<head>~ (best practice)
+   - Rules can be at the end of ~<body>~ (what we're doing)
+   - Rules can even be in the middle of content (not recommended, but works)
+
+*** Visual Diagram: CSS Rule Application
+
+#+BEGIN_EXAMPLE
+┌─────────────────────────────────────────────────────────────────┐
+│ HTML Document (Simplified)                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+<html>
+  <head>
+    <title>Key Pairs</title>
+  </head>
+  <body>
+    <table>
+      <tbody>
+        <!-- Row 1 -->
+        <tr class="keypair-detail-row"> ← ❓ How does CSS reach this?
+          <td>...</td>
+        </tr>
+        
+        <!-- Row 2 -->
+        <tr class="keypair-detail-row"> ← ❓ And this?
+          <td>...</td>
+        </tr>
+        
+        <!-- Row 3 -->
+        <tr class="keypair-detail-row"> ← ❓ And this?
+          <td>...</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <!-- ✅ <style> appears HERE, AFTER all the rows -->
+    <style>
+      tr.keypair-detail-row td {
+        padding: 0;
+      }
+    </style>
+  </body>
+</html>
+
+┌─────────────────────────────────────────────────────────────────┐
+│ Browser's CSS Processing (How It Works)                        │
+└─────────────────────────────────────────────────────────────────┘
+
+Step 1: Browser parses HTML top to bottom
+  ├─ Encounters <tr class="keypair-detail-row"> elements
+  ├─ Creates DOM nodes for these elements
+  └─ Stores them in the Document Object Model (DOM)
+
+Step 2: Browser encounters <style> tag (at the end)
+  ├─ Parses CSS rules: "tr.keypair-detail-row td { padding: 0; }"
+  ├─ Adds rules to CSS Object Model (CSSOM)
+  └─ CSSOM is GLOBAL - not location-specific!
+
+Step 3: Browser applies styles (Style Calculation)
+  ├─ Traverses the ENTIRE DOM tree
+  ├─ For each element, checks ALL CSS rules in CSSOM
+  ├─ Finds all <tr class="keypair-detail-row"> elements
+  │   (even those that were parsed BEFORE the <style> tag!)
+  └─ Applies matching rules to ALL of them
+
+Result: All three rows get "padding: 0" applied,
+        even though the <style> tag comes after them!
+#+END_EXAMPLE
+
+*** Why Location Doesn't Matter: The Rendering Pipeline
+
+Browsers use a multi-stage rendering pipeline:
+
+#+BEGIN_EXAMPLE
+┌────────────────────────────────────────────────────────────────┐
+│ Stage 1: HTML Parsing                                          │
+│ ────────────────────────────────────────────────────────────── │
+│ • Browser reads HTML sequentially                              │
+│ • Builds DOM tree (Document Object Model)                      │
+│ • All elements are in memory as DOM nodes                      │
+│ • Order parsed: top → bottom                                   │
+└────────────────────────────────────────────────────────────────┘
+                              ↓
+┌────────────────────────────────────────────────────────────────┐
+│ Stage 2: CSS Parsing                                           │
+│ ────────────────────────────────────────────────────────────── │
+│ • Browser encounters <style> tags                              │
+│ • Parses CSS rules from ALL <style> tags                       │
+│ • Builds CSSOM (CSS Object Model)                              │
+│ • CSSOM is a GLOBAL collection of rules                        │
+│ • Location of <style> tag is IRRELEVANT to CSSOM               │
+└────────────────────────────────────────────────────────────────┘
+                              ↓
+┌────────────────────────────────────────────────────────────────┐
+│ Stage 3: Style Calculation (Recalculate Styles)                │
+│ ────────────────────────────────────────────────────────────── │
+│ • Browser matches CSSOM rules to DOM elements                  │
+│ • For EACH element in DOM:                                     │
+│   1. Check ALL rules in CSSOM                                  │
+│   2. Apply matching rules based on specificity                 │
+│   3. Calculate final "computed style"                          │
+│ • This happens AFTER all HTML and CSS are parsed               │
+│ • So it doesn't matter if CSS came before or after elements!   │
+└────────────────────────────────────────────────────────────────┘
+                              ↓
+┌────────────────────────────────────────────────────────────────┐
+│ Stage 4: Layout (Reflow)                                       │
+│ ────────────────────────────────────────────────────────────── │
+│ • Browser calculates positions and sizes                       │
+│ • Uses computed styles from Stage 3                            │
+└────────────────────────────────────────────────────────────────┘
+                              ↓
+┌────────────────────────────────────────────────────────────────┐
+│ Stage 5: Paint                                                 │
+│ ────────────────────────────────────────────────────────────── │
+│ • Browser draws pixels on screen                               │
+│ • Applies colors, borders, shadows, etc.                       │
+└────────────────────────────────────────────────────────────────┘
+#+END_EXAMPLE
+
+*Key Point*: Style calculation (Stage 3) happens *AFTER* both HTML and CSS are fully parsed. The browser has the complete DOM and complete CSSOM before applying styles, so temporal ordering doesn't matter.
+
+*** Example: Forward References Work
+
+This might seem counterintuitive, but CSS can "reach back" to elements defined earlier:
+
+#+BEGIN_SRC html
+<!-- Element defined FIRST -->
+<div id="target">This will be red</div>
+
+<!-- CSS defined SECOND (but still works!) -->
+<style>
+  #target {
+    color: red;
+  }
+</style>
+#+END_SRC
+
+The ~#target~ div will be red, even though the style was defined *after* the element in the HTML source.
+
+*Why?* Because the browser:
+1. Parses the entire document first
+2. Then applies all CSS rules to the complete DOM
+
+*** Comparison: Before vs. After Solution 2
+
+**** Before Solution 2: Repeated <style> Tags
+
+#+BEGIN_SRC html
+<table>
+  <tbody>
+    <tr>...</tr>
+    <tr class="keypair-detail-row">...</tr>
+    <style>
+      tr.keypair-detail-row td { padding: 0; }
+    </style>
+    
+    <tr>...</tr>
+    <tr class="keypair-detail-row">...</tr>
+    <style>
+      tr.keypair-detail-row td { padding: 0; }
+    </style>
+    
+    <tr>...</tr>
+    <tr class="keypair-detail-row">...</tr>
+    <style>
+      tr.keypair-detail-row td { padding: 0; }
+    </style>
+  </tbody>
+</table>
+#+END_SRC
+
+*What happens:*
+1. Browser parses 3 identical ~<style>~ blocks
+2. Adds the same rule to CSSOM 3 times (wasteful!)
+3. Each rule still applies globally (so redundant)
+4. Result: Works, but inefficient and violates best practices
+
+**** After Solution 2: Single <style> Tag
+
+#+BEGIN_SRC html
+<table>
+  <tbody>
+    <tr>...</tr>
+    <tr class="keypair-detail-row">...</tr>
+    
+    <tr>...</tr>
+    <tr class="keypair-detail-row">...</tr>
+    
+    <tr>...</tr>
+    <tr class="keypair-detail-row">...</tr>
+  </tbody>
+</table>
+
+<style>
+  tr.keypair-detail-row td { padding: 0; }
+</style>
+#+END_SRC
+
+*What happens:*
+1. Browser parses 1 ~<style>~ block
+2. Adds the rule to CSSOM once
+3. Rule applies to ALL ~tr.keypair-detail-row~ elements (globally)
+4. Result: Same visual output, but efficient and clean!
+
+*** Why Both Approaches Work (But One Is Better)
+
+*Both approaches produce the same visual result* because:
+- CSS rules have global scope
+- Multiple identical rules don't conflict (last one wins, but they're identical)
+- All elements get the same computed styles
+
+*Solution 2 is better* because:
+- ✅ Smaller page size (one ~<style>~ block vs. N blocks)
+- ✅ Faster parsing (browser processes CSS once, not N times)
+- ✅ Follows best practices (styles in one place)
+- ✅ Easier to maintain (one place to update CSS)
+- ✅ Cleaner HTML (less clutter in the DOM)
+
+*** Browser Developer Tools Confirmation
+
+You can verify this in Chrome/Firefox DevTools:
+
+1. Right-click on a ~<tr class="keypair-detail-row">~ element
+2. Select "Inspect Element"
+3. Look at the "Computed" tab
+4. See ~padding: 0~ applied
+5. Click the arrow next to ~padding~ to see which rule applied it
+6. It will show the rule from the *single* ~<style>~ block at the end
+
+This confirms that:
+- The style from the end of the document applies to elements at the beginning
+- CSS scope is global, not sequential
+
+** Test Results
+
+✅ *Success Criteria Met:*
+1. Page loads without errors
+2. Chevrons display correctly in all rows
+3. Chevron rotation animation works when clicking
+4. Detail rows collapse/expand properly
+5. ~<style>~ tag appears exactly ONCE in page source
+6. All rows receive correct styling
+
+✅ *Performance Improvement:*
+- Before: 4 key pairs × 1 ~<style>~ block each = 4 blocks (redundant)
+- After: 1 ~<style>~ block total (optimal)
+- Savings: 75% reduction in CSS duplication for 4 rows
+
+** Conclusion from Testing
+
+Solution 2 successfully addresses Radomir's concern while maintaining full functionality. The single ~<style>~ block at the end of the table applies to all rows due to CSS's global scope, proving that temporal ordering in HTML doesn't affect CSS rule application.
 
 * Summary
 
