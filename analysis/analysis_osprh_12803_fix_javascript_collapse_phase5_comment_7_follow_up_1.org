@@ -5,139 +5,129 @@
 
 * Key Questions
 
-1. WHERE can we see "normal_column sortable"? (Not in Python code!)
-2. HOW does adding ~classes=['chevron_column']~ change the class name?
-3. HOW does ~sortable=False~ prevent sorting?
-4. HOW can we add parameters without changing ~ExpandableKeyPairColumn~ class definition?
+WHERE can we see "normal_column sortable"? (Not in Python code!)
+- HOW does adding ~classes=['chevron_column']~ change the class name?
+- HOW does ~sortable=False~ prevent sorting?
+- HOW can we add parameters without changing ~ExpandableKeyPairColumn~ class definition?
 
 * Critical Understanding: CSS Classes vs Python Code
 
 ** The Confusion
-
 You won't find ~"normal_column sortable"~ anywhere in the Python code!
 
 These are *CSS class names* that appear in the *rendered HTML*, not in Python.
 
-** Where to See Them
+* Where to See Them
 
-*** In Browser DevTools (Rendered HTML)
+** In Browser DevTools (Rendered HTML)
+When you load the Key Pairs page and inspect the chevron column with browser DevTools, you'll see:
 
-When you load the Key Pairs page and inspect the chevron column with browser DevTools,
-you'll see:
+: <!-- BEFORE the change -->
+: <th class="normal_column sortable">
+:   <span></span>
+: </th>
+: 
+: <td class="normal_column sortable">
+:   <a class="chevron-toggle" ...>
+:     <span class="fa fa-chevron-right"></span>
+:   </a>
+: </td>
 
-#+BEGIN_EXAMPLE
-<!-- BEFORE the change -->
-<th class="normal_column sortable">
-  <span></span>
-</th>
+The string *normal_column sortable* is the HTML *class* attribute value.
 
-<td class="normal_column sortable">
-  <a class="chevron-toggle" ...>
-    <span class="fa fa-chevron-right"></span>
-  </a>
-</td>
-#+END_EXAMPLE
+** In Generated HTML Source
+If you *View Page Source* in browser, you'll find:
 
-The string ~"normal_column sortable"~ is the HTML ~class~ attribute value.
-
-*** In Generated HTML Source
-
-If you "View Page Source" in browser, you'll find:
-
-#+BEGIN_SRC html
-<table class="table table-striped datatable">
-  <thead>
-    <tr>
-      <th class="normal_column sortable">  ← HERE!
-        <span></span>
-      </th>
-      <th class="normal_column sortable anchor">
-        <a href="...">Key Pair Name</a>
-      </th>
-      ...
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="normal_column sortable">  ← HERE!
-        <a class="chevron-toggle" ...>...</a>
-      </td>
-      ...
-    </tr>
-  </tbody>
-</table>
-#+END_SRC
+: <table class="table table-striped datatable">
+:   <thead>
+:     <tr>
+:       <th class="normal_column sortable">               ← HERE!
+:         <span></span>
+:       </th>
+:       <th class="normal_column sortable anchor">
+:         <a href="...">Key Pair Name</a>
+:       </th>
+:       ...
+:     </tr>
+:   </thead>
+:   <tbody>
+:     <tr>
+:       <td class="normal_column sortable">               ← HERE!
+:         <a class="chevron-toggle" ...>...</a>
+:       </td>
+:       ...
+:     </tr>
+:   </tbody>
+: </table>
 
 ** Radomir Sees This in DevTools
-
 When Radomir reviews the patch, he:
-1. Applies the patchset locally
-2. Runs Horizon dev server
-3. Opens Key Pairs page in browser
-4. Opens DevTools (F12)
-5. Inspects the chevron column
-6. Sees: ~<th class="normal_column sortable">~
-7. Thinks: "That's not right - chevron shouldn't be sortable!"
+- Applies the patchset locally
+- Runs Horizon dev server
+- Opens Key Pairs page in browser
+- Opens DevTools (F12)
+- Inspects the chevron column
+- Sees: <th class="normal_column sortable">
+- Thinks: "That's not right - chevron shouldn't be sortable!"
 
 * The Flow: Python Code → HTML Classes
 
 ** Diagram 1: From Python to HTML
 
-#+BEGIN_EXAMPLE
-┌─────────────────────────────────────────────────────────────┐
-│ PYTHON CODE (tables.py)                                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  chevron = ExpandableKeyPairColumn("chevron",               │
-│                                     verbose_name="")         │
-│                                                              │
-│  No explicit CSS classes mentioned!                         │
-│                                                              │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-                  │ (1) Class instantiation
-                  │
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│ HORIZON FRAMEWORK (horizon/tables/base.py)                  │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  Metaclass adds:    self.classes.append('normal_column')    │
-│                     Result: ['normal_column']               │
-│                                                              │
-│  __init__ checks:   if self.sortable and not self.auto:     │
-│                         self.classes.append('sortable')     │
-│                     Result: ['normal_column', 'sortable']   │
-│                                                              │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-                  │ (2) Template rendering
-                  │
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│ HTML TEMPLATE (horizon/common/_data_table.html)             │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  <th class="{{ column.classes|join:' ' }}">                 │
-│      ↓                                                       │
-│  Converts list to string: ['normal_column', 'sortable']     │
-│                         → "normal_column sortable"          │
-│                                                              │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-                  │ (3) Browser renders
-                  │
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│ BROWSER (DevTools / Rendered HTML)                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  <th class="normal_column sortable">                        │
-│      ↑                                                       │
-│  THIS is where Radomir sees "normal_column sortable"!       │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-#+END_EXAMPLE
+: ┌─────────────────────────────────────────────────────────────┐
+: │ PYTHON CODE (tables.py)                                     │
+: ├─────────────────────────────────────────────────────────────┤
+: │                                                             │
+: │  chevron = ExpandableKeyPairColumn("chevron",               │
+: │                                     verbose_name="")        │
+: │                                                             │
+: │  No explicit CSS classes mentioned!                         │
+: │                                                             │
+: └─────────────────┬───────────────────────────────────────────┘
+:                   │
+:                   │ (1) Class instantiation
+:                   │
+:                   ▼
+: ┌─────────────────────────────────────────────────────────────┐
+: │ HORIZON FRAMEWORK (horizon/tables/base.py)                  │
+: ├─────────────────────────────────────────────────────────────┤
+: │                                                             │
+: │  Metaclass adds:    self.classes.append('normal_column')    │
+: │                     Result: ['normal_column']               │
+: │                                                             │
+: │  __init__ checks:   if self.sortable and not self.auto:     │
+: │                         self.classes.append('sortable')     │
+: │                     Result: ['normal_column', 'sortable']   │
+: │                                                             │
+: └─────────────────┬───────────────────────────────────────────┘
+:                   │
+:                   │ (2) Template rendering
+:                   │
+:                   ▼
+: ┌─────────────────────────────────────────────────────────────┐
+: │ HTML TEMPLATE (horizon/common/_data_table.html)             │
+: ├─────────────────────────────────────────────────────────────┤
+: │                                                             │
+: │  <th class="{{ column.classes|join:' ' }}">                 │
+: │      ↓                                                      │
+: │  Converts list to string: ['normal_column', 'sortable']     │
+: │                         → "normal_column sortable"          │
+: │                                                             │
+: └─────────────────┬───────────────────────────────────────────┘
+:                   │
+:                   │ (3) Browser renders
+:                   │
+:                   ▼
+: ┌─────────────────────────────────────────────────────────────┐
+: │ BROWSER (DevTools / Rendered HTML)                          │
+: ├─────────────────────────────────────────────────────────────┤
+: │                                                             │
+: │  <th class="normal_column sortable">                        │
+: │      ↑                                                      │
+: │  THIS is where Radomir sees "normal_column sortable"!       │
+: │                                                             │
+: └─────────────────────────────────────────────────────────────┘
+
 
 * Detailed Step-by-Step Breakdown
 
@@ -145,548 +135,507 @@ When Radomir reviews the patch, he:
 
 File: ~openstack_dashboard/dashboards/project/key_pairs/tables.py~
 
-#+BEGIN_SRC python
-chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
-#+END_SRC
+: X
+: ipython https://review.opendev.org/c/openstack/horizon/+/966349/11/openstack_dashboard/dashboards/project/key_pairs/tables.py
+: 
+: 165  chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
 
 What happens internally:
-
-1. Python calls ~ExpandableKeyPairColumn.__init__("chevron", verbose_name="")~
-2. ~ExpandableKeyPairColumn~ has no ~__init__~ method, so it uses parent's
-3. Calls ~tables.Column.__init__("chevron", verbose_name="")~
-4. ~Column.__init__~ has parameter ~sortable=True~ as default (not specified = uses default)
-5. Inside ~__init__~: ~self.classes = []~ (empty list initially)
+- Python calls *ExpandableKeyPairColumn.__init__("chevron", verbose_name="")*
+- *ExpandableKeyPairColumn* has no *__init__* method, so it uses parent's
+- Calls *tables.Column.__init__("chevron", verbose_name="")*
+- *Column.__init__* has parameter *sortable=True* as default (not specified = uses default)
+- Inside *__init__*: *self.classes = []* (empty list initially)
 
 ** Step 2: Metaclass Adds 'normal_column'
+When the *KeyPairsTable* class is being created (before any instance exists):
 
-File: ~horizon/tables/base.py~, Line 1191
+Inside DataTableMetaclass.__new__()
 
-When the ~KeyPairsTable~ class is being created (before any instance exists):
-
-#+BEGIN_SRC python
-# Inside DataTableMetaclass.__new__()
-for attr_name, obj in attrs.items():
-    if isinstance(obj, (opts.column_class, Column)):
-        column_instance = attrs[attr_name]
-        column_instance.name = attr_name
-        column_instance.classes.append('normal_column')  # ← ADDS HERE!
-        columns.append((attr_name, column_instance))
-#+END_SRC
+: X
+: ipython https://github.com/openstack/horizon/blob/master/horizon/tables/base.py#L1191
+:
+: for attr_name, obj in attrs.items():
+:     if isinstance(obj, (opts.column_class, Column)):
+:         column_instance = attrs[attr_name]
+:         column_instance.name = attr_name
+:         column_instance.classes.append('normal_column')             # ← ADDS HERE!
+:         columns.append((attr_name, column_instance))
 
 After this step:
-- ~chevron.classes = ['normal_column']~
+: *chevron.classes = ['normal_column']*
 
 ** Step 3: Column.__init__ Adds 'sortable'
 
-File: ~horizon/tables/base.py~, Lines 363-364
+Still in the *Column.__init__* method:
 
-Still in the ~Column.__init__~ method:
-
-#+BEGIN_SRC python
-def __init__(self, transform, verbose_name=None, sortable=True, ...):
-    # ... earlier code sets self.sortable = sortable ...
-    self.sortable = sortable  # True by default!
-    
-    # ... later code ...
-    if self.sortable and not self.auto:
-        self.classes.append("sortable")  # ← ADDS HERE!
-#+END_SRC
+: X
+: ipython https://github.com/openstack/horizon/blob/master/horizon/tables/base.py#L363-L364
+: 
+: def __init__(self, transform, verbose_name=None, sortable=True, ...):
+:     # ... earlier code sets self.sortable = sortable ...
+:     self.sortable = sortable  # True by default!
+:     
+:     # ... later code ...
+:     if self.sortable and not self.auto:
+:         self.classes.append("sortable")  # ← ADDS HERE!
 
 After this step:
-- ~chevron.classes = ['normal_column', 'sortable']~
+: *chevron.classes = ['normal_column', 'sortable']*
 
 ** Step 4: Template Renders to HTML
 
-File: ~horizon/templates/horizon/common/_data_table.html~
+File: *horizon/templates/horizon/common/_data_table.html*
 
 The Django template converts the Python list to HTML:
 
-#+BEGIN_SRC django
-<th class="{{ column.classes|join:' ' }}">
-  {{ column.verbose_name }}
-</th>
-#+END_SRC
+: X
+: ishell https://opendev.org/openstack/horizon/src/branch/master/horizon/templates/horizon/common/_data_table.html
+: 
+: <th class="{{ column.classes|join:' ' }}">
+:   {{ column.verbose_name }}
+: </th>
 
-Django's ~join~ filter:
-- Takes list: ~['normal_column', 'sortable']~
-- Joins with space: ~"normal_column sortable"~
-- Outputs in HTML
+Django's *join* filter:
+: Takes list: *['normal_column', 'sortable']*
+: Joins with space: *"normal_column sortable"*
+: Outputs in HTML
 
 Result in HTML:
-#+BEGIN_SRC html
-<th class="normal_column sortable">
-  <span></span>
-</th>
-#+END_SRC
+: <th class="normal_column sortable">
+:   <span></span>
+: </th>
 
 ** Step 5: Browser Displays
-
 The browser receives this HTML and renders the table.
 
-When you inspect with DevTools, you see the ~class~ attribute with both class names.
+When you inspect with DevTools, you see the *class* attribute with both class names.
 
 * How Our Changes Work
 
 ** Diagram 2: With Our Changes
 
-#+BEGIN_EXAMPLE
-┌─────────────────────────────────────────────────────────────┐
-│ PYTHON CODE (tables.py) - AFTER CHANGES                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  chevron = ExpandableKeyPairColumn("chevron",               │
-│                                     verbose_name="",         │
-│                                     sortable=False,    ←─┐   │
-│                                     classes=[...])     ←─┤   │
-│                                                          │   │
-│  Now we explicitly specify these!                       │   │
-│                                                          │   │
-└─────────────────┬────────────────────────────────────────┼───┘
-                  │                                        │
-                  │ (1) Parameters passed                  │
-                  │                                        │
-                  ▼                                        │
-┌─────────────────────────────────────────────────────────┼───┐
-│ HORIZON FRAMEWORK (horizon/tables/base.py)              │   │
-├─────────────────────────────────────────────────────────┼───┤
-│                                                          │   │
-│  Metaclass adds:    self.classes.append('normal_column')│   │
-│                     But we started with ['chevron_col'] │   │
-│                     Result: ['chevron_col', 'normal_col']   │
-│                                                          │   │
-│  __init__ checks:   if self.sortable and not self.auto:│   │
-│                     False! So DON'T add 'sortable' ────┘   │
-│                     Result: ['chevron_col', 'normal_col']   │
-│                                                              │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-                  │ (2) Template rendering
-                  │
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│ HTML TEMPLATE                                                │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  <th class="{{ column.classes|join:' ' }}">                 │
-│      ↓                                                       │
-│  Converts: ['chevron_column', 'normal_column']              │
-│          → "chevron_column normal_column"                   │
-│                                                              │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-                  │ (3) Browser renders
-                  │
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│ BROWSER (DevTools / Rendered HTML)                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  <th class="chevron_column normal_column">                  │
-│      ↑                         ↑                            │
-│   NEW semantic          OLD general                         │
-│   class name            class name                          │
-│                                                              │
-│  NOTE: "sortable" is GONE!                                  │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-#+END_EXAMPLE
+: ┌─────────────────────────────────────────────────────────────┐
+: │ PYTHON CODE (tables.py) - AFTER CHANGES                     │
+: ├─────────────────────────────────────────────────────────────┤
+: │                                                             │
+: │  chevron = ExpandableKeyPairColumn("chevron",               │
+: │                                     verbose_name="",        │
+: │                                     sortable=False,    ←─┐  │
+: │                                     classes=[...])     ←─┤  │
+: │                                                          │  │
+: │  Now we explicitly specify these!                        │  │
+: │                                                          │  │
+: └─────────────────┬────────────────────────────────────────┼──┘
+:                   │                                        │
+:                   │ (1) Parameters passed                  │
+:                   │                                        │
+:                   ▼                                        │
+: ┌──────────────────────────────────────────────────────────┼───┐
+: │ HORIZON FRAMEWORK (horizon/tables/base.py)               │   │
+: ├───────────────────────────────────────────────────────── ┼───┤
+: │                                                          │   │
+: │  Metaclass adds:    self.classes.append('normal_column') │   │
+: │                     But we started with ['chevron_col']  │   │
+: │                     Result: ['chevron_col', 'normal_col']    │
+: │                                                          │   │
+: │  __init__ checks:   if self.sortable and not self.auto:  │   │
+: │                     False! So DON'T add 'sortable' ──────┘   │
+: │                     Result: ['chevron_col', 'normal_col']    │
+: │                                                              │
+: └─────────────────┬────────────────────────────────────────────┘
+:                   │
+:                   │ (2) Template rendering
+:                   │
+:                   ▼
+: ┌─────────────────────────────────────────────────────────────┐
+: │ HTML TEMPLATE                                               │
+: ├─────────────────────────────────────────────────────────────┤
+: │                                                             │
+: │  <th class="{{ column.classes|join:' ' }}">                 │
+: │      ↓                                                      │
+: │  Converts: ['chevron_column', 'normal_column']              │
+: │          → "chevron_column normal_column"                   │
+: │                                                             │
+: └─────────────────┬───────────────────────────────────────────┘
+:                   │
+:                   │ (3) Browser renders
+:                   │
+:                   ▼
+: ┌─────────────────────────────────────────────────────────────┐
+: │ BROWSER (DevTools / Rendered HTML)                          │
+: ├─────────────────────────────────────────────────────────────┤
+: │                                                             │
+: │  <th class="chevron_column normal_column">                  │
+: │      ↑                         ↑                            │
+: │   NEW semantic          OLD general                         │
+: │   class name            class name                          │
+: │                                                             │
+: │  NOTE: "sortable" is GONE!                                  │
+: │                                                             │
+: └─────────────────────────────────────────────────────────────┘
 
 * Question: How Do Parameters Work?
 
 ** Python Class Inheritance
+*ExpandableKeyPairColumn* inherits from *tables.Column*:
 
-~ExpandableKeyPairColumn~ inherits from ~tables.Column~:
+: class ExpandableKeyPairColumn(tables.Column):
+:     """Column that renders a chevron toggle for expandable rows."""
+:     
+:     def get_data(self, datum):
+:         # Our custom method
+:         ...
 
-#+BEGIN_SRC python
-class ExpandableKeyPairColumn(tables.Column):
-    """Column that renders a chevron toggle for expandable rows."""
-    
-    def get_data(self, datum):
-        # Our custom method
-        ...
-#+END_SRC
-
-Because ~ExpandableKeyPairColumn~ doesn't define ~__init__~, it automatically
-uses the parent's ~__init__~ method.
+Because *ExpandableKeyPairColumn* doesn't define *__init__*, it automatically uses the parent's *__init__* method.
 
 ** Diagram 3: Method Resolution Order
 
-#+BEGIN_EXAMPLE
-┌─────────────────────────────────────────────────────────────┐
-│ When you call:                                               │
-│                                                              │
-│   ExpandableKeyPairColumn("chevron",                        │
-│                           verbose_name="",                  │
-│                           sortable=False,                   │
-│                           classes=['chevron_column'])       │
-│                                                              │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-                  │ Python looks for __init__ method
-                  │
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│ ExpandableKeyPairColumn class                               │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   Has __init__? NO                                          │
-│                                                              │
-│   Has get_data()? YES (but that's not what we need now)     │
-│                                                              │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-                  │ Look in parent class
-                  │
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│ tables.Column class                                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   Has __init__? YES! ✓                                      │
-│                                                              │
-│   def __init__(self, transform, verbose_name=None,          │
-│                sortable=True, ..., classes=None, ...):      │
-│                ↑                ↑              ↑             │
-│         Required param    Default=True   Default=None       │
-│                                                              │
-│   Use this __init__ method!                                 │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-#+END_EXAMPLE
+: ┌─────────────────────────────────────────────────────────────┐
+: │ When you call:                                              │
+: │                                                             │
+: │   ExpandableKeyPairColumn("chevron",                        │
+: │                           verbose_name="",                  │
+: │                           sortable=False,                   │
+: │                           classes=['chevron_column'])       │
+: │                                                             │
+: └─────────────────┬───────────────────────────────────────────┘
+:                   │
+:                   │ Python looks for __init__ method
+:                   │
+:                   ▼
+: ┌─────────────────────────────────────────────────────────────┐
+: │ ExpandableKeyPairColumn class                               │
+: ├─────────────────────────────────────────────────────────────┤
+: │                                                             │
+: │   Has __init__? NO                                          │
+: │                                                             │
+: │   Has get_data()? YES (but that's not what we need now)     │
+: │                                                             │
+: └─────────────────┬───────────────────────────────────────────┘
+:                   │
+:                   │ Look in parent class
+:                   │
+:                   ▼
+: ┌─────────────────────────────────────────────────────────────┐
+: │ tables.Column class                                         │
+: ├─────────────────────────────────────────────────────────────┤
+: │                                                             │
+: │   Has __init__? YES! ✓                                      │
+: │                                                             │
+: │   def __init__(self, transform, verbose_name=None,          │
+: │                sortable=True, ..., classes=None, ...):      │
+: │                ↑                ↑              ↑            │
+: │         Required param    Default=True   Default=None       │
+: │                                                             │
+: │   Use this __init__ method!                                 │
+: │                                                             │
+: └─────────────────────────────────────────────────────────────┘
 
 ** Parameter Matching
 
 When we call:
-#+BEGIN_SRC python
-ExpandableKeyPairColumn("chevron",
-                        verbose_name="",
-                        sortable=False,
-                        classes=['chevron_column'])
-#+END_SRC
+: X
+: ipython
+: ExpandableKeyPairColumn("chevron",
+:                         verbose_name="",
+:                         sortable=False,
+:                         classes=['chevron_column'])
 
-Python matches parameters to ~Column.__init__~:
-- ~"chevron"~ → ~transform~ parameter
-- ~verbose_name=""~ → ~verbose_name~ parameter
-- ~sortable=False~ → ~sortable~ parameter (overrides default True)
-- ~classes=['chevron_column']~ → ~classes~ parameter (overrides default None)
+Python matches parameters to *Column.__init__*:
+- *"chevron"* → *transform* parameter
+- *verbose_name=""* → *verbose_name* parameter
+- *sortable=False* → *sortable* parameter (overrides default True)
+- *classes=['chevron_column']* → *classes* parameter (overrides default None)
 
 ** The Magic: All Column Parameters Available
+Because *ExpandableKeyPairColumn* inherits from *Column*, we can use ANY parameter that *Column.__init__* accepts:
 
-Because ~ExpandableKeyPairColumn~ inherits from ~Column~, we can use ANY
-parameter that ~Column.__init__~ accepts:
-
-#+BEGIN_SRC python
-# We could use ANY of these Column parameters:
-chevron = ExpandableKeyPairColumn("chevron",
-                                  verbose_name="",     # Column param
-                                  sortable=False,       # Column param
-                                  classes=[...],        # Column param
-                                  hidden=False,         # Column param (if we wanted)
-                                  link=None,            # Column param (if we wanted)
-                                  attrs={...},          # Column param (if we wanted)
-                                  # ... and many more!
-                                  )
-#+END_SRC
+We could use ANY of these Column parameters:
+: chevron = ExpandableKeyPairColumn("chevron",
+:                                   verbose_name="",     # Column param
+:                                   sortable=False,       # Column param
+:                                   classes=[...],        # Column param
+:                                   hidden=False,         # Column param (if we wanted)
+:                                   link=None,            # Column param (if we wanted)
+:                                   attrs={...},          # Column param (if we wanted)
+:                                   # ... and many more!
+:                                   )
 
 * The Two Changes Explained
 
-** Change 1: sortable=False
+** Change 1: sortable=False, BEFORE
 
-*** Before
-#+BEGIN_SRC python
-chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
-#                                                   ↑
-#                                    sortable parameter not specified
-#                                    Defaults to True (from Column.__init__)
-#+END_SRC
+: X
+: ipython
+: chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+: #                                                   ↑
+: #                                    sortable parameter not specified
+: #                                    Defaults to True (from Column.__init__)
 
-Inside ~Column.__init__~:
-#+BEGIN_SRC python
-def __init__(self, ..., sortable=True, ...):  # ← Defaults to True
-    self.sortable = sortable  # self.sortable = True
-    
-    if self.sortable and not self.auto:  # True and True
-        self.classes.append("sortable")  # APPENDS "sortable"
-#+END_SRC
+Inside *Column.__init__*:
+: def __init__(self, ..., sortable=True, ...):  # ← Defaults to True
+:     self.sortable = sortable  # self.sortable = True
+:     
+:     if self.sortable and not self.auto:  # True and True
+:         self.classes.append("sortable")  # APPENDS "sortable"
 
-Result: ~classes = ['normal_column', 'sortable']~
+Result: *classes = ['normal_column', 'sortable']*
 
-*** After
-#+BEGIN_SRC python
-chevron = ExpandableKeyPairColumn("chevron",
-                                  verbose_name="",
-                                  sortable=False)  # ← EXPLICITLY False
-#+END_SRC
+** Change 1: sortable=False, AFTER
 
-Inside ~Column.__init__~:
-#+BEGIN_SRC python
-def __init__(self, ..., sortable=True, ...):
-    self.sortable = sortable  # self.sortable = False (from our parameter)
-    
-    if self.sortable and not self.auto:  # False and True = False
-        self.classes.append("sortable")  # SKIPPED! Condition is False
-#+END_SRC
+: X
+: ipython
+: chevron = ExpandableKeyPairColumn("chevron",
+:                                   verbose_name="",
+:                                   sortable=False)  # ← EXPLICITLY False
 
-Result: ~classes = ['normal_column']~ (no "sortable")
+Inside *Column.__init__*:
+: X
+: ipython
+:
+: def __init__(self, ..., sortable=True, ...):
+:     self.sortable = sortable  # self.sortable = False (from our parameter)
+:     
+:     if self.sortable and not self.auto:  # False and True = False
+:         self.classes.append("sortable")  # SKIPPED! Condition is False
 
-*** Diagram 4: sortable=False Flow
+Result: *classes = ['normal_column']* (no "sortable")
 
-#+BEGIN_EXAMPLE
-Our Parameter              Column.__init__           Result
-──────────────────────────────────────────────────────────────
-                                                     classes = []
-sortable=False      →      self.sortable = False
-                                                     
-                           if self.sortable:        False!
-                               classes.append()     ← SKIPPED
-                                                     
-                                                     classes = []
-                                                     (no "sortable" added)
+** Diagram 4: sortable=False Flow
 
-Later, metaclass adds:                              classes = ['normal_column']
-#+END_EXAMPLE
+: Our Parameter              Column.__init__           Result
+: ──────────────────────────────────────────────────────────────
+:                                                      classes = []
+: sortable=False      →      self.sortable = False
+:                                                      
+:                            if self.sortable:        False!
+:                                classes.append()     ← SKIPPED
+:                                                      
+:                                                      classes = []
+:                                                      (no "sortable" added)
+: 
+: Later, metaclass adds:                              classes = ['normal_column']
 
 ** Change 2: classes=['chevron_column']
 
 *** Before
-#+BEGIN_SRC python
-chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
-#                                                   ↑
-#                                    classes parameter not specified
-#                                    Defaults to None (from Column.__init__)
-#+END_SRC
 
-Inside ~Column.__init__~:
-#+BEGIN_SRC python
-def __init__(self, ..., classes=None, ...):  # ← Defaults to None
-    # Early in __init__:
-    self.classes = list(classes or [])  # None or [] = []
-    # So: self.classes = list([]) = []
-#+END_SRC
+: chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+: #                                                   ↑
+: #                                    classes parameter not specified
+: #                                    Defaults to None (from Column.__init__)
+: #+END_SRC
 
-Then metaclass adds ~'normal_column'~, then ~__init__~ adds ~'sortable'~.
+Inside *Column.__init__*:
+: def __init__(self, ..., classes=None, ...):  # ← Defaults to None
+:     # Early in __init__:
+:     self.classes = list(classes or [])  # None or [] = []
+:     # So: self.classes = list([]) = []
 
-Result: ~classes = ['normal_column', 'sortable']~
+Then metaclass adds *'normal_column'*, then *__init__* adds *'sortable'*.
 
-*** After
-#+BEGIN_SRC python
-chevron = ExpandableKeyPairColumn("chevron",
-                                  verbose_name="",
-                                  sortable=False,
-                                  classes=['chevron_column'])  # ← EXPLICIT list
-#+END_SRC
+Result: *classes = ['normal_column', 'sortable']*
 
-Inside ~Column.__init__~:
-#+BEGIN_SRC python
-def __init__(self, ..., classes=None, ...):
-    # Early in __init__:
-    self.classes = list(classes or [])
-    # classes = ['chevron_column'] (from our parameter)
-    # So: self.classes = list(['chevron_column']) = ['chevron_column']
-#+END_SRC
+** After
 
-Then metaclass adds ~'normal_column'~:
-- ~classes.append('normal_column')~
-- Result: ~['chevron_column', 'normal_column']~
+: chevron = ExpandableKeyPairColumn("chevron",
+:                                   verbose_name="",
+:                                   sortable=False,
+:                                   classes=['chevron_column'])  # ← EXPLICIT list
 
-Then ~__init__~ checks ~sortable~ (False), doesn't add "sortable".
+Inside *Column.__init__*:
+: def __init__(self, ..., classes=None, ...):
+:     # Early in __init__:
+:     self.classes = list(classes or [])
+:     # classes = ['chevron_column'] (from our parameter)
+:     # So: self.classes = list(['chevron_column']) = ['chevron_column']
 
-Final result: ~classes = ['chevron_column', 'normal_column']~
+Then metaclass adds *'normal_column'*:
+- *classes.append('normal_column')*
+- Result: *['chevron_column', 'normal_column']*
 
-*** Diagram 5: classes Parameter Flow
+Then *__init__* checks *sortable* (False), doesn't add "sortable".
 
-#+BEGIN_EXAMPLE
-Our Parameter              Column.__init__              Metaclass
-─────────────────────────────────────────────────────────────────
-                           self.classes = list(
-classes=['chevron_col'] →    ['chevron_col'] or [])
-                           = ['chevron_col']
-                                                         
-                                                    ┌──────────────┐
-                                                    │ Adds:        │
-                                                    │ .append(     │
-                                                    │  'normal_col'│
-                                                    │  )           │
-                                                    └──────────────┘
-                           
-Final: classes = ['chevron_column', 'normal_column']
-#+END_EXAMPLE
+Final result: *classes = ['chevron_column', 'normal_column']*
+
+** Diagram 5: classes Parameter Flow
+
+: Our Parameter              Column.__init__              Metaclass
+: ─────────────────────────────────────────────────────────────────
+:                            self.classes = list(
+: classes=['chevron_col'] →    ['chevron_col'] or [])
+:                            = ['chevron_col']
+:                                                          
+:                                                     ┌──────────────┐
+:                                                     │ Adds:        │
+:                                                     │ .append(     │
+:                                                     │  'normal_col'│
+:                                                     │  )           │
+:                                                     └──────────────┘
+:                            
+: Final: classes = ['chevron_column', 'normal_column']
 
 * Complete Flow Diagram
 
 ** Before Our Changes
 
-#+BEGIN_EXAMPLE
-┌────────────────────────────────────────────────────────────┐
-│ Python Code                                                │
-├────────────────────────────────────────────────────────────┤
-│ chevron = ExpandableKeyPairColumn("chevron",               │
-│                                    verbose_name="")        │
-│                                                            │
-│ Implicit defaults:                                         │
-│   sortable = True    (Column.__init__ default)            │
-│   classes = None     (Column.__init__ default)            │
-└──────┬─────────────────────────────────────────────────────┘
-       │
-       ▼
-┌────────────────────────────────────────────────────────────┐
-│ Column.__init__ Processing                                 │
-├────────────────────────────────────────────────────────────┤
-│                                                            │
-│ Step 1: self.classes = list(None or []) = []              │
-│                                                            │
-│ Step 2: Metaclass adds: classes.append('normal_column')   │
-│         Result: ['normal_column']                          │
-│                                                            │
-│ Step 3: self.sortable = True                              │
-│         if True and not self.auto:                         │
-│             classes.append('sortable')                     │
-│         Result: ['normal_column', 'sortable']              │
-│                                                            │
-└──────┬─────────────────────────────────────────────────────┘
-       │
-       ▼
-┌────────────────────────────────────────────────────────────┐
-│ Template Rendering                                         │
-├────────────────────────────────────────────────────────────┤
-│                                                            │
-│ {{ column.classes|join:' ' }}                             │
-│ → "normal_column sortable"                                │
-│                                                            │
-└──────┬─────────────────────────────────────────────────────┘
-       │
-       ▼
-┌────────────────────────────────────────────────────────────┐
-│ HTML Output                                                │
-├────────────────────────────────────────────────────────────┤
-│                                                            │
-│ <th class="normal_column sortable">                       │
-│         ↑                    ↑                             │
-│    Added by               Added by                         │
-│    metaclass         Column.__init__                       │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
-#+END_EXAMPLE
+: ┌────────────────────────────────────────────────────────────┐
+: │ Python Code                                                │
+: ├────────────────────────────────────────────────────────────┤
+: │ chevron = ExpandableKeyPairColumn("chevron",               │
+: │                                    verbose_name="")        │
+: │                                                            │
+: │ Implicit defaults:                                         │
+: │   sortable = True    (Column.__init__ default)             │
+: │   classes = None     (Column.__init__ default)             │
+: └──────┬─────────────────────────────────────────────────────┘
+:        │
+:        ▼
+: ┌────────────────────────────────────────────────────────────┐
+: │ Column.__init__ Processing                                 │
+: ├────────────────────────────────────────────────────────────┤
+: │                                                            │
+: │ Step 1: self.classes = list(None or []) = []               │
+: │                                                            │
+: │ Step 2: Metaclass adds: classes.append('normal_column')    │
+: │         Result: ['normal_column']                          │
+: │                                                            │
+: │ Step 3: self.sortable = True                               │
+: │         if True and not self.auto:                         │
+: │             classes.append('sortable')                     │
+: │         Result: ['normal_column', 'sortable']              │
+: │                                                            │
+: └──────┬─────────────────────────────────────────────────────┘
+:        │
+:        ▼
+: ┌────────────────────────────────────────────────────────────┐
+: │ Template Rendering                                         │
+: ├────────────────────────────────────────────────────────────┤
+: │                                                            │
+: │ {{ column.classes|join:' ' }}                              │
+: │ → "normal_column sortable"                                 │
+: │                                                            │
+: └──────┬─────────────────────────────────────────────────────┘
+:        │
+:        ▼
+: ┌────────────────────────────────────────────────────────────┐
+: │ HTML Output                                                │
+: ├────────────────────────────────────────────────────────────┤
+: │                                                            │
+: │ <th class="normal_column sortable">                        │
+: │         ↑                    ↑                             │
+: │    Added by               Added by                         │
+: │    metaclass         Column.__init__                       │
+: │                                                            │
+: └────────────────────────────────────────────────────────────┘
 
 ** After Our Changes
 
-#+BEGIN_EXAMPLE
-┌────────────────────────────────────────────────────────────┐
-│ Python Code                                                │
-├────────────────────────────────────────────────────────────┤
-│ chevron = ExpandableKeyPairColumn("chevron",               │
-│                                    verbose_name="",        │
-│                                    sortable=False, ────┐   │
-│                                    classes=[...])  ────┤   │
-│                                                        │   │
-│ Explicit parameters override defaults!                │   │
-└──────┬─────────────────────────────────────────────────┼───┘
-       │                                                 │
-       ▼                                                 │
-┌────────────────────────────────────────────────────────┼───┐
-│ Column.__init__ Processing                             │   │
-├────────────────────────────────────────────────────────┼───┤
-│                                                        │   │
-│ Step 1: self.classes = list(['chevron_column'] or []) │   │
-│         = ['chevron_column']  ←────────────────────────┘   │
-│                                                            │
-│ Step 2: Metaclass adds: classes.append('normal_column')   │
-│         Result: ['chevron_column', 'normal_column']        │
-│                                                            │
-│ Step 3: self.sortable = False  ←───────────────────────┐  │
-│         if False and not self.auto:                     │  │
-│             classes.append('sortable')  ← SKIPPED!     │  │
-│         Result: ['chevron_column', 'normal_column']    │  │
-│         (no 'sortable' added)                          │  │
-│                                                        │  │
-└──────┬─────────────────────────────────────────────────┼──┘
-       │                                                 │
-       ▼                                                 │
-┌────────────────────────────────────────────────────────┼──┐
-│ Template Rendering                                     │  │
-├────────────────────────────────────────────────────────┼──┤
-│                                                        │  │
-│ {{ column.classes|join:' ' }}                         │  │
-│ → "chevron_column normal_column"                      │  │
-│         ↑                    ↑                         │  │
-│    Our custom           Still added by                │  │
-│    class name           metaclass                     │  │
-│                                                        │  │
-│ NOTE: "sortable" is ABSENT because sortable=False ────┘  │
-│                                                           │
-└──────┬────────────────────────────────────────────────────┘
-       │
-       ▼
-┌────────────────────────────────────────────────────────────┐
-│ HTML Output                                                │
-├────────────────────────────────────────────────────────────┤
-│                                                            │
-│ <th class="chevron_column normal_column">                 │
-│         ↑                    ↑                             │
-│    Our parameter        Still added                        │
-│    classes=[...]        by metaclass                       │
-│                                                            │
-│ "sortable" is GONE! ✓                                      │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
-#+END_EXAMPLE
+: ┌────────────────────────────────────────────────────────────┐
+: │ Python Code                                                │
+: ├────────────────────────────────────────────────────────────┤
+: │ chevron = ExpandableKeyPairColumn("chevron",               │
+: │                                    verbose_name="",        │
+: │                                    sortable=False, ────┐   │
+: │                                    classes=[...])  ────┤   │
+: │                                                        │   │
+: │ Explicit parameters override defaults!                 │   │
+: └──────┬─────────────────────────────────────────────────┼───┘
+:        │                                                 │
+:        ▼                                                 │
+: ┌────────────────────────────────────────────────────────┼───┐
+: │ Column.__init__ Processing                             │   │
+: ├────────────────────────────────────────────────────────┼───┤
+: │                                                        │   │
+: │ Step 1: self.classes = list(['chevron_column'] or [])  │   │
+: │         = ['chevron_column']  ←────────────────────────┘   │
+: │                                                            │
+: │ Step 2: Metaclass adds: classes.append('normal_column')    │
+: │         Result: ['chevron_column', 'normal_column']        │
+: │                                                            │
+: │ Step 3: self.sortable = False  ←───────────────────────┐   │
+: │         if False and not self.auto:                    │   │
+: │             classes.append('sortable')  ← SKIPPED!     │   │
+: │         Result: ['chevron_column', 'normal_column']    │   │
+: │         (no 'sortable' added)                          │   │
+: │                                                        │   │
+: └──────┬─────────────────────────────────────────────────┼───┘
+:        │                                                 │
+:        ▼                                                 │
+: ┌────────────────────────────────────────────────────────┼──┐
+: │ Template Rendering                                     │  │
+: ├────────────────────────────────────────────────────────┼──┤
+: │                                                        │  │
+: │ {{ column.classes|join:' ' }}                          │  │
+: │ → "chevron_column normal_column"                       │  │
+: │         ↑                    ↑                         │  │
+: │    Our custom           Still added by                 │  │
+: │    class name           metaclass                      │  │
+: │                                                        │  │
+: │ NOTE: "sortable" is ABSENT because sortable=False ─────┘  │
+: │                                                           │
+: └──────┬────────────────────────────────────────────────────┘
+:        │
+:        ▼
+: ┌────────────────────────────────────────────────────────────┐
+: │ HTML Output                                                │
+: ├────────────────────────────────────────────────────────────┤
+: │                                                            │
+: │ <th class="chevron_column normal_column">                  │
+: │         ↑                    ↑                             │
+: │    Our parameter        Still added                        │
+: │    classes=[...]        by metaclass                       │
+: │                                                            │
+: │ "sortable" is GONE! ✓                                      │
+: │                                                            │
+: └────────────────────────────────────────────────────────────┘
 
 * Summary: The Answer to "How?"
 
 ** Q: Where is "normal_column sortable"?
+*A:* In the rendered HTML *class* attribute, visible in browser DevTools. NOT in the Python code!
 
-*A:* In the rendered HTML ~class~ attribute, visible in browser DevTools.
-NOT in the Python code!
+** Q: How does *classes=['chevron_column']* change the class name?
+*A:* It ADDS *'chevron_column'* to the list. The metaclass still adds 
+     *'normal_column'*, so the final list is *['chevron_column', 'normal_column']*.
+     When joined with spaces, becomes: *"chevron_column normal_column"*.
 
-** Q: How does ~classes=['chevron_column']~ change the class name?
+** Q: How does *sortable=False* prevent sorting?
+*A:* Inside *Column.__init__*, there's a check:
 
-*A:* It ADDS ~'chevron_column'~ to the list. The metaclass still adds 
-~'normal_column'~, so the final list is ~['chevron_column', 'normal_column']~.
-When joined with spaces, becomes: ~"chevron_column normal_column"~.
+: if self.sortable and not self.auto:
+:     self.classes.append("sortable")
 
-** Q: How does ~sortable=False~ prevent sorting?
+When *sortable=False*, the condition is False, so "sortable" is never appended.
 
-*A:* Inside ~Column.__init__~, there's a check:
-#+BEGIN_SRC python
-if self.sortable and not self.auto:
-    self.classes.append("sortable")
-#+END_SRC
-
-When ~sortable=False~, the condition is False, so "sortable" is never appended.
-
-** Q: How can we add parameters without changing ~ExpandableKeyPairColumn~?
-
-*A:* Python's inheritance! ~ExpandableKeyPairColumn~ has no ~__init__~ method,
-so it uses the parent's (~Column.__init__~). We can pass ANY parameter that
-~Column.__init__~ accepts, including ~sortable~ and ~classes~.
+** Q: How can we add parameters without changing *ExpandableKeyPairColumn*?
+*A:* Python's inheritance! *ExpandableKeyPairColumn* has no *__init__* method,
+     so it uses the parent's (*Column.__init__*). We can pass ANY parameter that
+     *Column.__init__* accepts, including *sortable* and *classes*.
 
 * Visual Summary: Classes List Evolution
 
-#+BEGIN_EXAMPLE
 BEFORE (no parameters):
-
-Step 1: Column.__init__ starts     classes = []
-Step 2: Metaclass adds             classes = ['normal_column']
-Step 3: sortable=True adds         classes = ['normal_column', 'sortable']
-Step 4: HTML renders               class="normal_column sortable"
-
+: Step 1: Column.__init__ starts     classes = []
+: Step 2: Metaclass adds             classes = ['normal_column']
+: Step 3: sortable=True adds         classes = ['normal_column', 'sortable']
+: Step 4: HTML renders               class="normal_column sortable"
+: 
 
 AFTER (with sortable=False, classes=['chevron_column']):
-
-Step 1: Column.__init__ starts     classes = ['chevron_column']
-        (because we passed it)
-Step 2: Metaclass adds             classes = ['chevron_column', 'normal_column']
-Step 3: sortable=False, so skip    classes = ['chevron_column', 'normal_column']
-        (no 'sortable' added)
-Step 4: HTML renders               class="chevron_column normal_column"
-#+END_EXAMPLE
+: Step 1: Column.__init__ starts     classes = ['chevron_column']
+:         (because we passed it)
+: Step 2: Metaclass adds             classes = ['chevron_column', 'normal_column']
+: Step 3: sortable=False, so skip    classes = ['chevron_column', 'normal_column']
+:         (no 'sortable' added)
+: Step 4: HTML renders               class="chevron_column normal_column"
 
 * Key Takeaway
-
-The class names ~"normal_column sortable"~ are generated by Horizon's framework
+The class names *"normal_column sortable"* are generated by Horizon's framework
 and appear in the rendered HTML, NOT in the Python code.
 
-By passing explicit parameters (~sortable=False~ and ~classes=['chevron_column']~),
+By passing explicit parameters (*sortable=False* and *classes=['chevron_column']*),
 we control how those class names are generated, ultimately changing what appears
-in the HTML ~class~ attribute.
+in the HTML *class* attribute.
 
