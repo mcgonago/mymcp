@@ -8,6 +8,29 @@
 ```
 [exact query text]
 ```
+
+---
+
+## Follow-Up Inquiry (Optional)
+
+**Date:** YYYY-MM-DD  
+**Asked to:** @agent-name  
+**References:** [Link to original section above](#original-inquiry) or [analysis_other_topic.md](analysis_other_topic.md#section-name)  
+**Query:**
+```
+[follow-up question related to the original inquiry]
+```
+
+### Context
+This follow-up addresses [specific aspect] that came up while working with the findings from the original inquiry.
+
+**Connection to Original:**
+- Original topic: [brief description]
+- New question: [what's different/deeper about this follow-up]
+- Why this matters: [explain the connection]
+
+---
+
 ## Key Takeaways
 
 1. [First major finding]
