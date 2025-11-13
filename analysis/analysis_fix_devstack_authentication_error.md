@@ -473,4 +473,443 @@ ssh stack@192.168.122.140 "sudo journalctl -u devstack@keystone --since '5 minut
 **Keystone Endpoint:** http://192.168.122.140/identity/v3/  
 **Issue:** Authentication endpoint timeout
 
+---
+
+## USE CASE: How to Prevent Disk Space Issues in the Future
+
+### Problem: Disk Full Due to Large Log Files
+
+DevStack VMs can experience disk space exhaustion, which can cause service failures, hung authentication, and general system instability. The most common culprit is unrotated log files, particularly `/var/log/syslog`.
+
+---
+
+### Sequence Showing Disk Space Exhaustion
+
+**Initial Check - Disk Full:**
+
+```bash
+stack@omcgonag-devstack-ui-pytest-1:~$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           794M   79M  715M  10% /run
+/dev/vda1        39G   39G     0 100% /
+tmpfs           3.9G  100K  3.9G   1% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/vda15      105M  6.1M   99M   6% /boot/efi
+tmpfs           3.9G     0  3.9G   0% /run/qemu
+tmpfs           512M  123M  390M  24% /opt/stack/data/etcd
+tmpfs           794M  4.0K  794M   1% /run/user/1001
+```
+
+❌ **Problem:** Root filesystem at 100% capacity!
+
+---
+
+### Quick Emergency Cleanup
+
+**Step 1: Clean journalctl logs**
+
+```bash
+sudo journalctl --vacuum-size=100M
+sudo rm -rf /var/log/libvirt/*.log*
+```
+
+**Step 2: Check disk space again**
+
+```bash
+stack@omcgonag-devstack-ui-pytest-1:~$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           794M  1.5M  793M   1% /run
+/dev/vda1        39G   39G  544M  99% /
+tmpfs           3.9G  100K  3.9G   1% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/vda15      105M  6.1M   99M   6% /boot/efi
+tmpfs           3.9G     0  3.9G   0% /run/qemu
+tmpfs           512M  123M  390M  24% /opt/stack/data/etcd
+tmpfs           794M  4.0K  794M   1% /run/user/1001
+```
+
+⚠️ **Still Critical:** Only freed 544M, still at 99%!
+
+---
+
+### Manual Fix: Truncate the Massive syslog File
+
+**Identify the problem:**
+
+```bash
+stack@omcgonag-devstack-ui-pytest-1:/var/log$ cd /var/log
+stack@omcgonag-devstack-ui-pytest-1:/var/log$ du -h syslog
+20G	syslog
+```
+
+😱 **20GB syslog file!** This is the culprit.
+
+**Truncate the file (safer than deletion):**
+
+```bash
+sudo truncate -s 0 /var/log/syslog
+```
+
+> **Why truncate instead of rm?**
+> - Keeps the file descriptor open for logging processes
+> - Prevents permission/ownership issues
+> - Logs can continue to be written immediately
+> - No need to restart services
+
+**Verify the space is freed:**
+
+```bash
+stack@omcgonag-devstack-ui-pytest-1:/var/log$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           794M  1.5M  793M   1% /run
+/dev/vda1        39G   19G   21G  49% /
+tmpfs           3.9G  100K  3.9G   1% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/vda15      105M  6.1M   99M   6% /boot/efi
+tmpfs           3.9G     0  3.9G   0% /run/qemu
+tmpfs           512M  123M  390M  24% /opt/stack/data/etcd
+tmpfs           794M  4.0K  794M   1% /run/user/1001
+```
+
+✅ **Success:** Freed 20GB, now at healthy 49% usage!
+
+---
+
+## Automation: Guard Against Syslog Growing Too Large
+
+That 20GB `syslog` size indicates a **failure in log maintenance**. To guard against this log bloat in the future, you need a **two-part strategy**:
+
+1. **Ensure proper log rotation** (the maintenance fix)
+2. **Implement filtering rules** to stop applications that spam log files (the root cause fix)
+
+---
+
+### Part 1: Configure Log Rotation (The Maintenance Fix)
+
+You must ensure that the `logrotate` utility is running on a size-based schedule and compressing old files.
+
+**Logrotate configuration locations:**
+- Global config: `/etc/logrotate.conf`
+- Syslog-specific rules: `/etc/logrotate.d/rsyslog`
+
+#### Check the State File
+
+Verify when the last rotation occurred:
+
+```bash
+cat /var/lib/logrotate/status
+```
+
+**Look for:**
+- When `/var/log/syslog` was last rotated
+- If rotation is failing or stalled
+
+---
+
+#### Implement Size-Based Rotation
+
+To prevent any log file from exceeding a specific size, use the `maxsize` directive. This forces rotation even if the scheduled time (e.g., `weekly`) hasn't arrived.
+
+**Edit the rsyslog configuration:**
+
+```bash
+sudo vim /etc/logrotate.d/rsyslog
+```
+
+**Add or modify the configuration:**
+
+```
+/var/log/syslog {
+    maxsize 50M       # Forces rotation as soon as the file exceeds 50MB
+    weekly            # Regular scheduled rotation
+    rotate 4          # Keep 4 old versions
+    compress          # Compress rotated files to save space
+    delaycompress     # Don't compress most recent old file
+    missingok         # Don't error if file is missing
+    notifempty        # Don't rotate if file is empty
+    postrotate
+        # Reload rsyslog after rotation
+        /usr/lib/rsyslog/rsyslog-rotate
+    endscript
+}
+```
+
+**Key directives explained:**
+
+| Directive | Purpose |
+|-----------|---------|
+| `maxsize 50M` | Rotate immediately when file exceeds 50MB (prevents 20GB files!) |
+| `weekly` | Also rotate once per week (whichever comes first) |
+| `rotate 4` | Keep 4 old versions (syslog.1, syslog.2, syslog.3, syslog.4) |
+| `compress` | Compress old logs with gzip (saves ~90% space) |
+| `delaycompress` | Keep most recent rotation uncompressed (for easier access) |
+
+**Test the configuration:**
+
+```bash
+# Dry-run to check for syntax errors:
+sudo logrotate -d /etc/logrotate.d/rsyslog
+
+# Force an immediate rotation (for testing):
+sudo logrotate -f /etc/logrotate.d/rsyslog
+```
+
+---
+
+### Part 2: Implement Log Suppression (The Root Cause Fix)
+
+Stopping the source of excessive logs is the only long-term fix. You can filter messages based on the program name using `rsyslog`'s property-based filters.
+
+#### Identify the Spamming Program
+
+First, identify which process is generating excessive logs:
+
+```bash
+# Show recent log lines with program names:
+journalctl -n 100
+
+# Or check syslog directly:
+tail -f /var/log/syslog
+
+# Count log entries by program:
+sudo awk '{print $5}' /var/log/syslog | sort | uniq -c | sort -rn | head -20
+```
+
+**Look for patterns like:**
+- Repeated messages every second/millisecond
+- Debug messages that shouldn't be in production
+- Error loops (same error repeated constantly)
+
+#### Create a Filtering Rule
+
+Once you know the program name (e.g., `spammer-app`), create a custom filter file that runs **before** the default rules.
+
+**Create the filter file:**
+
+```bash
+sudo vim /etc/rsyslog.d/01-discard-spam.conf
+```
+
+> **Note:** The `01-` prefix ensures this file is processed before `50-default.conf`
+
+**Example filters:**
+
+```
+# Discard all messages from a specific program:
+:programname, isequal, "spammer-app" stop
+
+# Discard messages containing a specific string:
+:msg, contains, "Excessive Debug Info" stop
+
+# Discard messages matching a regex pattern:
+:msg, regex, "Connection reset.*peer" stop
+
+# More complex: Only discard if program AND message match:
+:programname, isequal, "neutron-server" {
+    :msg, contains, "DEBUG pool" stop
+}
+```
+
+**Common spam sources in OpenStack DevStack:**
+
+```
+# Nova spam:
+:programname, isequal, "nova-compute" {
+    :msg, contains, "Took" stop
+}
+
+# Neutron connection spam:
+:programname, isequal, "neutron-server" {
+    :msg, contains, "Connection pool" stop
+}
+
+# Keystone token spam:
+:programname, isequal, "keystone" {
+    :msg, contains, "Token validation" stop
+}
+```
+
+**Restart rsyslog to apply changes:**
+
+```bash
+sudo systemctl restart rsyslog
+```
+
+**Verify the filter is working:**
+
+```bash
+# Watch syslog in real-time:
+tail -f /var/log/syslog | grep "spammer-app"
+
+# Should see no new messages from the filtered program
+```
+
+---
+
+### Part 3: Adjust Systemd Journal Limits (If Applicable)
+
+If the systemd journal itself is allowing too much log traffic before it even reaches `rsyslog`, adjust its rate limits.
+
+**Edit journald configuration:**
+
+```bash
+sudo vim /etc/systemd/journald.conf
+```
+
+**Configure rate limits:**
+
+```ini
+[Journal]
+# Limit the rate of messages per service:
+RateLimitIntervalSec=30s
+RateLimitBurst=50000      # Allow 50,000 messages per 30 seconds per service
+
+# Set hard limits on total journal size:
+SystemMaxUse=5G           # Don't use more than 5GB for logs
+SystemMaxFileSize=500M    # Each journal file max 500MB
+RuntimeMaxUse=512M        # Limit runtime (tmpfs) logs to 512MB
+
+# How long to keep old logs:
+MaxRetentionSec=1week     # Delete logs older than 1 week
+```
+
+**Restart journald to apply changes:**
+
+```bash
+sudo systemctl restart systemd-journald
+```
+
+**Verify journal size:**
+
+```bash
+journalctl --disk-usage
+```
+
+---
+
+## Automated Monitoring Script
+
+Create a monitoring script to alert when logs grow too large:
+
+**Create the script:**
+
+```bash
+sudo vim /usr/local/bin/check-log-sizes.sh
+```
+
+**Script contents:**
+
+```bash
+#!/bin/bash
+# Check for oversized log files
+
+THRESHOLD_MB=100
+ALERT_EMAIL="admin@example.com"
+
+# Check syslog size
+SYSLOG_SIZE=$(du -m /var/log/syslog 2>/dev/null | cut -f1)
+
+if [ "$SYSLOG_SIZE" -gt "$THRESHOLD_MB" ]; then
+    echo "WARNING: /var/log/syslog is ${SYSLOG_SIZE}MB (threshold: ${THRESHOLD_MB}MB)"
+    
+    # Optional: send email alert
+    # echo "Syslog size: ${SYSLOG_SIZE}MB" | mail -s "DevStack Log Alert" "$ALERT_EMAIL"
+    
+    # Optional: auto-rotate
+    # sudo logrotate -f /etc/logrotate.d/rsyslog
+fi
+
+# Check total disk usage
+DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
+
+if [ "$DISK_USAGE" -gt "80" ]; then
+    echo "WARNING: Disk usage is ${DISK_USAGE}% (threshold: 80%)"
+fi
+```
+
+**Make it executable:**
+
+```bash
+sudo chmod +x /usr/local/bin/check-log-sizes.sh
+```
+
+**Add to cron to run every hour:**
+
+```bash
+sudo crontab -e
+```
+
+Add this line:
+
+```
+0 * * * * /usr/local/bin/check-log-sizes.sh
+```
+
+---
+
+## Quick Reference: Emergency Disk Space Commands
+
+```bash
+# Check disk usage:
+df -h
+
+# Find largest directories:
+sudo du -sh /* | sort -rh | head -10
+
+# Find largest files in /var/log:
+sudo du -sh /var/log/* | sort -rh | head -20
+
+# Truncate syslog (emergency):
+sudo truncate -s 0 /var/log/syslog
+
+# Clean journalctl logs:
+sudo journalctl --vacuum-size=100M
+sudo journalctl --vacuum-time=7d
+
+# Force log rotation:
+sudo logrotate -f /etc/logrotate.conf
+
+# Clean package cache (Ubuntu):
+sudo apt clean
+sudo apt autoremove
+
+# Clean old kernels (Ubuntu):
+sudo apt autoremove --purge
+
+# Find and delete old compressed logs:
+sudo find /var/log -name "*.gz" -mtime +30 -delete
+sudo find /var/log -name "*.old" -mtime +30 -delete
+```
+
+---
+
+## Prevention Checklist
+
+- [ ] Configure `maxsize` in `/etc/logrotate.d/rsyslog` (set to 50M-100M)
+- [ ] Enable log compression in logrotate config
+- [ ] Identify and filter spammy log sources in `/etc/rsyslog.d/01-discard-spam.conf`
+- [ ] Set systemd journal size limits in `/etc/systemd/journald.conf`
+- [ ] Create monitoring script for log sizes
+- [ ] Add cron job to run monitoring script
+- [ ] Test logrotate with `logrotate -f` command
+- [ ] Document which logs are being filtered and why
+- [ ] Set calendar reminder to check disk space monthly
+
+---
+
+## Summary: Three-Layer Defense
+
+| Layer | Purpose | Tool | Configuration |
+|-------|---------|------|---------------|
+| **1. Rotation** | Prevent files from growing unbounded | `logrotate` | `/etc/logrotate.d/rsyslog` with `maxsize 50M` |
+| **2. Filtering** | Stop spam at the source | `rsyslog` | `/etc/rsyslog.d/01-discard-spam.conf` |
+| **3. Rate Limiting** | Control journal growth | `systemd-journald` | `/etc/systemd/journald.conf` with `SystemMaxUse=5G` |
+
+**Result:** Logs stay manageable, disk space stays available, DevStack stays healthy! ✅
+
+---
+
+**Last Updated:** 2025-11-13  
+**Related Issue:** Disk space exhaustion causing service failures
+
 
