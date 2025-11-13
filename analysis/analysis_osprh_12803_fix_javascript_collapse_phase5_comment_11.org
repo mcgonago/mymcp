@@ -1,0 +1,243 @@
+#+TITLE: Analysis: Removing Space Between Key Pair Rows (Comment #11)
+#+DATE: 2025-11-13
+#+AUTHOR: AI Assistant
+
+* Initial Inquiry
+
+User reported seeing space between rows in the Python implementation that differs from the AngularJS implementation.
+
+Working directory: ~/Work/mymcp/workspace/horizon-osprh-12803-working
+
+Question: What needs to be done to remove this space?
+
+* Problem Analysis
+
+** Current Implementation
+
+The expandable row template renders two `<tr>` elements per key pair:
+1. Summary row (name, type, fingerprint) - included from base template
+2. Detail row (expanded information with collapse div)
+
+File: =openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html=
+
+#+BEGIN_SRC django
+{% load i18n %}
+
+{% include "horizon/common/_data_table_row.html" %}
+
+{# Detail row - shows key pair information #}
+<tr class="keypair-detail-row">
+  <td colspan="{{ row.cells|length }}">
+    <div id="{{ chevron_id }}" class="collapse">
+      <div class="keypair-details">
+        <dl class="dl-horizontal">
+          <!-- key pair details -->
+        </dl>
+      </div>
+    </div>
+  </td>
+</tr>
+#+END_SRC
+
+** Root Causes of Spacing
+
+There are THREE sources of unwanted spacing:
+
+*** 1. Template Whitespace (Lines 2-4)
+The blank line (line 4) between the include statement and the detail `<tr>` creates literal whitespace in the HTML output. Django templates preserve whitespace by default unless you use `{% spaceless %}` tags.
+
+*** 2. Table Row Still Rendered When Collapsed
+Even when Bootstrap's `.collapse` class hides the inner `<div>` (by setting it to `display: none` or `height: 0`), the `<tr class="keypair-detail-row">` element itself is still rendered in the DOM.
+
+The table row has inherent height from:
+- Default table cell padding
+- Table row minimum height
+- Border spacing (if any)
+
+*** 3. Table Cell Padding
+Standard Bootstrap tables apply padding to `<td>` elements. Even with `padding: 0` on the cell (which is already set in the CSS), the row itself can still have spacing.
+
+** Current CSS Mitigation (Partial)
+
+File: =openstack_dashboard/dashboards/project/templates/key_pairs/_keypairs_table.html=
+
+#+BEGIN_SRC css
+/* Remove padding from detail row cells to eliminate gap when collapsed */
+tr.keypair-detail-row td {
+  padding: 0;
+}
+
+/* Add margin to inner content to maintain spacing when expanded */
+tr.keypair-detail-row td div.keypair-details {
+  margin: 8px;
+}
+#+END_SRC
+
+This helps but doesn't fully solve the problem because the `<tr>` element itself still exists in the DOM.
+
+* Solution: Two-Part Fix
+
+** Part 1: Remove Template Whitespace
+
+Remove the blank line between the include and the detail row:
+
+#+BEGIN_SRC django
+{% load i18n %}
+
+{% include "horizon/common/_data_table_row.html" %}
+{# Detail row - shows key pair information #}
+<tr class="keypair-detail-row">
+  <td colspan="{{ row.cells|length }}">
+#+END_SRC
+
+**Before** (lines 2-6):
+- Line 2: (blank)
+- Line 3: {% include ... %}
+- Line 4: (blank) ← **REMOVE THIS**
+- Line 5: {# Comment #}
+- Line 6: <tr class="keypair-detail-row">
+
+**After** (lines 2-5):
+- Line 2: (blank)
+- Line 3: {% include ... %}
+- Line 4: {# Comment #} ← Moved up
+- Line 5: <tr class="keypair-detail-row"> ← Moved up
+
+** Part 2: Hide Entire Row When Collapsed (CSS Enhancement)
+
+The current CSS only removes padding from the `<td>`, but the `<tr>` itself still takes up minimal space. We need to ensure the entire row height collapses to zero when the content is hidden.
+
+Add this CSS rule to =_keypairs_table.html=:
+
+#+BEGIN_SRC css
+/* Ensure detail row has zero height when content is collapsed */
+tr.keypair-detail-row td {
+  padding: 0;
+  line-height: 0; /* Collapse row height when content hidden */
+}
+
+/* Restore line-height when expanded */
+tr.keypair-detail-row td div.keypair-details {
+  margin: 8px;
+  line-height: normal; /* Restore normal text rendering */
+}
+#+END_SRC
+
+The key addition is `line-height: 0` on the `<td>` element, which eliminates the minimum height the table cell would normally have. The inner `div.keypair-details` restores `line-height: normal` so text displays properly when expanded.
+
+* Implementation Steps
+
+** Step 1: Edit expandable_row.html
+
+File: =openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html=
+
+Change lines 3-6 from:
+#+BEGIN_SRC django
+{% include "horizon/common/_data_table_row.html" %}
+
+{# Detail row - shows key pair information #}
+<tr class="keypair-detail-row">
+#+END_SRC
+
+To:
+#+BEGIN_SRC django
+{% include "horizon/common/_data_table_row.html" %}
+{# Detail row - shows key pair information #}
+<tr class="keypair-detail-row">
+#+END_SRC
+
+(Remove the blank line 4)
+
+** Step 2: Update _keypairs_table.html CSS
+
+File: =openstack_dashboard/dashboards/project/templates/key_pairs/_keypairs_table.html=
+
+Change lines 23-31 from:
+#+BEGIN_SRC css
+/* Remove padding from detail row cells to eliminate gap when collapsed */
+tr.keypair-detail-row td {
+  padding: 0;
+}
+
+/* Add margin to inner content to maintain spacing when expanded */
+tr.keypair-detail-row td div.keypair-details {
+  margin: 8px;
+}
+#+END_SRC
+
+To:
+#+BEGIN_SRC css
+/* Remove padding and line-height from detail row cells to eliminate gap when collapsed */
+tr.keypair-detail-row td {
+  padding: 0;
+  line-height: 0;
+}
+
+/* Add margin and restore line-height to inner content when expanded */
+tr.keypair-detail-row td div.keypair-details {
+  margin: 8px;
+  line-height: normal;
+}
+#+END_SRC
+
+** Step 3: Test
+
+1. Restart dev server: `tox -e runserver`
+2. Navigate to Key Pairs panel
+3. Verify:
+   - No spacing between collapsed rows
+   - Rows still expand properly when clicking chevron
+   - Text in expanded rows displays normally (not squished)
+   - Multiple key pairs don't have gaps between them
+
+* Why This Works
+
+** Template Whitespace Removal
+Django templates preserve literal whitespace/newlines in the output HTML. By removing the blank line, we eliminate one source of spacing.
+
+** line-height: 0 Technique
+Table cells have a minimum height determined by their line-height, even when padding is 0. Setting `line-height: 0` on the cell collapses it to zero height when the inner content is hidden by Bootstrap's `.collapse` class.
+
+When the collapse div expands, the inner `div.keypair-details` has `line-height: normal`, which restores proper text rendering for the expanded content.
+
+** Why Not Other Approaches?
+
+*** Why not display: none on the row?
+Bootstrap's collapse manages visibility of the inner div. If we set `display: none` on the `<tr>`, it would conflict with Bootstrap's state management. We'd need custom JavaScript to toggle the row itself.
+
+*** Why not height: 0?
+Table rows don't respect `height: 0` the same way block elements do. The line-height approach is more reliable for table cells.
+
+*** Why not visibility: hidden?
+This would hide the row but still preserve its space in the layout - exactly what we're trying to avoid.
+
+* Comparison: AngularJS vs Python Implementation
+
+** AngularJS Version
+The AngularJS implementation likely uses `ng-if` or `ng-show` directives that completely remove or hide elements, preventing any spacing issues.
+
+** Python/Django Version
+Uses Bootstrap's collapse JavaScript, which manages a CSS class on the inner div but doesn't remove elements from the DOM. This requires CSS to ensure zero height when collapsed.
+
+Both approaches are valid; the Python version just requires more explicit CSS to handle the table row spacing.
+
+* Summary
+
+**Problem**: Visible space between key pair rows when detail rows are collapsed
+
+**Root Causes**:
+1. Template whitespace (blank line)
+2. Table row exists in DOM even when content is collapsed
+3. Table cells have minimum height from line-height
+
+**Solution**:
+1. Remove blank line in template (line 4)
+2. Add `line-height: 0` to collapsed row cells
+3. Restore `line-height: normal` to expanded content div
+
+**Files to Change**:
+- =openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html=
+- =openstack_dashboard/dashboards/project/templates/key_pairs/_keypairs_table.html=
+
+**Result**: No visible spacing between rows when collapsed, matching AngularJS behavior
+
