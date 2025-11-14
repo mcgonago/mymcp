@@ -27,6 +27,8 @@ The `analysis/` directory stores permanent technical analyses and research findi
 
 ## How to Use
 
+For more info on guidelines and templates please see [Analysis directory README](../../analysis/README.md)
+
 ### Step 1: Create a New Analysis Document
 
 ```bash
