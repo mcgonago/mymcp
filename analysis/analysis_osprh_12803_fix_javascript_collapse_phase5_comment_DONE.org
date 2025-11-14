@@ -3,6 +3,42 @@
 #+DATE: 2025-11-14
 #+PROPERTY: header-args :eval never-export
 
+* Action Items for Review 966349
+
+** Step 1: Change the Topic ✅ TODO
+
+1. Go to: https://review.opendev.org/c/openstack/horizon/+/966349
+2. Click edit on Topic field
+3. Change from =keypair-chevron-patch19= to =de-angularize=
+4. Save
+
+** Step 2: Verify the Change ✅ TODO
+
+1. Refresh the review page
+2. Confirm Topic now shows: =de-angularize=
+
+** Step 3: Test Topic Search ✅ TODO
+
+1. Go to: https://review.opendev.org/q/project:openstack/horizon+topic:de-angularize
+2. Verify your review (966349) appears in results
+
+** Step 4: Bookmark Topic Search ✅ TODO
+
+Save this URL for future reference:
+#+BEGIN_EXAMPLE
+https://review.opendev.org/q/project:openstack/horizon+topic:de-angularize+status:open
+#+END_EXAMPLE
+
+This will be your "dashboard" for all de-angularization work.
+
+** Step 5: Monitor for Merge
+
+After topic change, the review is ready:
+- Has +2 approval
+- Has correct topic
+- No changes needed to code
+- Just waiting for merge
+
 * Review Status
 
 ** Current State
@@ -257,42 +293,6 @@ Looking at other OpenStack projects, common topic patterns:
 - Blueprint topics: =bp/feature-name= (for blueprints)
 
 For your work, =de-angularize= follows the broad initiative pattern, which is perfect.
-
-* Action Items for Review 966349
-
-** Step 1: Change the Topic ✅ TODO
-
-1. Go to: https://review.opendev.org/c/openstack/horizon/+/966349
-2. Click edit on Topic field
-3. Change from =keypair-chevron-patch19= to =de-angularize=
-4. Save
-
-** Step 2: Verify the Change ✅ TODO
-
-1. Refresh the review page
-2. Confirm Topic now shows: =de-angularize=
-
-** Step 3: Test Topic Search ✅ TODO
-
-1. Go to: https://review.opendev.org/q/project:openstack/horizon+topic:de-angularize
-2. Verify your review (966349) appears in results
-
-** Step 4: Bookmark Topic Search ✅ TODO
-
-Save this URL for future reference:
-#+BEGIN_EXAMPLE
-https://review.opendev.org/q/project:openstack/horizon+topic:de-angularize+status:open
-#+END_EXAMPLE
-
-This will be your "dashboard" for all de-angularization work.
-
-** Step 5: Monitor for Merge
-
-After topic change, the review is ready:
-- Has +2 approval
-- Has correct topic
-- No changes needed to code
-- Just waiting for merge
 
 * Future De-Angularization Work
 
