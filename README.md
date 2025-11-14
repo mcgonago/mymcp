@@ -186,6 +186,21 @@ This workflow:
 - ✅ Queries the appropriate MCP agent for metadata
 - ✅ Provides complete context for code analysis
 
+### Feature Development (Analysis) Workflow Using Cursor
+
+Systematically develop features using Cursor with comprehensive analysis documentation. This workflow demonstrates how to use the `analysis/` directory to track research, decisions, and methodology throughout feature development.
+
+This approach was successfully used to develop and merge the expandable Key Pairs table feature upstream in [Review 966349](https://review.opendev.org/c/openstack/horizon/+/966349). By documenting each phase of development, from initial investigation through final implementation, the analysis documents provided a complete historical record that made troubleshooting easier and preserved institutional knowledge for future work.
+
+**For detailed instructions, see [usecases/analysis_new_feature/README.md](usecases/analysis_new_feature/README.md).**
+
+**Key Benefits:**
+- Track feature development progress systematically
+- Document decisions and rationale
+- Preserve institutional knowledge in git
+- Provide reproducible research methodology
+- Make onboarding easier for new team members
+
 ---
 
 ## What These Agents Can Do
@@ -274,8 +289,10 @@ mymcp/
 │   ├── example.mcp.json                # MCP configuration template
 │   └── LICENSE                         # MIT License
 ├── usecases/                           # Practical use case examples and workflows
-│   └── review_automation/              # Automated review analysis workflow
-│       └── README.md                   # Review automation guide
+│   ├── review_automation/              # Automated review analysis workflow
+│   │   └── README.md                   # Review automation guide
+│   └── analysis_new_feature/           # Feature development analysis workflow
+│       └── README.md                   # Feature development guide
 ├── images/                             # Screenshots and documentation images
 ├── workspace/                          # Temporary workspace for code review analysis (gitignored)
 │   ├── README.md                       # Workspace usage guide
@@ -292,44 +309,6 @@ mymcp/
 │   └── analysis_direct_mode.md         # Horizon/Glance direct mode upload analysis
 └── test-mcp-setup.sh                   # Verification script for all agents
 ```
-
-### Analysis Directory for Permanent Research
-
-The `analysis/` directory stores permanent technical analyses and research findings:
-
-**Purpose:**
-- Document research methodology and findings
-- Preserve institutional knowledge
-- Provide reproducible research
-- Cross-reference related work
-
-**Example Analyses:**
-- Horizon/Glance direct mode upload implementation
-- CORS configuration changes
-- Feature migrations and deprecations
-- Integration test architecture decisions
-
-**How to Use:**
-```bash
-# Create a new analysis from template
-cd analysis
-cp analysis_template.md analysis_<topic>.md
-
-# Query MCP agents for information
-@github-reviewer-agent search for [topic]
-@opendev-reviewer-agent analyze [review]
-
-# Document findings in your new analysis file
-vim analysis_<topic>.md
-```
-
-**Benefits:**
-- ✅ Permanent knowledge base (tracked in git)
-- ✅ All queries and sources documented
-- ✅ Reproducible research methodology
-- ✅ Easy onboarding for new team members
-
-See [`analysis/README.md`](analysis/README.md) for detailed guidelines and templates.
 
 ### Key Differences Between Agents
 
