@@ -711,11 +711,6 @@ was loaded over HTTPS, but requested an insecure resource
 
 ## Related Work
 
-### Related Analyses
-
-- [analysis_cors_security.md](analysis_cors_security.md) - CORS security best practices (to be created)
-- [analysis_large_file_uploads.md](analysis_large_file_uploads.md) - Handling large file uploads (to be created)
-
 ### External References
 
 - **OpenStack Glance Documentation:** https://docs.openstack.org/glance/latest/

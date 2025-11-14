@@ -203,4 +203,5 @@ For solutions to common issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 ## Related Documentation
 
-- [OpenDev MCP Agent Setup Guide](opendev-mcp-agent-setup.org) - Detailed setup documentation in org-mode format
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Solutions to common setup issues
+- [Main Repository README](../README.md) - Overview of all MCP agents
