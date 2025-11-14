@@ -1,0 +1,375 @@
+#+OPTIONS: ^:nil num:nil \n:t
+#+TITLE: HOWTO_install_devstack_on_psi
+#+SETUPFILE: theme-readtheorg.setup
+
+* TL;DR
+
+This page describes how to install devstack following the docs at [[https://docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]
+
+You have a few choices:
+- get a PSI account and install devstack in your psi instance
+- get *Virtual Machine Manager* (virt-manager) and install devstack under Ubuntu 22.04 VM on your laptop
+
+This page describes using virt-manager on psi
+
+The steps for installing devstack on your laptop is at [[https://spaces.redhat.com/display/~omcgonag/horizon_dfg_ui_howto_article_install_devstack_on_laptop][Howto Install Devstack on your Laptop]]
+
+This page describes how to create a PSI instance that supports Horizon ui-pytest/ui-integration-pytest devstack/tox
+
+I already have documented how to install *Fedora40* and *RHEL* on PSI (to support install_yamls) at:
+- [[https://spaces.redhat.com/spaces/OSP/pages/527410011/Install+Fedora40+on+PSI][Install Fedora40 on PSI]]
+- [[https://spaces.redhat.com/spaces/~omcgonag/pages/627081543/horizon_dfg_ui_howto_article_install_rhel_on_psi][Install RHEL on PSI]]
+
+I took some notes while viewing what Jan Jasek did on PSI for his devstack/tox support
+
+* connect to the dashboard
+My PSI node is at 10.0.148.47 - I can see the dashboard
+: http://10.0.148.47/dashboard/project
+
+[[file:../images/dfg_ui_psi_instance_omcgonag_devstack_psi_dashboard.png]]
+
+* AFTER finishing the steps below, and your devstack is up in PSI
+Need to update horizon.conf so that you can connect to the dashboard from your laptop
+
+From Jan:
+- Create Instace in PSI (*DONE*)
+- deploy devstack (*DONE*)
+
+Clone horizon on your laptop - you need to point the integration tests against your PSI deployed devstack
+: git clone https://github.com/openstack/horizon
+: cd horizon
+
+Then in horizon.conf change:
+- instead of *localhost* you want to point to the address of your instance in psi (where horizon UI is accessible)
+- and you need to change *credentials* in horizon.conf because in default there is password *secretadmin* and in default deploy it is only *secret*
+
+: X
+: iyaml openstack_dashboard/test/integration_tests/horizon.conf
+:
+: [dashboard]
+: # Where the dashboard can be found (string value)
+: dashboard_url=http://localhost/dashboard/
+:
+: # Where the keystone endpoint is
+: auth_url=http://localhost/identity/v3
+
+
+* Create instance omcgonag-devstack-ui-pytest-1
+Go to PSI and look around
+: https://openstack.psi.redhat.com
+
+| field             | value                         | other                                                                                        |
+|-------------------+-------------------------------+----------------------------------------------------------------------------------------------|
+| ssh               | IP=10.0.148.47                | ssh -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 ubuntu@10.0.148.47                         |
+| Project Name      | rhos-dfg-ui                   | -                                                                                            |
+| Instance Name     | omcgonag-devstack-ui-pytest-1 | -                                                                                            |
+| Description       | testing tox -e ui-pytest      | -                                                                                            |
+| Availability zone | nova                          | -                                                                                            |
+| Count             | 1                             | -                                                                                            |
+| Volume Size       | 8GB                           | does *Volume Size* need to match below *8GB* Disk? I think so...                                 |
+| Ephemeral Disk    | 0                             | *what is this used for again?*                                                                 |
+| Flavor            | quicklab.ocp4.worker.4vcpu    | RAM 8GB VCPUs 4 VCPU Disk 40GB                                                               |
+| Image Name        | Ubuntu22.04                   | -                                                                                            |
+| Networks          | provider_net_cci_5            | -                                                                                            |
+| Security Group    | Default, jjasek_devstack_sg   | SG allowing all port required for devstack deployment.                                       |
+| Key pair          | Create key pair (ssh)         | omcgonag_key_pair_devstack_2                                                                 |
+| ssh example       | login                         | ssh -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 (see *1* for details on copying private key) |
+
+: [1]  [x] Copy private key to keyboard
+:          ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2
+:          chmod 600 ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2
+
+* Perform basic steps to add stack user
+We do this as root first
+: ssh -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 ubuntu@10.0.148.47
+: sudo -i
+
+Do a few updates
+: sudo apt update
+: sudo apt upgrade
+: sudo apt install emacs-nox
+
+Add user and authorized keys from ubuntu
+
+: sudo useradd -s /bin/bash -d /opt/stack -m stack
+: sudo chmod +x /opt/stack
+: echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
+: sudo chown root:root /etc/sudoers.d/stack
+: sudo chmod 0660 /etc/sudoers.d/stack
+
+: if [ ! -e /opt/stack/.ssh/authorized_keys ]; then
+:       sudo mkdir -p /opt/stack/.ssh
+:       sudo chmod 0700 /opt/stack/.ssh
+:       sudo cp /home/ubuntu/.ssh/authorized_keys /opt/stack/.ssh/authorized_keys
+:       sudo chown -R stack: /opt/stack/.ssh
+:       sudo chmod 0600 /opt/stack/.ssh/authorized_keys
+: fi
+
+** Log out and back in as stack
+Just make sure you can get in as the new sack user
+
+: omcgonag@omcgonag-thinkpadp16vgen1:~$ ssh -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 stack@10.0.148.47
+: Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-157-generic x86_64)
+:
+:  * Documentation:  https://help.ubuntu.com
+:  * Management:     https://landscape.canonical.com
+:  * Support:        https://ubuntu.com/pro
+:
+:  System information as of Thu Oct  9 18:44:36 UTC 2025
+:
+:   System load:  0.02              Processes:               153
+:   Usage of /:   5.7% of 38.58GB   Users logged in:         0
+:   Memory usage: 2%                IPv4 address for enp3s0: 10.0.148.47
+:   Swap usage:   0%
+:
+:
+: Expanded Security Maintenance for Applications is not enabled.
+:
+: 0 updates can be applied immediately.
+:
+: Enable ESM Apps to receive additional future security updates.
+: See https://ubuntu.com/esm or run: sudo pro status
+:
+: New release '24.04.3 LTS' available.
+: Run 'do-release-upgrade' to upgrade to it.
+:
+: The programs included with the Ubuntu system are free software;
+: the exact distribution terms for each program are described in the
+: individual files in /usr/share/doc/*/copyright.
+:
+: Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+: applicable law.
+
+** I want to add my credentials so that I can do things as me over on this box
+Update .gitconfig in case you want to do anything with git
+
+Copy your ~/.ssh/id_rsa over to home/ospng.ssh/id_rsa_owen
+: scp -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 ~/.ssh/id_rsa stack@10.0.148.47:/opt/stack/.ssh/id_rsa_owen
+
+Copy over devstack instructions
+: scp -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2  /home/omcgonag/Work/team-catalyst/org/horizon_dfg_ui_howto_article_install_devstack_on_laptop.org stack@10.0.148.47:/opt/stack/
+
+Get it back to publish
+: scp -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2  stack@10.0.148.47:/opt/stack/HOWTO_install_devstack_on_psi.org  ~/Work/howto_documents_pages/org/HOWTO_install_devstack_on_psi.org
+
+Remember to chmod 600 ~/.ssh/id_rsa_owen
+
+Add your ~/.gitconfig
+: X
+: ishell ~/.gitconfig
+:
+: [user]
+:     name = mcgonago
+:     email = omcgonag@redhat.com
+:
+: [core]
+:     sshCommand = ssh -i ~/.ssh/id_rsa_owen
+
+* Added a few pictures this time
+Here are a few snippets that my help when creating your instance (to compare)
+
+These images are from a previously deleted instance - the name changed to *omcgonag-devstack-ui-pytest-1*
+
+My current *omcgonag-devstack-ui-pytest-1* instance is at [[https://openstack.psi.redhat.com/dashboard/project/instances/2d75a1d8-d721-4044-8e31-c724505ca755/][omcgonag-devstack-ui-pytest-1]]
+
+** instance
+
+[[file:../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest.png]]
+
+** interfaces
+
+[[file:../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_interfaces.png]]
+
+** log
+
+[[file:../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_log.png]]
+
+
+login as root?:
+: ssh -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 ubuntu@10.0.148.47
+
+*First time*
+: $ ssh -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 ubuntu@10.0.148.47
+: Please login as the user "ubuntu" rather than the user "root".
+: Connection to 10.0.151.140 closed.
+
+: omcgonag@omcgonag-thinkpadp16vgen1:~$ ssh -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 ubuntu@10.0.148.47
+: Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-82-generic x86_64)
+:
+:  * Documentation:  https://help.ubuntu.com
+:  * Management:     https://landscape.canonical.com
+:  * Support:        https://ubuntu.com/advantage
+:
+:   System information as of Thu Sep 11 13:00:10 UTC 2025
+:
+:   System load:             0.02490234375
+:   Usage of /:              3.7% of 38.58GB
+:   Memory usage:            2%
+:   Swap usage:              0%
+:   Processes:               139
+:   Users logged in:         0
+:   IPv4 address for enp3s0: 10.0.151.140
+:   IPv6 address for enp3s0: 2620:52:0:94:f816:3eff:fed4:32cc
+:
+:
+: Expanded Security Maintenance for Applications is not enabled.
+:
+: 0 updates can be applied immediately.
+:
+: Enable ESM Apps to receive additional future security updates.
+: See https://ubuntu.com/esm or run: sudo pro status
+:
+:
+: The list of available updates is more than a week old.
+: To check for new updates run: sudo apt update
+: New release '24.04.3 LTS' available.
+: Run 'do-release-upgrade' to upgrade to it.
+:
+:
+:
+: The programs included with the Ubuntu system are free software;
+: the exact distribution terms for each program are described in the
+: individual files in /usr/share/doc/*/copyright.
+:
+: Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+: applicable law.
+:
+: To run a command as administrator (user "root"), use "sudo <command>".
+: See "man sudo_root" for details.
+
+* Login and install devstack
+I grabbed a bunch of steps from [[https://spaces.redhat.com/spaces/OSP/pages/504794733/Install+devstack+on+laptop][Install devstack on laptop]]
+
+Since we are not doing this in a VM - no need to follow [[https://spaces.redhat.com/spaces/OSP/pages/504794733/Install+devstack+on+laptop#Installdevstackonlaptop-StepstocreateyourVM][devstack: Steps to create your VM]]
+
+** Sounds like we should just follow it as is?
+As is from [[https://docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]?
+
+If git is missing:
+: sudo apt install git
+
+A bit about *local.conf*
+
+: X
+: ishell local.conf
+: [[local|localrc]]
+: ADMIN_PASSWORD=xxxxxx
+: DATABASE_PASSWORD=$ADMIN_PASSWORD
+: RABBIT_PASSWORD=$ADMIN_PASSWORD
+: SERVICE_PASSWORD=$ADMIN_PASSWORD
+: This is the minimum required config to get started with DevStack.
+
+NOTE:
+- There is a sample local.conf file under the samples directory in the devstack repository.
+- Only use alphanumeric characters in your passwords, as some services fail to work when using special characters.
+
+*EDITORS NOTE*: I took the sames local.conf and updated as above
+: cp ./samples/local.conf local.conf
+
+*EDITORS NOTE*: I did not change the ADMIN_PASSWORD when doing this in the PSI node - probably ok?
+: ADMIN_PASSWORD=nomoresecret
+: DATABASE_PASSWORD=stackdb
+: RABBIT_PASSWORD=stackqueue
+: SERVICE_PASSWORD=$ADMIN_PASSWORD
+
+* Install devstack
+
+: git clone https://opendev.org/openstack/devstack
+: cd devstack
+
+Start the install
+: ./stack.sh
+
+This will take 15 - 30 minutes, largely depending on the speed of your internet connection.
+Many git trees and packages will be installed during this process.
+
+*EDITORS NOTE:* wait until the end!
+
+: .
+: .
+: .
+: Services are running under systemd unit files.
+: For more information see:
+: https://docs.openstack.org/devstack/latest/systemd.html
+:
+: DevStack Version: 2024.2
+: Change: 6990b06cd321930f69907ba42ee744755f8029fe Install simplejson in devstack venv 2024-07-25 14:37:41 +0200
+: OS Version: Ubuntu 22.04 jammy
+:
+: stack@laptopserver1:~/devstack$
+
+
+* Misc: just a few checks on .ssh, permissions... my first try at this failed miserably
+
+: stack@omcgonag-devstack-ui-pytest-1:~$ ls -alrt	~/
+: total 48
+: -rw-r--r-- 1 stack stack  807 Jan  6  2022 .profile
+: -rw-r--r-- 1 stack stack 3771 Jan  6  2022 .bashrc
+: -rw-r--r-- 1 stack stack  220 Jan  6  2022 .bash_logout
+: drwxr-xr-x 3 root  root  4096 Oct  9 18:43 ..
+: drwx------ 2 stack stack 4096 Oct  9 18:44 .cache
+: drwx------ 2 stack stack 4096 Oct  9 18:47 .ssh
+: drwx------ 3 stack stack 4096 Oct  9 18:48 .emacs.d
+: -rw-rw-r-- 1 stack stack 6954 Oct  9 18:48 .emacs~
+: -rw-rw-r-- 1 stack stack 6954 Oct  9 18:48 .emacs
+: drwxr-x--x 5 stack stack 4096 Oct  9 18:48 .
+: stack@omcgonag-devstack-ui-pytest-1:~$ ls -alrt ~/.ssh
+: total 16
+: -rw------- 1 stack stack  399 Oct  9 18:43 authorized_keys
+: drwx------ 2 stack stack 4096 Oct  9 18:47 .
+: -rw------- 1 stack stack 1864 Oct  9 18:47 id_rsa_owen
+: drwxr-x--x 5 stack stack 4096 Oct  9 18:48 ..
+
+* Misc: security group jjasek_devstack_sg
+One key difference is use of *security group* *jjasek_devstack_sg* when creating instance
+
+default
+: ALLOW IPv4 to 0.0.0.0/0
+: ALLOW IPv4 icmp from 0.0.0.0/0
+: ALLOW IPv6 to ::/0
+: ALLOW IPv4 22/tcp from 0.0.0.0/0
+
+jjasek_devstack_sg
+: ALLOW IPv4 80/tcp from 0.0.0.0/0
+: ALLOW IPv4 443/tcp from 0.0.0.0/0
+: ALLOW IPv4 from 033c3ab6-9973
+: ALLOW IPv6 to ::/0
+: ALLOW IPv4 22/tcp from 0.0.0.0/0
+: ALLOW IPv6 from 033c3ab6-9973
+: ALLOW IPv4 to 0.0.0.0/0
+: ALLOW IPv4 icmp from 0.0.0.0/0
+
+As a reference:
+| Instance Name            | Image Name  |   IP Address | Flavor                     | Key Pair         | Status |   | Availability Zone | Task | Power State | Age             | Actions |
+|--------------------------+-------------+--------------+----------------------------+------------------+--------+---+-------------------+------+-------------+-----------------+---------|
+| jjasek-devstack-swift-ui | Ubuntu22.04 | 10.0.215.101 | quicklab.ocp4.worker.4vcpu | jjasek_key_pair2 | Active |   | nova              | None | Running     | 2 days, 6 hours |         |
+
+* Misc: Wait, after devstack install I see a bunch of things, including horizon
+
+: stack@omcgonag-devstack-ui-pytest-1:~$ pwd
+: /opt/stack
+:
+: stack@omcgonag-devstack-ui-pytest-1:~$ ls -lrt
+: total 1820
+: drwxrwxr-x 15 stack stack    4096 Oct  9 18:57  devstack
+: drwxr-xr-x  5 stack stack    4096 Oct  9 19:00  bindep-venv
+: drwxr-xr-x  2 root  root     4096 Oct  9 19:02  bin
+: drwxr-xr-x 15 stack stack    4096 Oct  9 19:03  keystone
+: drwxr-xr-x 12 stack stack    4096 Oct  9 19:05  glance
+: drwxr-xr-x 12 stack stack    4096 Oct  9 19:06  cinder
+: drwxr-xr-x 15 stack stack    4096 Oct  9 19:08  neutron
+: drwxr-xr-x 12 stack stack    4096 Oct  9 19:09  novnc
+: drwxr-xr-x 14 stack stack    4096 Oct  9 19:11  nova
+: drwxr-xr-x 11 stack stack    4096 Oct  9 19:13  placement
+: drwxr-xr-x  3 stack root     4096 Oct  9 19:16  logs
+: drwxr-xr-x 14 stack stack    4096 Oct  9 19:22  horizon            <== is this where I make the change?
+: drwxr-xr-x  2 stack stack    4096 Oct  9 19:23  async
+: drwxr-xr-x 13 stack stack    4096 Oct  9 19:23  requirements
+: drwxr-xr-x  5 stack stack    4096 Oct  9 19:24  os-test-images
+: drwxr-xr-x 10 stack root     4096 Oct  9 19:24  data
+: drwxr-xr-x 12 stack stack    4096 Oct  9 19:27  tempest
+: -rw-r--r--  1 stack stack      44 Oct  9 19:27  devstack.subunit
+
+* Misc: been a while since I changed from doing devstack on laptop to now in PSI
+: Creation Date: Jul 25, 2024
+: Current Date:  Oct 01, 2025
