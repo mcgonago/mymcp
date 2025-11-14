@@ -10,22 +10,22 @@ The (one) goal of all this is to convert all our *angular* panels to use pure *p
 
 This continues the work documented in the peer programming sessions, building on our understanding of how to de-angularize Horizon panels.
 
-Continuing with review at [[https: //review.opendev.org/c/openstack/horizon/+/966349][966349:  de-angularize Key Pairs]]
+Continuing with review at [[https://review.opendev.org/c/openstack/horizon/+/966349][966349:  de-angularize Key Pairs]]
 
 Part of this exercise is to figure out what code needs to change in order to get your *python* *Key Tables* panel to look exactly like what we get with the default (enabled) *angular* implementation.
 
 It started with a few tickets on removing some angular code from Horizon
-- [[https: //issues.redhat.com/browse/OSPRH-12801][OSPRH-12801:  Remove angular.js from Horizon]]
-- [[https: //issues.redhat.com/browse/OSPRH-12804][OSPRH-12804:  Identify all the differences that are missing from the Python views]]
+- [[https://issues.redhat.com/browse/OSPRH-12801][OSPRH-12801:  Remove angular.js from Horizon]]
+- [[https://issues.redhat.com/browse/OSPRH-12804][OSPRH-12804:  Identify all the differences that are missing from the Python views]]
 
 In particular, one that was recently assigned to me
-- [[https: //issues.redhat.com/browse/OSPRH-12803][OSPRH-12803:  Add chevrons to the key pair table]]
+- [[https://issues.redhat.com/browse/OSPRH-12803][OSPRH-12803:  Add chevrons to the key pair table]]
 
 What is a chevron you ask? What is a key pair table?
 
 Best to show with a picture - here is a clip from our Horizon *Key Pairs* view (form)
 
-[[file: ../images/horizon_ui_programming_101_key_pairs_chevrons.png]]
+[[file:../images/horizon_ui_programming_101_key_pairs_chevrons.png]]
 
 * Patchset 1
 Pulling limitations and summary from all the detail about Patchset 1 (below)
@@ -52,10 +52,10 @@ This forms the foundation for the de-angularization effort, replacing Angular-ba
 * Horizon dashboard
 Here is our *Key pairs* dashboard afer the changes below
 
-[[file: ../images/horizon_ui_programming_101_key_pairs_new_row.png]]
+[[file:../images/horizon_ui_programming_101_key_pairs_new_row.png]]
 
 * Pulling key pieces from analysis_peer_review_day_1_phase_1
-Pulling key pieces in from [[https: //github.com/mcgonago/mymcp/blob/main/analysis/analysis_peer_review_day_1_phase_1.md][analysis_peer_review_day_1_phase_1]]
+Pulling key pieces in from [[https://github.com/mcgonago/mymcp/blob/main/analysis/analysis_peer_review_day_1_phase_1.md][analysis_peer_review_day_1_phase_1]]
 
 ** inlined bsae row template
 
@@ -132,7 +132,7 @@ I guess this is considered a *template* which got pulled in from our other code 
 
 *Compare* this to the original
 
-:  $ git clone https: //github.com/openstack/horizon horizon-osprh-12803-tip
+:  $ git clone https://github.com/openstack/horizon horizon-osprh-12803-tip
 :  $ cd horizon-osprh-12803-tip
 
 :  cd /home/omcgonag/Work/mymcp/workspace/horizon-osprh-12803
@@ -330,10 +330,10 @@ Q:  What does the HTML structure look like from the browser?
                                        
 This shows the new row:                 
 :  <tr><td colspan="5">...</td></tr>
-[[file: ../images/horizon_ui_programming_101_key_pairs_new_row.png]]
+[[file:../images/horizon_ui_programming_101_key_pairs_new_row.png]]
 
 Here is what happens when clicking *<table>*
-[[file: ../images/horizon_ui_programming_101_key_pairs_new_row_click_table.png]]
+[[file:../images/horizon_ui_programming_101_key_pairs_new_row_click_table.png]]
 
 
 ** Here is where we can see where the template code gets injected
@@ -358,7 +358,7 @@ This produces the display pattern you see:
 :      </td>
 :  </tr>
 
-[[file: ../images/horizon_ui_programming_101_key_pairs_show_row.png]]
+[[file:../images/horizon_ui_programming_101_key_pairs_show_row.png]]
 
 * Key Concepts
 

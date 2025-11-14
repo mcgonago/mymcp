@@ -4,7 +4,7 @@
 
 * TL;DR
 
-This page describes how to install devstack following the docs at [[https: //docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]
+This page describes how to install devstack following the docs at [[https://docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]
 
 You have a few choices: 
 - get a PSI account and install devstack in your psi instance
@@ -12,21 +12,21 @@ You have a few choices:
 
 This page describes using virt-manager on psi
 
-The steps for installing devstack on your laptop is at [[file: HOWTO_install_devstack_on_laptop.org][Howto Install Devstack on your Laptop]]
+The steps for installing devstack on your laptop is at [[file:HOWTO_install_devstack_on_laptop.org][Howto Install Devstack on your Laptop]]
 
 This page describes how to create a PSI instance that supports Horizon ui-pytest/ui-integration-pytest devstack/tox
 
 I already have documented how to install *Fedora40* and *RHEL* on PSI (to support install_yamls) at: 
-- [[https: //spaces.redhat.com/spaces/OSP/pages/527410011/Install+Fedora40+on+PSI][Install Fedora40 on PSI]]
-- [[https: //spaces.redhat.com/spaces/~omcgonag/pages/627081543/horizon_dfg_ui_howto_article_install_rhel_on_psi][Install RHEL on PSI]]
+- [[https://spaces.redhat.com/spaces/OSP/pages/527410011/Install+Fedora40+on+PSI][Install Fedora40 on PSI]]
+- [[https://spaces.redhat.com/spaces/~omcgonag/pages/627081543/horizon_dfg_ui_howto_article_install_rhel_on_psi][Install RHEL on PSI]]
 
 I took some notes while viewing what Jan Jasek did on PSI for his devstack/tox support
 
 * connect to the dashboard
 My PSI node is at 10.0.148.47 - I can see the dashboard
-:  http: //10.0.148.47/dashboard/project
+:  http://10.0.148.47/dashboard/project
 
-[[file: ../../images/dfg_ui_psi_instance_omcgonag_devstack_psi_dashboard.png]]
+[[file:../../images/dfg_ui_psi_instance_omcgonag_devstack_psi_dashboard.png]]
 
 * AFTER finishing the steps below, and your devstack is up in PSI
 Need to update horizon.conf so that you can connect to the dashboard from your laptop
@@ -36,7 +36,7 @@ From Jan:
 - deploy devstack (*DONE*)
 
 Clone horizon on your laptop - you need to point the integration tests against your PSI deployed devstack
-:  git clone https: //github.com/openstack/horizon
+:  git clone https://github.com/openstack/horizon
 :  cd horizon
 
 Then in horizon.conf change: 
@@ -47,16 +47,16 @@ Then in horizon.conf change:
 
 [dashboard]
 # Where the dashboard can be found (string value)
-dashboard_url=http: //localhost/dashboard/
+dashboard_url=http://localhost/dashboard/
 
 # Where the keystone endpoint is
-auth_url=http: //localhost/identity/v3
+auth_url=http://localhost/identity/v3
 #+END_SRC
 
 
 * Create instance omcgonag-devstack-ui-pytest-1
 Go to PSI and look around
-:  https: //openstack.psi.redhat.com
+:  https://openstack.psi.redhat.com
 
 | field             | value                         | other                                                                                        |
 |-------------------+-------------------------------+----------------------------------------------------------------------------------------------|
@@ -111,9 +111,9 @@ Just make sure you can get in as the new sack user
 :  omcgonag@omcgonag-thinkpadp16vgen1: ~$ ssh -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 stack@10.0.148.47
 :  Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-157-generic x86_64)
 : 
-:   * Documentation:   https: //help.ubuntu.com
-:   * Management:      https: //landscape.canonical.com
-:   * Support:         https: //ubuntu.com/pro
+:   * Documentation:   https://help.ubuntu.com
+:   * Management:      https://landscape.canonical.com
+:   * Support:         https://ubuntu.com/pro
 : 
 :   System information as of Thu Oct  9 18: 44: 36 UTC 2025
 : 
@@ -128,7 +128,7 @@ Just make sure you can get in as the new sack user
 :  0 updates can be applied immediately.
 : 
 :  Enable ESM Apps to receive additional future security updates.
-:  See https: //ubuntu.com/esm or run:  sudo pro status
+:  See https://ubuntu.com/esm or run:  sudo pro status
 : 
 :  New release '24.04.3 LTS' available.
 :  Run 'do-release-upgrade' to upgrade to it.
@@ -170,19 +170,19 @@ Here are a few snippets that my help when creating your instance (to compare)
 
 These images are from a previously deleted instance - the name changed to *omcgonag-devstack-ui-pytest-1*
 
-My current *omcgonag-devstack-ui-pytest-1* instance is at [[https: //openstack.psi.redhat.com/dashboard/project/instances/2d75a1d8-d721-4044-8e31-c724505ca755/][omcgonag-devstack-ui-pytest-1]]
+My current *omcgonag-devstack-ui-pytest-1* instance is at [[https://openstack.psi.redhat.com/dashboard/project/instances/2d75a1d8-d721-4044-8e31-c724505ca755/][omcgonag-devstack-ui-pytest-1]]
 
 ** instance
 
-[[file: ../../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest.png]]
+[[file:../../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest.png]]
 
 ** interfaces
 
-[[file: ../../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_interfaces.png]]
+[[file:../../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_interfaces.png]]
 
 ** log
 
-[[file: ../../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_log.png]]
+[[file:../../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_log.png]]
 
 
 login as root?: 
@@ -196,9 +196,9 @@ login as root?:
 :  omcgonag@omcgonag-thinkpadp16vgen1: ~$ ssh -i ~/.ssh/id_rsa_omcgonag_key_pair_devstack_2 ubuntu@10.0.148.47
 :  Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-82-generic x86_64)
 : 
-:   * Documentation:   https: //help.ubuntu.com
-:   * Management:      https: //landscape.canonical.com
-:   * Support:         https: //ubuntu.com/advantage
+:   * Documentation:   https://help.ubuntu.com
+:   * Management:      https://landscape.canonical.com
+:   * Support:         https://ubuntu.com/advantage
 : 
 :    System information as of Thu Sep 11 13: 00: 10 UTC 2025
 : 
@@ -217,7 +217,7 @@ login as root?:
 :  0 updates can be applied immediately.
 : 
 :  Enable ESM Apps to receive additional future security updates.
-:  See https: //ubuntu.com/esm or run:  sudo pro status
+:  See https://ubuntu.com/esm or run:  sudo pro status
 : 
 : 
 :  The list of available updates is more than a week old.
@@ -238,12 +238,12 @@ login as root?:
 :  See "man sudo_root" for details.
 
 * Login and install devstack
-I grabbed a bunch of steps from [[file: HOWTO_install_devstack_on_laptop.org][Install devstack on laptop]]
+I grabbed a bunch of steps from [[file:HOWTO_install_devstack_on_laptop.org][Install devstack on laptop]]
 
-Since we are not doing this in a VM - no need to follow [[file: HOWTO_install_devstack_on_laptop.org: : *Steps to create your VM][devstack:  Steps to create your VM]]
+Since we are not doing this in a VM - no need to follow [[file:HOWTO_install_devstack_on_laptop.org::*Steps to create your VM][devstack: Steps to create your VM]]
 
 ** Sounds like we should just follow it as is?
-As is from [[https: //docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]?
+As is from [[https://docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]?
 
 If git is missing: 
 :  sudo apt install git
@@ -274,7 +274,7 @@ NOTE:
 
 * Install devstack
 
-:  git clone https: //opendev.org/openstack/devstack
+:  git clone https://opendev.org/openstack/devstack
 :  cd devstack
 
 Start the install
@@ -290,7 +290,7 @@ Many git trees and packages will be installed during this process.
 :  .
 :  Services are running under systemd unit files.
 :  For more information see: 
-:  https: //docs.openstack.org/devstack/latest/systemd.html
+:  https://docs.openstack.org/devstack/latest/systemd.html
 : 
 :  DevStack Version:  2024.2
 :  Change:  6990b06cd321930f69907ba42ee744755f8029fe Install simplejson in devstack venv 2024-07-25 14: 37: 41 +0200

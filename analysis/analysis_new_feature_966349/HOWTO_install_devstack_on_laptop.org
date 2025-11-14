@@ -4,7 +4,7 @@
 
 * TL;DR
 
-This page describes how to install devstack following the docs at [[https: //docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]
+This page describes how to install devstack following the docs at [[https://docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]
 
 You have a few choices: 
 - get a PSI account and install devstack in your psi instance
@@ -15,16 +15,16 @@ This page describes using virt-manager on your laptop
 * Point your browser at your new Horizon controlled devstack
 After completing [[*clone and run (tox) horizon on devstack][clone and run (tox) horizon on devstack]] - point your browser at your VM, and login as admin
 
-[[file: ../../images/virt_manager_openstack_connect.png]]
+[[file:../../images/virt_manager_openstack_connect.png]]
 
 ** See Openstack running
-[[file: ../../images/virt_manager_openstack_running.png]]
+[[file:../../images/virt_manager_openstack_running.png]]
 
 
 * clone and run (tox) horizon on devstack
 After completing [[*Steps to create your VM][Steps to create your VM]]
 
-:  git clone https: //github.com/openstack/horizon
+:  git clone https://github.com/openstack/horizon
 :  cd horizon
 
 ** Create/update openstack_dashboard/local/local_settings.py
@@ -39,23 +39,23 @@ After completing [[*Steps to create your VM][Steps to create your VM]]
 .
 .
 OPENSTACK_HOST = "192.168.122.169"
-OPENSTACK_KEYSTONE_URL = "http: //%s/identity/v3" % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
 .
 .
 .
 # If horizon is running in production (DEBUG is False), set this
 # with the list of host/domain names that the application can serve.
 # For more information see: 
-# https: //docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+# https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 #ALLOWED_HOSTS = ['horizon.example.com', ]
 ALLOWED_HOSTS = ['*']
 .
 .
 # Help URL can be made available for the client. To provide a help URL, edit the
 # following attribute to the URL of your choice.
-#HORIZON_CONFIG["help_url"] = "http: //openstack.mycompany.org"
+#HORIZON_CONFIG["help_url"] = "http://openstack.mycompany.org"
 
-OPENSTACK_KEYSTONE_URL = "https: //keystone-public-openstack.apps-crc.testing/v3"
+OPENSTACK_KEYSTONE_URL = "https://keystone-public-openstack.apps-crc.testing/v3"
 OPENSTACK_SSL_NO_VERIFY = True
 
 CACHES = {
@@ -83,7 +83,7 @@ These steps show how to use virt-manager to create your Ubuntu 22.04 VM running 
 :  sudo yum install virt-manager
 
 ** Download ubuntu-22.04.4-live-server-amd64.iso
-[[https: //docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]] requires (highly recommends) *Ubuntu-22.04*
+[[https://docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]] requires (highly recommends) *Ubuntu-22.04*
 
 This version of *virt-builder* did not include *Ubuntu-22.04*
 
@@ -97,9 +97,9 @@ This version of *virt-builder* did not include *Ubuntu-22.04*
 :  ubuntu-20.04             x86_64     Ubuntu 20.04 (focal)
 
 We downloaded the *ubuntu-22.04.4-live-server-amd64.iso* from
-:  https: //releases.ubuntu.com/22.04/
+:  https://releases.ubuntu.com/22.04/
 
-Download the [[https: //releases.ubuntu.com/22.04/ubuntu-22.04.4-live-server-amd64.iso][64-bit PC (AMD64) server install image]] version.
+Download the [[https://releases.ubuntu.com/22.04/ubuntu-22.04.4-live-server-amd64.iso][64-bit PC (AMD64) server install image]] version.
 
 ** Fire up virt-manager
 :  virt-manager
@@ -108,24 +108,24 @@ Download the [[https: //releases.ubuntu.com/22.04/ubuntu-22.04.4-live-server-amd
 Better to tackle the *mouse pointer disappearing* issue right away.
 
 I removed the default *tablet* setting, and replaced it with *PS/2 Mouse*
-[[file: ../../images/virt_manager_mouse.png]]
+[[file:../../images/virt_manager_mouse.png]]
 
 This allowed me to use the *host keys* (grab keys) to toggle the mouse pointer between the Console VM and desktop
 :  hit the Control Left Key (Control_L) and Alt Left Key (Alt_L) to toggle mouse pointer
 
 If you want to change the *grab keys* - click *change* and follow direction (I kept it at default)
-[[file: ../../images/virt_manager_grab_keys_change.png]]
+[[file:../../images/virt_manager_grab_keys_change.png]]
 
 ** Step 1:  Create a new virtual machine:  import disk image
 We will do it using *Import existing disk image*
 
-[[file: ../../images/virt_manager_create_a_new_virtual_machine_step_1.png]]
+[[file:../../images/virt_manager_create_a_new_virtual_machine_step_1.png]]
 
 ** Step 2:  Create a new virtual machine:  choose ubuntu-22.04.4-live-server-amd64.iso
 Browse to your *ubuntu-22.04.4-live-server-amd64.iso*
 :  Choose the operating system you are installing:  Ubuntu 24.04 LTS
 
-[[file: ../../images/virt_manager_create_a_new_virtual_machine_step_2.png]]
+[[file:../../images/virt_manager_create_a_new_virtual_machine_step_2.png]]
 
 ** Step 3:  Create a new virtual machine:  Choose Memory and CPU settings
 
@@ -139,7 +139,7 @@ This example allocates ~13G of memory
 :  CPUs:  [8]
 :  Up to 16 available
 
-[[file: ../../images/virt_manager_create_a_new_virtual_machine_step_3.png]]
+[[file:../../images/virt_manager_create_a_new_virtual_machine_step_3.png]]
 
 
 ** Step 4:  Create a new virtual machine:  Ready to begin the installation
@@ -159,26 +159,26 @@ This example allocates ~13G of memory
 :  |FINISH|
 :  +------+
 
-[[file: ../../images/virt_manager_create_a_new_virtual_machine_step_4.png]]
+[[file:../../images/virt_manager_create_a_new_virtual_machine_step_4.png]]
 
 ** Choose English
 
-[[file: ../../images/virt_manager_choose_english.png]]
+[[file:../../images/virt_manager_choose_english.png]]
 
 ** Continue without updating
 
-[[file: ../../images/virt_manager_continue_without_updating.png]]
+[[file:../../images/virt_manager_continue_without_updating.png]]
 
 ** Choose type of install
 Use *<tab>* to move, and *<space-bar>* to select, and then *Done*
 
 :  [x] Ubuntu Server (minimized)
 
-[[file: ../../images/virt_manager_ubuntu_server_minimized.png]]
+[[file:../../images/virt_manager_ubuntu_server_minimized.png]]
 
 ** Network connections
 
-[[file: ../../images/virt_manager_network_connections.png]]
+[[file:../../images/virt_manager_network_connections.png]]
 
 ** Skip configure proxy
 Skip
@@ -186,23 +186,23 @@ Skip
 
 ** Configure Ubuntu archive mirror
 This mirror location passed tests
-:  http: //us.archive.ubuntu.com/ubuntu/
+:  http://us.archive.ubuntu.com/ubuntu/
 
-[[file: ../../images/virt_manager_configure_ubuntu_archive_mirror.png]]
+[[file:../../images/virt_manager_configure_ubuntu_archive_mirror.png]]
 
 ** Opps - Block probing did not discover any disks
 
-[[file: ../../images/virt_manager_configure_block_probing_did_not_discover_disks.png]]
+[[file:../../images/virt_manager_configure_block_probing_did_not_discover_disks.png]]
 
 ** Go back (unfortunately) and add storage
 First, click *information* blue icon
 
-[[file: ../../images/virt_manager_add_storage_step_1.png]]
+[[file:../../images/virt_manager_add_storage_step_1.png]]
 
 ** Add Hardware - Storage
 Add 50G of storage
 
-[[file: ../../images/virt_manager_add_storage_step_2_50G.png]]
+[[file:../../images/virt_manager_add_storage_step_2_50G.png]]
 
 ** See new Virtual Disk:  ubuntu24.04.qcow2
 
@@ -212,15 +212,15 @@ Add 50G of storage
 :  Disk bus:       VirtIO
 :  Storage size:   50.00 GiB
 
-[[file: ../../images/virt_manager_add_storage_step_3_50G_details.png]]
+[[file:../../images/virt_manager_add_storage_step_3_50G_details.png]]
 
 ** Reboot and start over
 
-[[file: ../../images/virt_manager_add_storage_reboot_and_start_over.png]]
+[[file:../../images/virt_manager_add_storage_reboot_and_start_over.png]]
 
 ** After reboot - Guided storage configuration
 
-[[file: ../../images/virt_manager_guided_storage_configuration.png]]
+[[file:../../images/virt_manager_guided_storage_configuration.png]]
 
 ** Storage configuration
 
@@ -265,7 +265,7 @@ USED DEVICES
 :  | partition 2 | new, to be formatted as ext4, mounted at /boot | 2.000G  |
 :  | partition 1 | new, PV of LVM volume group ubuntu-vg          | 47.007G |
 
-[[file: ../../images/virt_manager_storage_configuration.png]]
+[[file:../../images/virt_manager_storage_configuration.png]]
 
 ** Profile setup
 
@@ -274,7 +274,7 @@ USED DEVICES
 :  Pick a username:  ospng
 :  confirm:   123456
 
-[[file: ../../images/virt_manager_profile_setup.png]]
+[[file:../../images/virt_manager_profile_setup.png]]
 
 ** Skip Upgrade to Ubuntu Pro
 
@@ -291,14 +291,14 @@ Before a reboot - need/must remove VirtIO Disk1
 
 Click *Information* icon
 
-[[file: ../../images/virt_manager_remove_virtio_disk1.png]]
+[[file:../../images/virt_manager_remove_virtio_disk1.png]]
 
 ** Hit reboot - oops, must power cycle the VM
 A power cycle is needed to finish remove of VirtIO Disk1
 
 ** Click console - login
 
-[[file: ../../images/virt_manager_login.png]]
+[[file:../../images/virt_manager_login.png]]
 
 * Congrats, VM is up
 
@@ -310,7 +310,7 @@ From diagram - IP is *192.168.122.169*
 Use *ssh-copy-id* so that it is passwordless next time: 
 :  ssh-copy-id ospng@192.168.122.169
 
-[[file: ../../images/virt_manager_network_interface.png]]
+[[file:../../images/virt_manager_network_interface.png]]
 
 ** Enable sudo privelage for ospng user
 
@@ -318,7 +318,7 @@ Use *ssh-copy-id* so that it is passwordless next time:
 :  sudo chmod 0660 /etc/sudoers.d/ospng
 
 * Install devstack
-Pulled directly from [[https: //docs.openstack.org/devstack/latest/][Devstack install]]
+Pulled directly from [[https://docs.openstack.org/devstack/latest/][Devstack install]]
 
 git was missing: 
 :  sudo apt install git
@@ -326,7 +326,7 @@ git was missing:
 :  sudo useradd -s /bin/bash -d /opt/stack -m stack
 :  sudo chmod +x /opt/stack
 :  sudo -u stack -i
-:  git clone https: //opendev.org/openstack/devstack
+:  git clone https://opendev.org/openstack/devstack
 :  cd devstack
 
 A bit about *local.conf*
@@ -356,7 +356,7 @@ Many git trees and packages will be installed during this process.
 :  .
 :  Services are running under systemd unit files.
 :  For more information see: 
-:  https: //docs.openstack.org/devstack/latest/systemd.html
+:  https://docs.openstack.org/devstack/latest/systemd.html
 :  
 :  DevStack Version:  2024.2
 :  Change:  6990b06cd321930f69907ba42ee744755f8029fe Install simplejson in devstack venv 2024-07-25 14: 37: 41 +0200
