@@ -17,19 +17,19 @@ The *Key Pairs* panel defaults to
 
 We need to switch this to *False* and then figure out how to get the python code to support the same *chevrons* that ANGULAR uses
 
-: X
-: iyaml horizon/openstack_dashboard/defaults.py
-:
-: # Dictionary of currently available angular features
-: ANGULAR_FEATURES = {
-:     'images_panel': True,
-:     'key_pairs_panel': True,       <== switch between True and False to toggle Key Pairs panel
-:     'flavors_panel': False,
-:     'domains_panel': False,
-:     'users_panel': False,
-:     'groups_panel': False,
-:     'roles_panel': True
-: }
+#+BEGIN_SRC python
+
+# Dictionary of currently available angular features
+ANGULAR_FEATURES = {
+    'images_panel': True,
+    'key_pairs_panel': True,       <== switch between True and False to toggle Key Pairs panel
+    'flavors_panel': False,
+    'domains_panel': False,
+    'users_panel': False,
+    'groups_panel': False,
+    'roles_panel': True
+}
+#+END_SRC
 
 Here are a few resources that will help in this investigation
 - Bootstrap, a sleek, intuitive, and powerful mobile first front-end framework for faster and easier web development.
@@ -91,39 +91,39 @@ Make sure you are in your development horizon repo
 *REMEMBER* to change change OPENSTACK_HOST to IP of your VM, in my case:
 : OPENSTACK_HOST = "192.168.122.140"
 
-: X
-: ipython openstack_dashboard/local/local_settings.py
-: .
-: .
-: .
-: OPENSTACK_HOST = "192.168.122.140"
-: .
-: .
-: .
-: # If horizon is running in production (DEBUG is False), set this
-: # with the list of host/domain names that the application can serve.
-: # For more information see:
-: # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-: #ALLOWED_HOSTS = ['horizon.example.com', ]
-: ALLOWED_HOSTS = ['*']
-: .
-: .
-: # Help URL can be made available for the client. To provide a help URL, edit the
-: # following attribute to the URL of your choice.
-: #HORIZON_CONFIG["help_url"] = "http://openstack.mycompany.org"
-:
-: #OPENSTACK_KEYSTONE_URL = "https://keystone-public-openstack.apps-crc.testing/v3"
-: OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
-: OPENSTACK_SSL_NO_VERIFY = True
-:
-: CACHES = {
-:     'default': {
-:         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-:         'LOCATION': 'unique-snowflake',
-:     }
-: }
-:
-: SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+#+BEGIN_SRC python
+.
+.
+.
+OPENSTACK_HOST = "192.168.122.140"
+.
+.
+.
+# If horizon is running in production (DEBUG is False), set this
+# with the list of host/domain names that the application can serve.
+# For more information see:
+# https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+#ALLOWED_HOSTS = ['horizon.example.com', ]
+ALLOWED_HOSTS = ['*']
+.
+.
+# Help URL can be made available for the client. To provide a help URL, edit the
+# following attribute to the URL of your choice.
+#HORIZON_CONFIG["help_url"] = "http://openstack.mycompany.org"
+
+#OPENSTACK_KEYSTONE_URL = "https://keystone-public-openstack.apps-crc.testing/v3"
+OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
+OPENSTACK_SSL_NO_VERIFY = True
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+#+END_SRC
 
 Run tox runserver
 : tox -e runserver -- 0.0.0.0:8080
@@ -140,33 +140,33 @@ This can be seen by the current definitions at defaults.py
 - *EDITORS NOTE:* does this mean al the *False* below are panels that were never converted to use *angular*?
 - if not changed to use *angular* - why only pick a few for angular *images_panel*, *key_pairs_panel*, *roles_panel* ?
 
-: X
-: iyaml horizon/openstack_dashboard/defaults.py
-:
-: # Dictionary of currently available angular features
-: ANGULAR_FEATURES = {
-:     'images_panel': True,
-:     'key_pairs_panel': True,       <== True is using angular, False is python
-:     'flavors_panel': False,
-:     'domains_panel': False,
-:     'users_panel': False,
-:     'groups_panel': False,
-:     'roles_panel': True
-: }
+#+BEGIN_SRC python
+
+# Dictionary of currently available angular features
+ANGULAR_FEATURES = {
+    'images_panel': True,
+    'key_pairs_panel': True,       <== True is using angular, False is python
+    'flavors_panel': False,
+    'domains_panel': False,
+    'users_panel': False,
+    'groups_panel': False,
+    'roles_panel': True
+}
+#+END_SRC
 
 ** Use local_settings.py to toggle
 Here we see *False* for using the *python* implementation (is that the *best way to refer to it*?)
 
-: X
-: ipython openstack_dashboard/local/local_settings.py
-: .
-: .
-: .
-: SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
-: 
-: ANGULAR_FEATURES = {
-:     'key_pairs_panel': False,   <== True is using angular, False is python
-: }
+#+BEGIN_SRC python
+.
+.
+.
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
+ANGULAR_FEATURES = {
+    'key_pairs_panel': False,   <== True is using angular, False is python
+}
+#+END_SRC
 
 
 * Use defaults.py (dangerous)
@@ -180,16 +180,16 @@ For example - to inspect the differences for the *key pairs* panel
 - any change to this file triggers a restart of the Horizon dashboard
 - *CAREFUL:* if not careful, this file could get pushed/changed during a commit (local_settings.d changes do not get pushed)
 
-: X
-: iyaml horizon/openstack_dashboard/defaults.py
-:
-: # Dictionary of currently available angular features
-: ANGULAR_FEATURES = {
-:     'images_panel': True,
-:     'key_pairs_panel': True,       <== True is using angular, False is python
-:     'flavors_panel': False,
-:     'domains_panel': False,
-:     'users_panel': False,
-:     'groups_panel': False,
-:     'roles_panel': True
-: }
+#+BEGIN_SRC python
+
+# Dictionary of currently available angular features
+ANGULAR_FEATURES = {
+    'images_panel': True,
+    'key_pairs_panel': True,       <== True is using angular, False is python
+    'flavors_panel': False,
+    'domains_panel': False,
+    'users_panel': False,
+    'groups_panel': False,
+    'roles_panel': True
+}
+#+END_SRC

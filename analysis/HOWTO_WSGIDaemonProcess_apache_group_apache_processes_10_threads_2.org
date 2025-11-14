@@ -310,16 +310,16 @@ RHOSO Horizon operator customers have *three viable approaches* for scaling Hori
 
 ** How They Interact
 
-: X
-: iyaml
-: # Pod resource limits
-: resources:
-:   limits:
-:     cpu: "4"        # <- Kubernetes gives pod access to 4 CPU cores
-:     memory: 2Gi
-:   requests:
-:     cpu: "2"
-:     memory: 1Gi
+#+BEGIN_SRC yaml
+# Pod resource limits
+resources:
+  limits:
+    cpu: "4"        # <- Kubernetes gives pod access to 4 CPU cores
+    memory: 2Gi
+  requests:
+    cpu: "2"
+    memory: 1Gi
+#+END_SRC
 
 Apache worker processes (in httpd.conf)
 : WSGIDaemonProcess apache processes=8 threads=1  # <- 8 processes can run on the 4 cores
@@ -388,18 +388,18 @@ In conf.d/custom.conf (trying to override)
 ** Horizontal Scaling via Replicas (RECOMMENDED)
 How It Works
 
-: X
-: iyaml
-: apiVersion: horizon.openstack.org/v1beta1
-: kind: Horizon
-: metadata:
-:   name: horizon
-: spec:
-:   replicas: 5  # <- Scale to 5 pods
-:   resources:
-:     limits:
-:       cpu: "2"
-:       memory: 2Gi
+#+BEGIN_SRC yaml
+apiVersion: horizon.openstack.org/v1beta1
+kind: Horizon
+metadata:
+  name: horizon
+spec:
+  replicas: 5  # <- Scale to 5 pods
+  resources:
+    limits:
+      cpu: "2"
+      memory: 2Gi
+#+END_SRC
 
 ** Architecture
 
@@ -432,37 +432,38 @@ How It Works
 
 ** Example Configuration:
 
-: X
-: iyaml 
-: apiVersion: horizon.openstack.org/v1beta1
-: kind: Horizon
-: metadata:
-:   name: horizon
-:   namespace: openstack
-: spec:
-:   replicas: 8  # 8 pods × 4 processes = 32 workers total
-:   resources:
-:     requests:
-:       cpu: "1"
-:       memory: 1Gi
-:     limits:
-:       cpu: "2"
-:       memory: 2Gi
-:   secret: osp-secret
-:   customServiceConfig: |
-:     SESSION_TIMEOUT = 3600
+#+BEGIN_SRC yaml
+apiVersion: horizon.openstack.org/v1beta1
+kind: Horizon
+metadata:
+  name: horizon
+  namespace: openstack
+spec:
+  replicas: 8  # 8 pods × 4 processes = 32 workers total
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+  secret: osp-secret
+  customServiceConfig: |
+    SESSION_TIMEOUT = 3600
+#+END_SRC
 
 * WSGIDaemonProcess Override via IfDefine (FEASIBLE)
 
 ** Modify Operator Template (requires operator rebuild)
 
-: X
-: ibash templates/horizon/config/httpd.conf
-: 
-: <IfDefine !CUSTOM_WSGI>
-:   # Default configuration
-:   WSGIDaemonProcess apache display-name=horizon group=apache processes=4 threads=1 user=apache
-: </IfDefine>
+#+BEGIN_SRC bash
+ibash templates/horizon/config/httpd.conf
+
+<IfDefine !CUSTOM_WSGI>
+  # Default configuration
+  WSGIDaemonProcess apache display-name=horizon group=apache processes=4 threads=1 user=apache
+</IfDefine>
+#+END_SRC
 
 ** Create Custom Configuration via IncludeOptional
 Customer creates ConfigMap with custom httpd config - we would use our new httpd.conf change using extra-mounts
@@ -475,26 +476,26 @@ Customer creates ConfigMap with custom httpd config - we would use our new httpd
 
 ** Mount ConfigMap to /etc/httpd/conf.d/
 
-: X
-: iyaml
-: apiVersion: horizon.openstack.org/v1beta1
-: kind: Horizon
-: metadata:
-:   name: horizon
-: spec:
-:   extraMounts:
-:   - name: httpd-custom
-:     region: r1
-:     extraVol:
-:     - volumes:
-:       - name: httpd-custom
-:         configMap:
-:           name: horizon-httpd-custom
-:       mounts:
-:       - name: httpd-custom
-:         mountPath: /etc/httpd/conf.d/99-wsgi-custom.conf
-:         subPath: 99-wsgi-custom.conf
-:         readOnly: true
+#+BEGIN_SRC yaml
+apiVersion: horizon.openstack.org/v1beta1
+kind: Horizon
+metadata:
+  name: horizon
+spec:
+  extraMounts:
+  - name: httpd-custom
+    region: r1
+    extraVol:
+    - volumes:
+      - name: httpd-custom
+        configMap:
+          name: horizon-httpd-custom
+      mounts:
+      - name: httpd-custom
+        mountPath: /etc/httpd/conf.d/99-wsgi-custom.conf
+        subPath: 99-wsgi-custom.conf
+        readOnly: true
+#+END_SRC
 
 *Advantages:*
 - ✅ *Fine-grained control* over worker processes and threads
@@ -559,22 +560,22 @@ Change process group used by WSGI
 
 Configuration:
 
-: X
-: iyaml
-: apiVersion: route.openshift.io/v1
-: kind: Route
-: metadata:
-:   name: horizon
-: spec:
-:   host: horizon.example.com
-:   to:
-:     kind: Service
-:     name: horizon
-:   tls:
-:     termination: edge
-:   # Optional: Session affinity for sticky sessions
-:   # sessionAffinity:
-:   #   type: ClientIP
+#+BEGIN_SRC yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: horizon
+spec:
+  host: horizon.example.com
+  to:
+    kind: Service
+    name: horizon
+  tls:
+    termination: edge
+  # Optional: Session affinity for sticky sessions
+  # sessionAffinity:
+  #   type: ClientIP
+#+END_SRC
 
 *Load Balancing Modes:*
 - *Round Robin* (default): Distribute requests evenly
@@ -924,19 +925,19 @@ Should show processes=10 threads=2
 
 *Capacity:* ~64 concurrent requests (2 pods × 8 processes × 4 threads)
 
-: X
-: ishell templates/horizon/config/httpd.conf
-: 
-: ## WSGI configuration
-: WSGIApplicationGroup %{GLOBAL}
-: 
-: <IfDefine !CUSTOM_WSGI>
-:   # Default configuration - can be overridden via IncludeOptional
-:   WSGIDaemonProcess apache display-name=horizon group=apache processes=4 threads=1 user=apache
-: </IfDefine>
-: 
-: WSGIProcessGroup apache
-: WSGIScriptAlias /dashboard "/usr/share/openstack-dashboard/openstack_dashboard/wsgi.py"
+#+BEGIN_SRC bash
+
+## WSGI configuration
+WSGIApplicationGroup %{GLOBAL}
+
+<IfDefine !CUSTOM_WSGI>
+  # Default configuration - can be overridden via IncludeOptional
+  WSGIDaemonProcess apache display-name=horizon group=apache processes=4 threads=1 user=apache
+</IfDefine>
+
+WSGIProcessGroup apache
+WSGIScriptAlias /dashboard "/usr/share/openstack-dashboard/openstack_dashboard/wsgi.py"
+#+END_SRC
 
 ** Customer ConfigMap
 

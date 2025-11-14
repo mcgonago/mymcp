@@ -35,19 +35,19 @@ For example - to inspect the differences for the *key pairs* panel
 - any change to this file triggers a restart of the Horizon dashboard
 - *CAREFUL:* if not careful, this file could get pushed/changed during a commit (local_settings.d changes do not get pushed)
 
-: X
-: iyaml horizon/openstack_dashboard/defaults.py
-:
-: # Dictionary of currently available angular features
-: ANGULAR_FEATURES = {
-:     'images_panel': True,
-:     'key_pairs_panel': True,
-:     'flavors_panel': False,
-:     'domains_panel': False,
-:     'users_panel': False,
-:     'groups_panel': False,
-:     'roles_panel': True
-: }
+#+BEGIN_SRC python
+
+# Dictionary of currently available angular features
+ANGULAR_FEATURES = {
+    'images_panel': True,
+    'key_pairs_panel': True,
+    'flavors_panel': False,
+    'domains_panel': False,
+    'users_panel': False,
+    'groups_panel': False,
+    'roles_panel': True
+}
+#+END_SRC
 
 ** local_settings.d
 Rename rename *_11_toggle_angular_features.example* to *_11_toggle_angular_features.example.py*
@@ -62,7 +62,7 @@ Rename rename *_11_toggle_angular_features.example* to *_11_toggle_angular_featu
 : -rw-r--r-- 1 root root  213 Jan 16 20:04 _9030_profiler_settings.py.example
 
 To inspect the differences for the *key pairs* panel
-: X
-: ipython openstack_dashboard/local/local_settings.d/_11_toggle_angular_features.py
-:
-: ANGULAR_FEATURES.update({'key_pairs_panel': False})
+#+BEGIN_SRC python
+
+ANGULAR_FEATURES.update({'key_pairs_panel': False})
+#+END_SRC

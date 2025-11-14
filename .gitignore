@@ -50,6 +50,7 @@ Thumbs.db
 kill-rec
 kill-rec~
 Makefile~
+*.backup
 
 # Logs
 *.log

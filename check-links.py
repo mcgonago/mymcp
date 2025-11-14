@@ -26,6 +26,18 @@ def should_skip_path(path):
     if "workspace" in path_parts:
         if "horizon-" in str(path) or ".tox" in str(path):
             return True
+    
+    # Skip temporary report files created during link-fixing sessions
+    filename = Path(path).name
+    skip_files = [
+        'BROKEN_LINKS_REPORT.md',
+        'PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md',
+        'REMAINING_BROKEN_LINKS_DETAIL.md',
+        'LINK_FIX_SUMMARY.md',
+    ]
+    if filename in skip_files:
+        return True
+    
     return False
 
 def check_link(md_file, link_text, link_path):

@@ -135,10 +135,10 @@ When Radomir reviews the patch, he:
 
 File: ~openstack_dashboard/dashboards/project/key_pairs/tables.py~
 
-: X
-: ipython https://review.opendev.org/c/openstack/horizon/+/966349/11/openstack_dashboard/dashboards/project/key_pairs/tables.py
-: 
-: 165  chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+#+BEGIN_SRC python
+
+165  chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+#+END_SRC
 
 What happens internally:
 - Python calls *ExpandableKeyPairColumn.__init__("chevron", verbose_name="")*
@@ -152,15 +152,15 @@ When the *KeyPairsTable* class is being created (before any instance exists):
 
 Inside DataTableMetaclass.__new__()
 
-: X
-: ipython https://github.com/openstack/horizon/blob/master/horizon/tables/base.py#L1191
-:
-: for attr_name, obj in attrs.items():
-:     if isinstance(obj, (opts.column_class, Column)):
-:         column_instance = attrs[attr_name]
-:         column_instance.name = attr_name
-:         column_instance.classes.append('normal_column')             # ← ADDS HERE!
-:         columns.append((attr_name, column_instance))
+#+BEGIN_SRC python
+
+for attr_name, obj in attrs.items():
+    if isinstance(obj, (opts.column_class, Column)):
+        column_instance = attrs[attr_name]
+        column_instance.name = attr_name
+        column_instance.classes.append('normal_column')             # ← ADDS HERE!
+        columns.append((attr_name, column_instance))
+#+END_SRC
 
 After this step:
 : *chevron.classes = ['normal_column']*
@@ -169,16 +169,16 @@ After this step:
 
 Still in the *Column.__init__* method:
 
-: X
-: ipython https://github.com/openstack/horizon/blob/master/horizon/tables/base.py#L363-L364
-: 
-: def __init__(self, transform, verbose_name=None, sortable=True, ...):
-:     # ... earlier code sets self.sortable = sortable ...
-:     self.sortable = sortable  # True by default!
-:     
-:     # ... later code ...
-:     if self.sortable and not self.auto:
-:         self.classes.append("sortable")  # ← ADDS HERE!
+#+BEGIN_SRC python
+
+def __init__(self, transform, verbose_name=None, sortable=True, ...):
+    # ... earlier code sets self.sortable = sortable ...
+    self.sortable = sortable  # True by default!
+    
+    # ... later code ...
+    if self.sortable and not self.auto:
+        self.classes.append("sortable")  # ← ADDS HERE!
+#+END_SRC
 
 After this step:
 : *chevron.classes = ['normal_column', 'sortable']*
@@ -189,12 +189,12 @@ File: *horizon/templates/horizon/common/_data_table.html*
 
 The Django template converts the Python list to HTML:
 
-: X
-: ishell https://opendev.org/openstack/horizon/src/branch/master/horizon/templates/horizon/common/_data_table.html
-: 
-: <th class="{{ column.classes|join:' ' }}">
-:   {{ column.verbose_name }}
-: </th>
+#+BEGIN_SRC html
+
+<th class="{{ column.classes|join:' ' }}">
+  {{ column.verbose_name }}
+</th>
+#+END_SRC
 
 Django's *join* filter:
 : Takes list: *['normal_column', 'sortable']*
@@ -335,12 +335,12 @@ Because *ExpandableKeyPairColumn* doesn't define *__init__*, it automatically us
 ** Parameter Matching
 
 When we call:
-: X
-: ipython
-: ExpandableKeyPairColumn("chevron",
-:                         verbose_name="",
-:                         sortable=False,
-:                         classes=['chevron_column'])
+#+BEGIN_SRC python
+ExpandableKeyPairColumn("chevron",
+                        verbose_name="",
+                        sortable=False,
+                        classes=['chevron_column'])
+#+END_SRC
 
 Python matches parameters to *Column.__init__*:
 - *"chevron"* → *transform* parameter
@@ -366,12 +366,12 @@ We could use ANY of these Column parameters:
 
 ** Change 1: sortable=False, BEFORE
 
-: X
-: ipython
-: chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
-: #                                                   ↑
-: #                                    sortable parameter not specified
-: #                                    Defaults to True (from Column.__init__)
+#+BEGIN_SRC python
+chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
+#                                                   ↑
+#                                    sortable parameter not specified
+#                                    Defaults to True (from Column.__init__)
+#+END_SRC
 
 Inside *Column.__init__*:
 : def __init__(self, ..., sortable=True, ...):  # ← Defaults to True
@@ -384,21 +384,21 @@ Result: *classes = ['normal_column', 'sortable']*
 
 ** Change 1: sortable=False, AFTER
 
-: X
-: ipython
-: chevron = ExpandableKeyPairColumn("chevron",
-:                                   verbose_name="",
-:                                   sortable=False)  # ← EXPLICITLY False
+#+BEGIN_SRC python
+chevron = ExpandableKeyPairColumn("chevron",
+                                  verbose_name="",
+                                  sortable=False)  # ← EXPLICITLY False
+#+END_SRC
 
 Inside *Column.__init__*:
-: X
-: ipython
-:
-: def __init__(self, ..., sortable=True, ...):
-:     self.sortable = sortable  # self.sortable = False (from our parameter)
-:     
-:     if self.sortable and not self.auto:  # False and True = False
-:         self.classes.append("sortable")  # SKIPPED! Condition is False
+#+BEGIN_SRC python
+
+def __init__(self, ..., sortable=True, ...):
+    self.sortable = sortable  # self.sortable = False (from our parameter)
+    
+    if self.sortable and not self.auto:  # False and True = False
+        self.classes.append("sortable")  # SKIPPED! Condition is False
+#+END_SRC
 
 Result: *classes = ['normal_column']* (no "sortable")
 

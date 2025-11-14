@@ -34,39 +34,39 @@ After completing [[https://spaces.redhat.com/display/OSP/Install+devstack+on+lap
 *REMEMBER* to change change OPENSTACK_HOST to IP of your VM
 : OPENSTACK_HOST = "192.168.122.169"
 
-: X
-: ipython openstack_dashboard/local/local_settings.py
-: .
-: .
-: .
-: OPENSTACK_HOST = "192.168.122.169"
-: OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
-: .
-: .
-: .
-: # If horizon is running in production (DEBUG is False), set this
-: # with the list of host/domain names that the application can serve.
-: # For more information see:
-: # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-: #ALLOWED_HOSTS = ['horizon.example.com', ]
-: ALLOWED_HOSTS = ['*']
-: .
-: .
-: # Help URL can be made available for the client. To provide a help URL, edit the
-: # following attribute to the URL of your choice.
-: #HORIZON_CONFIG["help_url"] = "http://openstack.mycompany.org"
-: 
-: OPENSTACK_KEYSTONE_URL = "https://keystone-public-openstack.apps-crc.testing/v3"
-: OPENSTACK_SSL_NO_VERIFY = True
-: 
-: CACHES = {
-:     'default': {
-:         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-:         'LOCATION': 'unique-snowflake',
-:     }
-: }
-: 
-: SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+#+BEGIN_SRC python
+.
+.
+.
+OPENSTACK_HOST = "192.168.122.169"
+OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
+.
+.
+.
+# If horizon is running in production (DEBUG is False), set this
+# with the list of host/domain names that the application can serve.
+# For more information see:
+# https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+#ALLOWED_HOSTS = ['horizon.example.com', ]
+ALLOWED_HOSTS = ['*']
+.
+.
+# Help URL can be made available for the client. To provide a help URL, edit the
+# following attribute to the URL of your choice.
+#HORIZON_CONFIG["help_url"] = "http://openstack.mycompany.org"
+
+OPENSTACK_KEYSTONE_URL = "https://keystone-public-openstack.apps-crc.testing/v3"
+OPENSTACK_SSL_NO_VERIFY = True
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+#+END_SRC
 
 ** run tox runserver
 : tox -e runserver -- 0.0.0.0:8080
@@ -331,10 +331,10 @@ git was missing:
 
 A bit about *local.conf*
 
-: X
-: ishell local.conf
-: [[local|localrc]]
-: This is the minimum required config to get started with DevStack.
+#+BEGIN_SRC bash
+[[local|localrc]]
+This is the minimum required config to get started with DevStack.
+#+END_SRC
 
 NOTE:
 - There is a sample local.conf file under the samples directory in the devstack repository.

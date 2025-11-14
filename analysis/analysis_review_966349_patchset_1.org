@@ -62,16 +62,16 @@ Pulling key pieces in from [[https://github.com/mcgonago/mymcp/blob/main/analysi
 High level
 - Inlined the base row template from horizon/common/_data_table_row.html
 
-: X
-: iyaml horizon/templates/horizon/common/_data_table_row.html
-:
-: <tr{{ row.attr_string|safe }}>
-:     {% spaceless %}
-:         {% for cell in row %}
-:             {% include "horizon/common/_data_table_cell.html" %}
-:         {% endfor %}
-:     {% endspaceless %}
-: </tr>
+#+BEGIN_SRC html
+
+<tr{{ row.attr_string|safe }}>
+    {% spaceless %}
+        {% for cell in row %}
+            {% include "horizon/common/_data_table_cell.html" %}
+        {% endfor %}
+    {% endspaceless %}
+</tr>
+#+END_SRC
 
 ** Then added a new row with all the info needed
 
@@ -79,54 +79,54 @@ High level
 Q: How does just creating this new expandable_row.html get called after whatever gets called today so that we get more info?
 #+END_EXAMPLE
 
-: X
-: iyaml openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
-:
-: {% load i18n %}
-:
-: {# Summary row - inlined from horizon/common/_data_table_row.html #}
-: <tr{{ row.attr_string|safe }}>
-:     {% spaceless %}
-:         {% for cell in row %}
-:             {# Inlined from horizon/common/_data_table_cell.html - simplified #}
-:             <td{{ cell.attr_string|safe }}>
-:                 {% if cell.wrap_list %}<ul>{% endif %}{{ cell.value }}{% if cell.wrap_list %}</ul>{% endif %}
-:             </td>
-:         {% endfor %}
-:     {% endspaceless %}
-: </tr>
-:
-: {# Detail row - shows key pair information #}
-: <tr class="keypair-detail-row">
-:   <td colspan="{{ row.cells|length }}">
-:     <dl class="dl-horizontal">
-:       <dt>{% trans "Key Pair Name" %}</dt>
-:       <dd>{{ row.datum.name }}</dd>
-:
-:       <dt>{% trans "Key Pair Type" %}</dt>
-:       <dd>{{ row.datum.type|default:"ssh" }}</dd>
-:
-:       <dt>{% trans "Fingerprint" %}</dt>
-:       <dd>{{ row.datum.fingerprint }}</dd>
-:
-:       <dt>{% trans "Public Key" %}</dt>
-:       <dd><pre style="word-break: break-all; white-space: pre-wrap; max-width: 100%; overflow-wrap: break-word;">{{ row.datum.public_key|default:"N/A" }}</pre></dd>
-:     </dl>
-:   </td>
-: </tr>
+#+BEGIN_SRC html
+
+{% load i18n %}
+
+{# Summary row - inlined from horizon/common/_data_table_row.html #}
+<tr{{ row.attr_string|safe }}>
+    {% spaceless %}
+        {% for cell in row %}
+            {# Inlined from horizon/common/_data_table_cell.html - simplified #}
+            <td{{ cell.attr_string|safe }}>
+                {% if cell.wrap_list %}<ul>{% endif %}{{ cell.value }}{% if cell.wrap_list %}</ul>{% endif %}
+            </td>
+        {% endfor %}
+    {% endspaceless %}
+</tr>
+
+{# Detail row - shows key pair information #}
+<tr class="keypair-detail-row">
+  <td colspan="{{ row.cells|length }}">
+    <dl class="dl-horizontal">
+      <dt>{% trans "Key Pair Name" %}</dt>
+      <dd>{{ row.datum.name }}</dd>
+
+      <dt>{% trans "Key Pair Type" %}</dt>
+      <dd>{{ row.datum.type|default:"ssh" }}</dd>
+
+      <dt>{% trans "Fingerprint" %}</dt>
+      <dd>{{ row.datum.fingerprint }}</dd>
+
+      <dt>{% trans "Public Key" %}</dt>
+      <dd><pre style="word-break: break-all; white-space: pre-wrap; max-width: 100%; overflow-wrap: break-word;">{{ row.datum.public_key|default:"N/A" }}</pre></dd>
+    </dl>
+  </td>
+</tr>
+#+END_SRC
 
 * Detailed Code Analysis
 
 ** Before Phase 1
 Original *expandable_row.html* (from peer review)
 
-: X
-: ishell openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
-:
-: {% include "horizon/common/_data_table_row.html" %}
-: <tr><td colspan="5">
-:          {{ row.datum }}
-:          {{ row.datum.name }} </td></tr>
+#+BEGIN_SRC html
+
+{% include "horizon/common/_data_table_row.html" %}
+<tr><td colspan="5">
+         {{ row.datum }}
+         {{ row.datum.name }} </td></tr>
+#+END_SRC
 
 I guess this is considered a *template* which got pulled in from our other code at:
 
@@ -231,33 +231,33 @@ The changes in Patchset 1 introduce a custom row rendering mechanism that displa
 - *Calls *render_to_string()*: This Django utility function renders the template *key_pairs/expandable_row.html* and returns the resulting HTML as a string
 - *Passes context* *"row": self*: The row object itself (which contains the keypair data in *self.datum*) is passed to the template for rendering
 
-: X
-: ipython openstack_dashboard/dashboards/project/key_pairs/tables.py
-:
-: class ExpandableKeyPairRow(tables.Row):
-:     """Custom row class for expandable key pair rows with chevron functionality."""
-:     def render(self):
-:         return render_to_string("key_pairs/expandable_row.html",
-:                                 {"row": self})
+#+BEGIN_SRC python
+
+class ExpandableKeyPairRow(tables.Row):
+    """Custom row class for expandable key pair rows with chevron functionality."""
+    def render(self):
+        return render_to_string("key_pairs/expandable_row.html",
+                                {"row": self})
+#+END_SRC
 
 ** Table Configuration
 *row_class = ExpandableKeyPairRow*
 - this tells Django Horizon's DataTable framework to use the custom *ExpandableKeyPairRow* class instead of the default *tables.Row* class when rendering each row in the table
 - *Applies to all rows*: Every key pair in the table will now be rendered using the custom row class
 
-: X
-: ipython openstack_dashboard/dashboards/project/key_pairs/tables.py
-:
-: class KeyPairsTable(tables.DataTable):
-:     # ... column definitions ...
-:
-:     class Meta(object):
-:         name = "keypairs"
-:         verbose_name = _("Key Pairs")
-:         row_class = ExpandableKeyPairRow                                     # ← NEW LINE
-:         table_actions = (CreateLinkNG, ImportKeyPair, DeleteKeyPairs,
-:                          KeypairsFilterAction,)
-:         row_actions = (DeleteKeyPairs,)
+#+BEGIN_SRC python
+
+class KeyPairsTable(tables.DataTable):
+    # ... column definitions ...
+
+    class Meta(object):
+        name = "keypairs"
+        verbose_name = _("Key Pairs")
+        row_class = ExpandableKeyPairRow                                     # ← NEW LINE
+        table_actions = (CreateLinkNG, ImportKeyPair, DeleteKeyPairs,
+                         KeypairsFilterAction,)
+        row_actions = (DeleteKeyPairs,)
+#+END_SRC
 
 ** Custom Template
 *Line 1*: include *horizon/common/_data_table_row.html*
@@ -266,13 +266,13 @@ The changes in Patchset 1 introduce a custom row rendering mechanism that displa
 - This is the first row you see
 : | [ ] | test1 | ssh | 83:9d:ce:... | |
 
-: X
-: ishell openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
-:
-:  1  {% include "horizon/common/_data_table_row.html" %}
-:  2  <tr><td colspan="5">
-:  3           {{ row.datum }}
-:  4           {{ row.datum.name }} </td></tr>
+#+BEGIN_SRC html
+
+ 1  {% include "horizon/common/_data_table_row.html" %}
+ 2  <tr><td colspan="5">
+ 3           {{ row.datum }}
+ 4           {{ row.datum.name }} </td></tr>
+#+END_SRC
 
 #+BEGIN_EXAMPLE
 Q: What is a <tr> element?

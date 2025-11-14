@@ -43,15 +43,15 @@ Then in horizon.conf change:
 - instead of *localhost* you want to point to the address of your instance in psi (where horizon UI is accessible)
 - and you need to change *credentials* in horizon.conf because in default there is password *secretadmin* and in default deploy it is only *secret*
 
-: X
-: iyaml openstack_dashboard/test/integration_tests/horizon.conf
-:
-: [dashboard]
-: # Where the dashboard can be found (string value)
-: dashboard_url=http://localhost/dashboard/
-:
-: # Where the keystone endpoint is
-: auth_url=http://localhost/identity/v3
+#+BEGIN_SRC bash
+
+[dashboard]
+# Where the dashboard can be found (string value)
+dashboard_url=http://localhost/dashboard/
+
+# Where the keystone endpoint is
+auth_url=http://localhost/identity/v3
+#+END_SRC
 
 
 * Create instance omcgonag-devstack-ui-pytest-1
@@ -155,15 +155,15 @@ Get it back to publish
 Remember to chmod 600 ~/.ssh/id_rsa_owen
 
 Add your ~/.gitconfig
-: X
-: ishell ~/.gitconfig
-:
-: [user]
-:     name = mcgonago
-:     email = omcgonag@redhat.com
-:
-: [core]
-:     sshCommand = ssh -i ~/.ssh/id_rsa_owen
+#+BEGIN_SRC bash
+
+[user]
+    name = mcgonago
+    email = omcgonag@redhat.com
+
+[core]
+    sshCommand = ssh -i ~/.ssh/id_rsa_owen
+#+END_SRC
 
 * Added a few pictures this time
 Here are a few snippets that my help when creating your instance (to compare)
@@ -250,14 +250,14 @@ If git is missing:
 
 A bit about *local.conf*
 
-: X
-: ishell local.conf
-: [[local|localrc]]
-: ADMIN_PASSWORD=xxxxxx
-: DATABASE_PASSWORD=$ADMIN_PASSWORD
-: RABBIT_PASSWORD=$ADMIN_PASSWORD
-: SERVICE_PASSWORD=$ADMIN_PASSWORD
-: This is the minimum required config to get started with DevStack.
+#+BEGIN_SRC bash
+[[local|localrc]]
+ADMIN_PASSWORD=xxxxxx
+DATABASE_PASSWORD=$ADMIN_PASSWORD
+RABBIT_PASSWORD=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+This is the minimum required config to get started with DevStack.
+#+END_SRC
 
 NOTE:
 - There is a sample local.conf file under the samples directory in the devstack repository.
