@@ -8,7 +8,7 @@ This document describes some recent Horizon peer programming sessions.
 
 The (one) goal of all this is to convert all our *angular* panels to use pure *python* instead.
 
-This is phase2 of [[https://spaces.redhat.com/spaces/~omcgonag/pages/721224780/HOWTO_horizon_peer_programming_101][HOWTO_horizon_peer_programming_101]]
+This continues the work documented in the peer programming sessions, building on our understanding of how to de-angularize Horizon panels.
 
 Continuing with review at [[https://review.opendev.org/c/openstack/horizon/+/966349][966349: de-angularize Key Pairs]]
 

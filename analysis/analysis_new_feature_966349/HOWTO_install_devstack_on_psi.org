@@ -12,7 +12,7 @@ You have a few choices:
 
 This page describes using virt-manager on psi
 
-The steps for installing devstack on your laptop is at [[https://spaces.redhat.com/display/~omcgonag/horizon_dfg_ui_howto_article_install_devstack_on_laptop][Howto Install Devstack on your Laptop]]
+The steps for installing devstack on your laptop is at [[file:HOWTO_install_devstack_on_laptop.org][Howto Install Devstack on your Laptop]]
 
 This page describes how to create a PSI instance that supports Horizon ui-pytest/ui-integration-pytest devstack/tox
 
@@ -238,9 +238,9 @@ login as root?:
 : See "man sudo_root" for details.
 
 * Login and install devstack
-I grabbed a bunch of steps from [[https://spaces.redhat.com/spaces/OSP/pages/504794733/Install+devstack+on+laptop][Install devstack on laptop]]
+I grabbed a bunch of steps from [[file:HOWTO_install_devstack_on_laptop.org][Install devstack on laptop]]
 
-Since we are not doing this in a VM - no need to follow [[https://spaces.redhat.com/spaces/OSP/pages/504794733/Install+devstack+on+laptop#Installdevstackonlaptop-StepstocreateyourVM][devstack: Steps to create your VM]]
+Since we are not doing this in a VM - no need to follow [[file:HOWTO_install_devstack_on_laptop.org::*Steps to create your VM][devstack: Steps to create your VM]]
 
 ** Sounds like we should just follow it as is?
 As is from [[https://docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]?

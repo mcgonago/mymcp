@@ -21,7 +21,7 @@ As we inspect, compare, and determine the work
 
 ** Get your devstack development environment up and running
 Easy peasy
-- follow the steps at [[https://spaces.redhat.com/display/OSP/Install+devstack+on+laptop][Install devstack on laptop]]
+- follow the steps at [[file:../analysis_new_feature_966349/HOWTO_install_devstack_on_laptop.org][Install devstack on laptop]]
 - *TODO:* would it make sense to do this in PSI (to help share dev environments with others?)
 
 ** Use local_settings.d to toggle between angular and python code

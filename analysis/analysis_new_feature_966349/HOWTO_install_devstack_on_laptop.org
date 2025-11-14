@@ -13,7 +13,7 @@ You have a few choices:
 This page describes using virt-manager on your laptop
 
 * Point your browser at your new Horizon controlled devstack
-After completing [[https://spaces.redhat.com/display/OSP/Install+devstack+on+laptop#Installdevstackonlaptop-cloneandrun(tox)horizonondevstack][clone and run (tox) horizon on devstack]] - point your browser at your VM, and login as admin
+After completing [[*clone and run (tox) horizon on devstack][clone and run (tox) horizon on devstack]] - point your browser at your VM, and login as admin
 
 [[file:../../images/virt_manager_openstack_connect.png]]
 
@@ -22,7 +22,7 @@ After completing [[https://spaces.redhat.com/display/OSP/Install+devstack+on+lap
 
 
 * clone and run (tox) horizon on devstack
-After completing [[https://spaces.redhat.com/display/OSP/Install+devstack+on+laptop#Installdevstackonlaptop-StepstocreateyourVM][Steps to create your VM]]
+After completing [[*Steps to create your VM][Steps to create your VM]]
 
 : git clone https://github.com/openstack/horizon
 : cd horizon
@@ -343,10 +343,6 @@ NOTE:
 *EDITORS NOTE*: I took the sames local.conf and updated as above
 : cp ./samples/local.conf local.conf
 
-FROM:
-
-TO:
-
 Start the install
 : ./stack.sh
 
@@ -389,7 +385,7 @@ This comes from using *12288* when allocating VM memory:
 
 : Memory
 : Total host memory: 62915 MiB
-:
+: 
 : Current allocation: [12288  - +] MiB
 : Max allocation:     [12288  - +] MiB
 :                                      [ ] Enable shared memory

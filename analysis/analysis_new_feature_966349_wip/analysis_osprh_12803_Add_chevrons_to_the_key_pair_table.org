@@ -48,10 +48,10 @@ We also may need to introduce/use templates to get our python code to add suppor
 Can it be that simple? When was last time I had to do this?
 
 A few places for reference
-- [[https://spaces.redhat.com/spaces/~omcgonag/pages/505089290/HOWTO_install_devstack_on_laptop][HOWTO_install_devstack_on_laptop]]
-- [[https://spaces.redhat.com/spaces/~omcgonag/pages/586844903/HOWTO_install_devstack_on_laptop_REVISIT_1][HOWTO_install_devstack_on_laptop_REVISIT_1]]
-- [[https://spaces.redhat.com/spaces/~omcgonag/pages/574132161/HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views][HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views]]
-- [[https://spaces.redhat.com/spaces/~omcgonag/pages/574132163/HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views_REVISIT_1][HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views_REVISIT_1]]
+- [[file:../analysis_new_feature_966349/HOWTO_install_devstack_on_laptop.org][HOWTO_install_devstack_on_laptop]]
+- [[file:../analysis_new_feature_966349/HOWTO_install_devstack_on_laptop.org][HOWTO_install_devstack_on_laptop_REVISIT_1]] (now merged into main HOWTO)
+- [[file:analysis_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views.org][HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views]]
+- [[file:analysis_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views.org][HOWTO_osprh_12804_Identify_all_the_differences_that_are_missing_from_the_Python_views_REVISIT_1]] (same file)
 
 : $ sudo virsh list --all
 :  Id   Name          State
