@@ -666,7 +666,7 @@ Both patchsets achieve the same visual result, but PS19 does it with cleaner cod
 ## Source Documents
 
 This patchset summary synthesizes:
-- [`analysis_osprh_12803_fix_javascript_collapse_phase5_comment_12.org`](../analysis_osprh_12803_fix_javascript_collapse_phase5_comment_12.org) - Detailed PS18 vs PS19 comparison
+- [`analysis_osprh_12803_fix_javascript_collapse_phase5_comment_12.org`](../analysis_new_feature_966349_wip/analysis_osprh_12803_fix_javascript_collapse_phase5_comment_12.org) - Detailed PS18 vs PS19 comparison
 - Gerrit review comments from Radomir Dopieralski
 - Git diff analysis between patchsets
 

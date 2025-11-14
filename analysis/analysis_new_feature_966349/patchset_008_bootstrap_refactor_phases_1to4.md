@@ -785,12 +785,12 @@ This allows unique per-row IDs: `table.get_object_id(datum)` returns the key pai
 ## Source Documents
 
 This patchset summary synthesizes:
-- [`analysis_osprh_12803_fix_chevron_id.org`](../analysis_osprh_12803_fix_chevron_id.org) - Unique ID problem analysis
-- [`analysis_osprh_12803_fix_javascript_collapse_phase1.org`](../analysis_osprh_12803_fix_javascript_collapse_phase1.org) - Helper function extraction
-- [`analysis_osprh_12803_fix_javascript_collapse_phase2.org`](../analysis_osprh_12803_fix_javascript_collapse_phase2.org) - Bootstrap collapse implementation
-- [`analysis_osprh_12803_fix_javascript_collapse_phase3.org`](../analysis_osprh_12803_fix_javascript_collapse_phase3.org) - CSS chevron rotation
-- [`analysis_osprh_12803_fix_javascript_collapse_phase4.org`](../analysis_osprh_12803_fix_javascript_collapse_phase4.org) - PEP8 compliance
-- [`PHASE_1_TO_4_COMPLETE_SUMMARY.md`](../PHASE_1_TO_4_COMPLETE_SUMMARY.md) - Complete overview
+- [`analysis_osprh_12803_fix_chevron_id.org`](../analysis_new_feature_966349_wip/analysis_osprh_12803_fix_chevron_id.org) - Unique ID problem analysis
+- [`analysis_osprh_12803_fix_javascript_collapse_phase1.org`](../analysis_new_feature_966349_wip/analysis_osprh_12803_fix_javascript_collapse_phase1.org) - Helper function extraction
+- [`analysis_osprh_12803_fix_javascript_collapse_phase2.org`](../analysis_new_feature_966349_wip/analysis_osprh_12803_fix_javascript_collapse_phase2.org) - Bootstrap collapse implementation
+- [`analysis_osprh_12803_fix_javascript_collapse_phase3.org`](../analysis_new_feature_966349_wip/analysis_osprh_12803_fix_javascript_collapse_phase3.org) - CSS chevron rotation
+- [`analysis_osprh_12803_fix_javascript_collapse_phase4.org`](../analysis_new_feature_966349_wip/analysis_osprh_12803_fix_javascript_collapse_phase4.org) - PEP8 compliance
+- [`PHASE_1_TO_4_COMPLETE_SUMMARY.md`](../analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md) - Complete overview
 
 ---
 

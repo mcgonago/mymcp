@@ -497,9 +497,9 @@ This spike is successful if we can answer:
 ### Source Documents
 
 This spike synthesizes findings from:
-- [`analysis_peer_review_day_1_phase_1_study_1.md`](../analysis_peer_review_day_1_phase_1_study_1.md) - Template inlining analysis
-- [`analysis_peer_review_day_2.md`](../analysis_peer_review_day_2.md) - Hide/show functionality investigation
-- [`analysis_peer_review_day_2_study_chevron.md`](../analysis_peer_review_day_2_study_chevron.md) - Chevron implementation options
+- [`analysis_peer_review_day_1_phase_1_study_1.md`](../analysis_new_feature_966349_wip/analysis_peer_review_day_1_phase_1_study_1.md) - Template inlining analysis
+- [`analysis_peer_review_day_2.md`](../analysis_new_feature_966349_wip/analysis_peer_review_day_2.md) - Hide/show functionality investigation
+- [`analysis_peer_review_day_2_study_chevron.md`](../analysis_new_feature_966349_wip/analysis_peer_review_day_2_study_chevron.md) - Chevron implementation options
 
 ### Development Environment
 
