@@ -26,7 +26,7 @@ I took some notes while viewing what Jan Jasek did on PSI for his devstack/tox s
 My PSI node is at 10.0.148.47 - I can see the dashboard
 : http://10.0.148.47/dashboard/project
 
-[[file:../images/dfg_ui_psi_instance_omcgonag_devstack_psi_dashboard.png]]
+[[file:../../images/dfg_ui_psi_instance_omcgonag_devstack_psi_dashboard.png]]
 
 * AFTER finishing the steps below, and your devstack is up in PSI
 Need to update horizon.conf so that you can connect to the dashboard from your laptop
@@ -174,15 +174,15 @@ My current *omcgonag-devstack-ui-pytest-1* instance is at [[https://openstack.ps
 
 ** instance
 
-[[file:../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest.png]]
+[[file:../../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest.png]]
 
 ** interfaces
 
-[[file:../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_interfaces.png]]
+[[file:../../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_interfaces.png]]
 
 ** log
 
-[[file:../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_log.png]]
+[[file:../../images/dfg_ui_psi_instance_omcgonag_devstack_ui_pytest_log.png]]
 
 
 login as root?:

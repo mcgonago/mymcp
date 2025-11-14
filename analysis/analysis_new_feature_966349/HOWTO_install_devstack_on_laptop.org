@@ -15,10 +15,10 @@ This page describes using virt-manager on your laptop
 * Point your browser at your new Horizon controlled devstack
 After completing [[https://spaces.redhat.com/display/OSP/Install+devstack+on+laptop#Installdevstackonlaptop-cloneandrun(tox)horizonondevstack][clone and run (tox) horizon on devstack]] - point your browser at your VM, and login as admin
 
-[[file:../images/virt_manager_openstack_connect.png]]
+[[file:../../images/virt_manager_openstack_connect.png]]
 
 ** See Openstack running
-[[file:../images/virt_manager_openstack_running.png]]
+[[file:../../images/virt_manager_openstack_running.png]]
 
 
 * clone and run (tox) horizon on devstack
@@ -108,24 +108,24 @@ Download the [[https://releases.ubuntu.com/22.04/ubuntu-22.04.4-live-server-amd6
 Better to tackle the *mouse pointer disappearing* issue right away.
 
 I removed the default *tablet* setting, and replaced it with *PS/2 Mouse*
-[[file:../images/virt_manager_mouse.png]]
+[[file:../../images/virt_manager_mouse.png]]
 
 This allowed me to use the *host keys* (grab keys) to toggle the mouse pointer between the Console VM and desktop
 : hit the Control Left Key (Control_L) and Alt Left Key (Alt_L) to toggle mouse pointer
 
 If you want to change the *grab keys* - click *change* and follow direction (I kept it at default)
-[[file:../images/virt_manager_grab_keys_change.png]]
+[[file:../../images/virt_manager_grab_keys_change.png]]
 
 ** Step 1: Create a new virtual machine: import disk image
 We will do it using *Import existing disk image*
 
-[[file:../images/virt_manager_create_a_new_virtual_machine_step_1.png]]
+[[file:../../images/virt_manager_create_a_new_virtual_machine_step_1.png]]
 
 ** Step 2: Create a new virtual machine: choose ubuntu-22.04.4-live-server-amd64.iso
 Browse to your *ubuntu-22.04.4-live-server-amd64.iso*
 : Choose the operating system you are installing: Ubuntu 24.04 LTS
 
-[[file:../images/virt_manager_create_a_new_virtual_machine_step_2.png]]
+[[file:../../images/virt_manager_create_a_new_virtual_machine_step_2.png]]
 
 ** Step 3: Create a new virtual machine: Choose Memory and CPU settings
 
@@ -139,7 +139,7 @@ This example allocates ~13G of memory
 : CPUs: [8]
 : Up to 16 available
 
-[[file:../images/virt_manager_create_a_new_virtual_machine_step_3.png]]
+[[file:../../images/virt_manager_create_a_new_virtual_machine_step_3.png]]
 
 
 ** Step 4: Create a new virtual machine: Ready to begin the installation
@@ -159,26 +159,26 @@ This example allocates ~13G of memory
 : |FINISH|
 : +------+
 
-[[file:../images/virt_manager_create_a_new_virtual_machine_step_4.png]]
+[[file:../../images/virt_manager_create_a_new_virtual_machine_step_4.png]]
 
 ** Choose English
 
-[[file:../images/virt_manager_choose_english.png]]
+[[file:../../images/virt_manager_choose_english.png]]
 
 ** Continue without updating
 
-[[file:../images/virt_manager_continue_without_updating.png]]
+[[file:../../images/virt_manager_continue_without_updating.png]]
 
 ** Choose type of install
 Use *<tab>* to move, and *<space-bar>* to select, and then *Done*
 
 : [x] Ubuntu Server (minimized)
 
-[[file:../images/virt_manager_ubuntu_server_minimized.png]]
+[[file:../../images/virt_manager_ubuntu_server_minimized.png]]
 
 ** Network connections
 
-[[file:../images/virt_manager_network_connections.png]]
+[[file:../../images/virt_manager_network_connections.png]]
 
 ** Skip configure proxy
 Skip
@@ -188,21 +188,21 @@ Skip
 This mirror location passed tests
 : http://us.archive.ubuntu.com/ubuntu/
 
-[[file:../images/virt_manager_configure_ubuntu_archive_mirror.png]]
+[[file:../../images/virt_manager_configure_ubuntu_archive_mirror.png]]
 
 ** Opps - Block probing did not discover any disks
 
-[[file:../images/virt_manager_configure_block_probing_did_not_discover_disks.png]]
+[[file:../../images/virt_manager_configure_block_probing_did_not_discover_disks.png]]
 
 ** Go back (unfortunately) and add storage
 First, click *information* blue icon
 
-[[file:../images/virt_manager_add_storage_step_1.png]]
+[[file:../../images/virt_manager_add_storage_step_1.png]]
 
 ** Add Hardware - Storage
 Add 50G of storage
 
-[[file:../images/virt_manager_add_storage_step_2_50G.png]]
+[[file:../../images/virt_manager_add_storage_step_2_50G.png]]
 
 ** See new Virtual Disk: ubuntu24.04.qcow2
 
@@ -212,15 +212,15 @@ Add 50G of storage
 : Disk bus:      VirtIO
 : Storage size:  50.00 GiB
 
-[[file:../images/virt_manager_add_storage_step_3_50G_details.png]]
+[[file:../../images/virt_manager_add_storage_step_3_50G_details.png]]
 
 ** Reboot and start over
 
-[[file:../images/virt_manager_add_storage_reboot_and_start_over.png]]
+[[file:../../images/virt_manager_add_storage_reboot_and_start_over.png]]
 
 ** After reboot - Guided storage configuration
 
-[[file:../images/virt_manager_guided_storage_configuration.png]]
+[[file:../../images/virt_manager_guided_storage_configuration.png]]
 
 ** Storage configuration
 
@@ -265,7 +265,7 @@ USED DEVICES
 : | partition 2 | new, to be formatted as ext4, mounted at /boot | 2.000G  |
 : | partition 1 | new, PV of LVM volume group ubuntu-vg          | 47.007G |
 
-[[file:../images/virt_manager_storage_configuration.png]]
+[[file:../../images/virt_manager_storage_configuration.png]]
 
 ** Profile setup
 
@@ -274,7 +274,7 @@ USED DEVICES
 : Pick a username: ospng
 : confirm:  123456
 
-[[file:../images/virt_manager_profile_setup.png]]
+[[file:../../images/virt_manager_profile_setup.png]]
 
 ** Skip Upgrade to Ubuntu Pro
 
@@ -291,14 +291,14 @@ Before a reboot - need/must remove VirtIO Disk1
 
 Click *Information* icon
 
-[[file:../images/virt_manager_remove_virtio_disk1.png]]
+[[file:../../images/virt_manager_remove_virtio_disk1.png]]
 
 ** Hit reboot - oops, must power cycle the VM
 A power cycle is needed to finish remove of VirtIO Disk1
 
 ** Click console - login
 
-[[file:../images/virt_manager_login.png]]
+[[file:../../images/virt_manager_login.png]]
 
 * Congrats, VM is up
 
@@ -310,7 +310,7 @@ From diagram - IP is *192.168.122.169*
 Use *ssh-copy-id* so that it is passwordless next time:
 : ssh-copy-id ospng@192.168.122.169
 
-[[file:../images/virt_manager_network_interface.png]]
+[[file:../../images/virt_manager_network_interface.png]]
 
 ** Enable sudo privelage for ospng user
 
