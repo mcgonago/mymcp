@@ -14,7 +14,7 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 - [GitLab RH Agent](#gitlab-rh-agent)
 - [Jira Agent](#jira-agent)
 - [Complete MCP Configuration](#complete-mcp-configuration)
-- [Use Cases](#use-cases) ⭐ **START HERE FOR AI**
+- [Use Cases](#use-cases)
 - [What These Agents Can Do](#what-these-agents-can-do)
 - [Next Steps](#next-steps)
 - [Additional Resources](#additional-resources)
@@ -168,7 +168,7 @@ Or for issues/MRs:
 
 Practical workflows and examples for using these MCP agents in your development process.
 
-### Review Automation ⭐ **START HERE FOR AI**
+### Review Automation
 
 Automate code review analysis across multiple platforms (OpenDev, GitHub, GitLab) using `fetch_review.sh`.
 
@@ -292,39 +292,6 @@ mymcp/
 │   └── analysis_direct_mode.md         # Horizon/Glance direct mode upload analysis
 └── test-mcp-setup.sh                   # Verification script for all agents
 ```
-
-### Workspace for Code Review Analysis
-
-The `workspace/` directory provides a dedicated space for cloning and analyzing code from reviews, PRs, and MRs:
-
-**Quick Start (with automated assessment):**
-```bash
-# Fetch an OpenDev review with assessment document
-cd workspace
-./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965216
-
-# Ask Cursor to complete the assessment
-"Please analyze review 965216 and complete results/review_965216.md"
-```
-
-**Traditional workflow:**
-```bash
-# Fetch a GitHub PR
-./fetch-review.sh github https://github.com/openstack-k8s-operators/horizon-operator/pull/402
-
-# Fetch a GitLab MR
-./fetch-review.sh gitlab https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
-```
-
-**Benefits:**
-- ✅ Organized workspace separate from agent code
-- ✅ **NEW:** Automated review assessment document creation
-- ✅ Full repository context for deeper analysis
-- ✅ Use Cursor's `codebase_search` across review code
-- ✅ Git-ignored to avoid cluttering the repo
-- ✅ Persistent across sessions
-
-See [`workspace/README.md`](workspace/README.md) and [`workspace/REVIEW_ASSESSMENT_GUIDE.md`](workspace/REVIEW_ASSESSMENT_GUIDE.md) for detailed usage instructions.
 
 ### Analysis Directory for Permanent Research
 

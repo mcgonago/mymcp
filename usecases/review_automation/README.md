@@ -49,6 +49,39 @@ The generated assessment document includes:
 - **Recommendations** - What should be addressed before merge
 - **Decision** - Final recommendation (+2/+1/0/-1)
 
+## Workspace for Code Review Analysis
+
+The `workspace/` directory provides a dedicated space for cloning and analyzing code from reviews, PRs, and MRs:
+
+**Quick Start (with automated assessment):**
+```bash
+# Fetch an OpenDev review with assessment document
+cd workspace
+./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965216
+
+# Ask Cursor to complete the assessment
+"Please analyze review 965216 and complete results/review_965216.md"
+```
+
+**Traditional workflow:**
+```bash
+# Fetch a GitHub PR
+./fetch-review.sh github https://github.com/openstack-k8s-operators/horizon-operator/pull/402
+
+# Fetch a GitLab MR
+./fetch-review.sh gitlab https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
+```
+
+**Benefits:**
+- ✅ Organized workspace separate from agent code
+- ✅ **NEW:** Automated review assessment document creation
+- ✅ Full repository context for deeper analysis
+- ✅ Use Cursor's `codebase_search` across review code
+- ✅ Git-ignored to avoid cluttering the repo
+- ✅ Persistent across sessions
+
+See [`workspace/README.md`](../../workspace/README.md) and [`workspace/REVIEW_ASSESSMENT_GUIDE.md`](../../workspace/REVIEW_ASSESSMENT_GUIDE.md) for detailed usage instructions.
+
 ## Platform-Specific Examples
 
 ### Example 1: OpenDev Review
