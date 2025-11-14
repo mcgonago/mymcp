@@ -62,7 +62,7 @@ Pulling key pieces in from [[https://github.com/mcgonago/mymcp/blob/main/analysi
 High level
 - Inlined the base row template from horizon/common/_data_table_row.html
 
-#+BEGIN_SRC html
+#+BEGIN_SRC html   # horizon/templates/horizon/common/_data_table_row.html
 
 <tr{{ row.attr_string|safe }}>
     {% spaceless %}
@@ -79,7 +79,7 @@ High level
 Q: How does just creating this new expandable_row.html get called after whatever gets called today so that we get more info?
 #+END_EXAMPLE
 
-#+BEGIN_SRC html
+#+BEGIN_SRC html   # openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
 
 {% load i18n %}
 
@@ -120,7 +120,7 @@ Q: How does just creating this new expandable_row.html get called after whatever
 ** Before Phase 1
 Original *expandable_row.html* (from peer review)
 
-#+BEGIN_SRC html
+#+BEGIN_SRC html   # openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
 
 {% include "horizon/common/_data_table_row.html" %}
 <tr><td colspan="5">
@@ -231,7 +231,7 @@ The changes in Patchset 1 introduce a custom row rendering mechanism that displa
 - *Calls *render_to_string()*: This Django utility function renders the template *key_pairs/expandable_row.html* and returns the resulting HTML as a string
 - *Passes context* *"row": self*: The row object itself (which contains the keypair data in *self.datum*) is passed to the template for rendering
 
-#+BEGIN_SRC python
+#+BEGIN_SRC python   # openstack_dashboard/dashboards/project/key_pairs/tables.py
 
 class ExpandableKeyPairRow(tables.Row):
     """Custom row class for expandable key pair rows with chevron functionality."""
@@ -245,7 +245,7 @@ class ExpandableKeyPairRow(tables.Row):
 - this tells Django Horizon's DataTable framework to use the custom *ExpandableKeyPairRow* class instead of the default *tables.Row* class when rendering each row in the table
 - *Applies to all rows*: Every key pair in the table will now be rendered using the custom row class
 
-#+BEGIN_SRC python
+#+BEGIN_SRC python   # openstack_dashboard/dashboards/project/key_pairs/tables.py
 
 class KeyPairsTable(tables.DataTable):
     # ... column definitions ...
@@ -266,7 +266,7 @@ class KeyPairsTable(tables.DataTable):
 - This is the first row you see
 : | [ ] | test1 | ssh | 83:9d:ce:... | |
 
-#+BEGIN_SRC html
+#+BEGIN_SRC html   # openstack_dashboard/dashboards/project/templates/key_pairs/expandable_row.html
 
  1  {% include "horizon/common/_data_table_row.html" %}
  2  <tr><td colspan="5">

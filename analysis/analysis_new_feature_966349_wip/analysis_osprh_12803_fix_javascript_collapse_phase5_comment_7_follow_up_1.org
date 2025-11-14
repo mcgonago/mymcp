@@ -135,7 +135,7 @@ When Radomir reviews the patch, he:
 
 File: ~openstack_dashboard/dashboards/project/key_pairs/tables.py~
 
-#+BEGIN_SRC python
+#+BEGIN_SRC python   # https://review.opendev.org/c/openstack/horizon/+/966349/11/openstack_dashboard/dashboards/project/key_pairs/tables.py
 
 165  chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
 #+END_SRC
@@ -152,7 +152,7 @@ When the *KeyPairsTable* class is being created (before any instance exists):
 
 Inside DataTableMetaclass.__new__()
 
-#+BEGIN_SRC python
+#+BEGIN_SRC python   # https://github.com/openstack/horizon/blob/master/horizon/tables/base.py#L1191
 
 for attr_name, obj in attrs.items():
     if isinstance(obj, (opts.column_class, Column)):
@@ -169,7 +169,7 @@ After this step:
 
 Still in the *Column.__init__* method:
 
-#+BEGIN_SRC python
+#+BEGIN_SRC python   # https://github.com/openstack/horizon/blob/master/horizon/tables/base.py#L363-L364
 
 def __init__(self, transform, verbose_name=None, sortable=True, ...):
     # ... earlier code sets self.sortable = sortable ...
@@ -189,7 +189,7 @@ File: *horizon/templates/horizon/common/_data_table.html*
 
 The Django template converts the Python list to HTML:
 
-#+BEGIN_SRC html
+#+BEGIN_SRC html   # https://opendev.org/openstack/horizon/src/branch/master/horizon/templates/horizon/common/_data_table.html
 
 <th class="{{ column.classes|join:' ' }}">
   {{ column.verbose_name }}
@@ -335,7 +335,7 @@ Because *ExpandableKeyPairColumn* doesn't define *__init__*, it automatically us
 ** Parameter Matching
 
 When we call:
-#+BEGIN_SRC python
+#+BEGIN_SRC bash
 ExpandableKeyPairColumn("chevron",
                         verbose_name="",
                         sortable=False,
@@ -366,7 +366,7 @@ We could use ANY of these Column parameters:
 
 ** Change 1: sortable=False, BEFORE
 
-#+BEGIN_SRC python
+#+BEGIN_SRC bash
 chevron = ExpandableKeyPairColumn("chevron", verbose_name="")
 #                                                   ↑
 #                                    sortable parameter not specified
@@ -384,14 +384,14 @@ Result: *classes = ['normal_column', 'sortable']*
 
 ** Change 1: sortable=False, AFTER
 
-#+BEGIN_SRC python
+#+BEGIN_SRC bash
 chevron = ExpandableKeyPairColumn("chevron",
                                   verbose_name="",
                                   sortable=False)  # ← EXPLICITLY False
 #+END_SRC
 
 Inside *Column.__init__*:
-#+BEGIN_SRC python
+#+BEGIN_SRC bash
 
 def __init__(self, ..., sortable=True, ...):
     self.sortable = sortable  # self.sortable = False (from our parameter)

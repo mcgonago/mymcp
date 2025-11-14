@@ -38,30 +38,37 @@ EXTENSION_MAP = {
 }
 
 def detect_language_from_marker(line):
-    """Detect the programming language from an 'iyaml/ipython/ishell <filename>' line."""
+    """Detect the programming language from an 'iyaml/ipython/ishell <filename>' line.
+    
+    Returns: tuple of (language, filename) or (language, None)
+    """
     # Check for ipython marker - always Python
-    if re.search(r': ipython\s+', line):
-        return 'python'
+    match = re.search(r': ipython\s+(.+)', line)
+    if match:
+        filename = match.group(1).strip()
+        return ('python', filename if filename else None)
     
     # Check for ishell marker - check file extension or default to bash
-    match = re.search(r': ishell\s+(\S+)', line)
+    match = re.search(r': ishell\s+(.+)', line)
     if match:
-        filename = match.group(1)
+        filename = match.group(1).strip()
         ext = Path(filename).suffix.lower()
-        return EXTENSION_MAP.get(ext, 'bash')
+        lang = EXTENSION_MAP.get(ext, 'bash')
+        return (lang, filename)
     
     # Check for iyaml marker - check file extension
-    match = re.search(r': iyaml\s+(\S+)', line)
+    match = re.search(r': iyaml\s+(.+)', line)
     if match:
-        filename = match.group(1)
+        filename = match.group(1).strip()
         ext = Path(filename).suffix.lower()
-        return EXTENSION_MAP.get(ext, 'bash')
+        lang = EXTENSION_MAP.get(ext, 'bash')
+        return (lang, filename)
     
     # Check for iyaml without filename - likely YAML content
     if re.search(r': iyaml\s*$', line):
-        return 'yaml'
+        return ('yaml', None)
     
-    return 'bash'  # Default fallback
+    return ('bash', None)  # Default fallback
 
 def convert_org_file(filepath, dry_run=False):
     """Convert old-style code blocks in an org file to modern #+BEGIN_SRC blocks."""
@@ -88,10 +95,11 @@ def convert_org_file(filepath, dry_run=False):
             
             # Look for language marker on next line(s)
             language = 'bash'  # Default
+            filename = None
             while i < len(lines):
                 next_line = lines[i]
                 if next_line.startswith(': iyaml') or next_line.startswith(': ipython') or next_line.startswith(': ishell'):
-                    language = detect_language_from_marker(next_line)
+                    language, filename = detect_language_from_marker(next_line)
                     i += 1
                     break
                 elif next_line.strip() == ':':
@@ -127,7 +135,11 @@ def convert_org_file(filepath, dry_run=False):
                     break
             
             # Write the new format
-            new_lines.append(f"#+BEGIN_SRC {language}\n")
+            if filename:
+                # Add filename as a comment on the same line
+                new_lines.append(f"#+BEGIN_SRC {language}   # {filename}\n")
+            else:
+                new_lines.append(f"#+BEGIN_SRC {language}\n")
             new_lines.extend(code_lines)
             new_lines.append("#+END_SRC\n")
             conversions += 1
@@ -174,7 +186,10 @@ def main():
     
     # Find files to convert
     if args.file:
-        org_files = [Path(args.file)]
+        file_path = Path(args.file)
+        if not file_path.is_absolute():
+            file_path = Path.cwd() / file_path
+        org_files = [file_path]
     else:
         org_files = sorted(BASE_DIR.rglob("*.org"))
     

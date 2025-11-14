@@ -34,7 +34,7 @@ After completing [[https://spaces.redhat.com/display/OSP/Install+devstack+on+lap
 *REMEMBER* to change change OPENSTACK_HOST to IP of your VM
 : OPENSTACK_HOST = "192.168.122.169"
 
-#+BEGIN_SRC python
+#+BEGIN_SRC python   # openstack_dashboard/local/local_settings.py
 .
 .
 .
@@ -331,7 +331,7 @@ git was missing:
 
 A bit about *local.conf*
 
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash   # local.conf
 [[local|localrc]]
 This is the minimum required config to get started with DevStack.
 #+END_SRC

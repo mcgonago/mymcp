@@ -925,7 +925,7 @@ Should show processes=10 threads=2
 
 *Capacity:* ~64 concurrent requests (2 pods × 8 processes × 4 threads)
 
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash   # templates/horizon/config/httpd.conf
 
 ## WSGI configuration
 WSGIApplicationGroup %{GLOBAL}

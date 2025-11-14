@@ -43,7 +43,7 @@ Then in horizon.conf change:
 - instead of *localhost* you want to point to the address of your instance in psi (where horizon UI is accessible)
 - and you need to change *credentials* in horizon.conf because in default there is password *secretadmin* and in default deploy it is only *secret*
 
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash   # openstack_dashboard/test/integration_tests/horizon.conf
 
 [dashboard]
 # Where the dashboard can be found (string value)
@@ -155,7 +155,7 @@ Get it back to publish
 Remember to chmod 600 ~/.ssh/id_rsa_owen
 
 Add your ~/.gitconfig
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash   # ~/.gitconfig
 
 [user]
     name = mcgonago
@@ -250,7 +250,7 @@ If git is missing:
 
 A bit about *local.conf*
 
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash   # local.conf
 [[local|localrc]]
 ADMIN_PASSWORD=xxxxxx
 DATABASE_PASSWORD=$ADMIN_PASSWORD
