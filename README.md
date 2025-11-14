@@ -164,8 +164,6 @@ Or for issues/MRs:
 
 ## Use Case: fetch_review.sh for reviewing Horizon Operator code
 
-**⭐ For AI Assistants (Cursor, Claude, etc.): Read this section first!**
-
 ### When User Asks to Analyze a Review
 
 **User says any of:**
@@ -174,12 +172,12 @@ Or for issues/MRs:
 - "Fetch and analyze review [URL] with full assessment"
 - "Please review https://review.opendev.org/c/openstack/horizon/+/965215"
 
-**You should execute this complete workflow:**
+**You can try the following to see one example of an MCP workflow**
 
 #### Step 1: Fetch the Review Code
 ```bash
 cd /home/omcgonag/Work/mymcp/workspace
-./fetch-review.sh --with-assessment opendev [URL]
+./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965215
 ```
 
 This creates:
