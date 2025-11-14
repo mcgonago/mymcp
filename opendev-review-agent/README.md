@@ -38,9 +38,13 @@ Alternatively, install packages directly into the venv without activating it:
 ./venv/bin/pip install -r requirements.txt
 ```
 
-## Define the MCP Server Script
+## Define the MCP Server Script (server.py)
 
-Create a file named [`server.py`](server.py). This script will host the MCP server and define the **gerrit_review_fetcher** tool.
+For your convenience, since you are working in your cloned repo of **mymcp**, the [`server.py`](server.py) script has already been created for you.
+- also, the [`server.sh`](server.sh) script below has already been created.
+- when you get to the point (below) of adding your **opendev-review-agent**, you just point to this **directory**, which will find the [`server.sh`](server.sh) script
+
+The [`server.py`](server.py) script hosts the MCP server and defines the **gerrit_review_fetcher** tool.
 
 **Tool Definition:**
 - **Tool Name**: `gerrit_review_fetcher`

@@ -76,8 +76,11 @@ GITHUB_TOKEN=ghp_your_actual_token_here
 > The `.gitignore` file is already configured to exclude it.
 
 ## Define the MCP Server Script
+For your convenience, since you are working in your cloned repo of **mymcp**, the [`server.py`](server.py) script has already been created for you.
+- also, the [`server.sh`](server.sh) script below has already been created.
+- when you get to the point (below) of adding your **github-agent**, you just point to this **directory**, which will find the [`server.sh`](server.sh) script
 
-Create a file named [`server.py`](server.py). This script will host the MCP server and define the **github_pr_fetcher** tool.
+The [`server.py`](server.py) file defines the logic for the **github_pr_fetcher** tool.
 
 **Tool Definition:**
 - **Tool Name**: `github_pr_fetcher`

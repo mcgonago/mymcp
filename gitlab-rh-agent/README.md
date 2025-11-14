@@ -75,9 +75,13 @@ GITLAB_TOKEN=glpat-your_actual_token_here
 > **Never commit the `.env` file to Git!** It contains your personal access token.  
 > The `.gitignore` file is already configured to exclude `.env`.
 
-## Create the Server Script (server.py)
+## Create the MCP Server Script (server.py)
 
-The [`server.py`](server.py) file is already provided in this directory. It defines the logic for the `gitlab_resource_fetcher` tool that:
+For your convenience, since you are working in your cloned repo of **mymcp**, the [`server.py`](server.py) script has already been created for you.
+- also, the [`server.sh`](server.sh) script below has already been created.
+- when you get to the point (below) of adding your **gitlab-rh-agent**, you just point to this **directory**, which will find the [`server.sh`](server.sh) script
+
+The [`server.py`](server.py) file defines the logic for the `gitlab_resource_fetcher` tool that:
 
 - Accepts GitLab paths or full URLs (e.g., `group/project/issues/123` or `https://gitlab.cee.redhat.com/...`)
 - Fetches data from the GitLab API at `https://gitlab.cee.redhat.com/api/v4`
