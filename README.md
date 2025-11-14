@@ -9,19 +9,160 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 
 ## Table of Contents
 
-- [AI Assistant Instructions](#ai-assistant-instructions) ⭐ **START HERE FOR AI**
 - [GitHub Review Agent](#github-review-agent)
 - [OpenDev Review Agent](#opendev-review-agent)
 - [GitLab RH Agent](#gitlab-rh-agent)
 - [Jira Agent](#jira-agent)
 - [Complete MCP Configuration](#complete-mcp-configuration)
+- [Use Case: fetch_review.sh for reviewing Horizon Operator code](#use-case-fetch_reviewsh-for-reviewing-horizon-operator-code) ⭐ **START HERE FOR AI**
 - [What These Agents Can Do](#what-these-agents-can-do)
 - [Next Steps](#next-steps)
 - [Additional Resources](#additional-resources)
 
 ---
 
-## AI Assistant Instructions
+## GitHub Review Agent
+
+An agent for analyzing GitHub Pull Requests with real GitHub API integration.
+
+### Features
+
+- **GitHub API Integration**: Fetches real PR data using PyGithub
+- **Authentication**: Uses personal access tokens for API access
+- **Comprehensive Data**: Retrieves PR metadata, file changes, comments, and reviews
+- **Security**: Environment file for token management (never committed to Git)
+
+**For detailed setup instructions, see [github-agent/README.md](github-agent/README.md).**
+
+---
+
+## OpenDev Review Agent
+
+An agent for analyzing OpenDev Gerrit code reviews for OpenStack projects.
+
+### Features
+
+- **Gerrit API Integration**: Fetches review details from OpenDev's Gerrit REST API
+- **Security Prefix Handling**: Strips the `)]}'` prefix that Gerrit adds for security
+- **Comprehensive Data**: Retrieves change metadata, file statistics, and comments
+- **URL Parsing**: Extracts change numbers from standard OpenDev review URLs
+
+**For detailed setup instructions, see [opendev-review-agent/README.md](opendev-review-agent/README.md).**
+
+---
+
+## GitLab RH Agent
+
+An agent for analyzing GitLab Issues, Merge Requests, and Commits from internal Red Hat GitLab (gitlab.cee.redhat.com).
+
+### Features
+
+- **GitLab API Integration**: Fetches issues, merge requests, and commits from internal Red Hat GitLab
+- **Authentication**: Uses personal access tokens with `read_api` scope
+- **Supports Issues, MRs, and Commits**: Analyze issues, merge requests, and individual commits
+- **Full URL Support**: Paste GitLab URLs directly from your browser
+- **Project Path Handling**: Properly URL-encodes project paths for API calls
+- **Commit Analysis**: Fetches diffs, file changes, and statistics for security review
+- **CVE Detection**: Analyzes commits for security implications and vulnerability fixes
+- **Comprehensive Metadata**: Retrieves title, state, description, assignees, labels, and timestamps
+- **Security**: Environment file for token management (never committed to Git)
+
+**For detailed setup instructions, see [gitlab-rh-agent/README.md](gitlab-rh-agent/README.md).**
+
+---
+
+## Jira Agent
+
+An agent that provides access to Jira from Cursor with containerized deployment.
+
+> [!NOTE]
+> **About the Jira Agent**  
+> The `jira-agent` in this repository is based on the excellent work from [redhat-community-ai-tools/jira-mcp](https://github.com/redhat-community-ai-tools/jira-mcp). I followed their well-documented steps as part of my learning journey to build MCP agents.
+
+### Features
+
+- Containerized deployment with Podman
+- 20+ Jira tools (issue search, project management, board & sprint management, user management)
+- Production-ready setup with proper authentication
+- Secure credential management
+
+**For detailed setup instructions, see [jira-agent/README.md](jira-agent/README.md).**
+
+---
+
+## Complete MCP Configuration
+Here is what your **MCP Servers** configuration looks like after you are done following the setup and configuration steps for each one.
+
+To see this:
+1. Open Cursor Settings (**Ctrl/Cmd + ,**)
+2. Search for: **MCP Servers**
+3. Click edit on any one of them
+
+```json
+{
+  "mcpServers": {
+    "github-reviewer-agent": {
+      "command": "<your-mymcp-cloned-repo-path>/github-agent/server.sh",
+      "description": "Analyzes GitHub pull requests to perform automated code review."
+    },
+    "opendev-reviewer-agent": {
+      "command": "<your-mymcp-cloned-repo-path>/opendev-review-agent/server.sh",
+      "description": "Analyzes OpenDev Gerrit reviews to perform automated code review."
+    },
+    "gitlab-cee-agent": {
+      "command": "<your-mymcp-cloned-repo-path>/gitlab-rh-agent/server.sh",
+      "description": "Agent to fetch and analyze issues/MRs from internal Red Hat GitLab."
+    },
+    "jiraMcp": {
+      "command": "podman",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--env-file",
+        "/home/username/.rh-jira-mcp.env",
+        "jira-agent:latest"
+      ],
+      "description": "Provides access to Jira issues, projects, boards, and sprints."
+    }
+  }
+}
+```
+
+4. **Save your new mcp.json configuration**  
+   Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
+   
+   > **Note**: Alternatively, you can fully exit Cursor (**Ctrl+Q**) and restart it, which will also reload the new settings.
+
+### Testing Each Agent
+
+After configuration, test each agent in Cursor:
+
+**GitHub Agent:**
+```
+@github-reviewer-agent Review https://github.com/openstack-k8s-operators/horizon-operator/pull/402
+```
+
+**OpenDev Agent:**
+```
+@opendev-reviewer-agent Analyze https://review.opendev.org/c/openstack/horizon/+/960204
+```
+
+**GitLab Agent:**
+```
+@gitlab-cee-agent Analyze commit https://gitlab.cee.redhat.com/eng/openstack/python-django/-/commit/848fd870bb51ae6d8ea44512665dab8257f9c27a
+```
+Or for issues/MRs:
+```
+@gitlab-cee-agent Analyze issue openstack-konflux/osp-director-operator-17.1/issues/24
+```
+
+**Jira Agent:**
+```
+@jiraMcp Get details for issue OSPRH-13100
+```
+
+## Use Case: fetch_review.sh for reviewing Horizon Operator code
 
 **⭐ For AI Assistants (Cursor, Claude, etc.): Read this section first!**
 
@@ -183,147 +324,6 @@ tox -e pep8
 ```
 
 ---
-
-## GitHub Review Agent
-
-An agent for analyzing GitHub Pull Requests with real GitHub API integration.
-
-### Features
-
-- **GitHub API Integration**: Fetches real PR data using PyGithub
-- **Authentication**: Uses personal access tokens for API access
-- **Comprehensive Data**: Retrieves PR metadata, file changes, comments, and reviews
-- **Security**: Environment file for token management (never committed to Git)
-
-**For detailed setup instructions, see [github-agent/README.md](github-agent/README.md).**
-
----
-
-## OpenDev Review Agent
-
-An agent for analyzing OpenDev Gerrit code reviews for OpenStack projects.
-
-### Features
-
-- **Gerrit API Integration**: Fetches review details from OpenDev's Gerrit REST API
-- **Security Prefix Handling**: Strips the `)]}'` prefix that Gerrit adds for security
-- **Comprehensive Data**: Retrieves change metadata, file statistics, and comments
-- **URL Parsing**: Extracts change numbers from standard OpenDev review URLs
-
-**For detailed setup instructions, see [opendev-review-agent/README.md](opendev-review-agent/README.md).**
-
----
-
-## GitLab RH Agent
-
-An agent for analyzing GitLab Issues, Merge Requests, and Commits from internal Red Hat GitLab (gitlab.cee.redhat.com).
-
-### Features
-
-- **GitLab API Integration**: Fetches issues, merge requests, and commits from internal Red Hat GitLab
-- **Authentication**: Uses personal access tokens with `read_api` scope
-- **Supports Issues, MRs, and Commits**: Analyze issues, merge requests, and individual commits
-- **Full URL Support**: Paste GitLab URLs directly from your browser
-- **Project Path Handling**: Properly URL-encodes project paths for API calls
-- **Commit Analysis**: Fetches diffs, file changes, and statistics for security review
-- **CVE Detection**: Analyzes commits for security implications and vulnerability fixes
-- **Comprehensive Metadata**: Retrieves title, state, description, assignees, labels, and timestamps
-- **Security**: Environment file for token management (never committed to Git)
-
-**For detailed setup instructions, see [gitlab-rh-agent/README.md](gitlab-rh-agent/README.md).**
-
----
-
-## Jira Agent
-
-An agent that provides access to Jira from Cursor with containerized deployment.
-
-> [!NOTE]
-> **About the Jira Agent**  
-> The `jira-agent` in this repository is based on the excellent work from [redhat-community-ai-tools/jira-mcp](https://github.com/redhat-community-ai-tools/jira-mcp). I followed their well-documented steps as part of my learning journey to build MCP agents.
-
-### Features
-
-- Containerized deployment with Podman
-- 20+ Jira tools (issue search, project management, board & sprint management, user management)
-- Production-ready setup with proper authentication
-- Secure credential management
-
-**For detailed setup instructions, see [jira-agent/README.md](jira-agent/README.md).**
-
----
-
-## Complete MCP Configuration
-Here is what your **MCP Servers** configuration looks like after you are done following the setup and configuration steps for each one.
-
-To see this:
-1. Open Cursor Settings (**Ctrl/Cmd + ,**)
-2. Search for: **MCP Servers**
-3. Click edit on any one of them
-
-```json
-{
-  "mcpServers": {
-    "github-reviewer-agent": {
-      "command": "<your-mymcp-cloned-repo-path>/github-agent/server.sh",
-      "description": "Analyzes GitHub pull requests to perform automated code review."
-    },
-    "opendev-reviewer-agent": {
-      "command": "<your-mymcp-cloned-repo-path>/opendev-review-agent/server.sh",
-      "description": "Analyzes OpenDev Gerrit reviews to perform automated code review."
-    },
-    "gitlab-cee-agent": {
-      "command": "<your-mymcp-cloned-repo-path>/gitlab-rh-agent/server.sh",
-      "description": "Agent to fetch and analyze issues/MRs from internal Red Hat GitLab."
-    },
-    "jiraMcp": {
-      "command": "podman",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--env-file",
-        "/home/username/.rh-jira-mcp.env",
-        "jira-agent:latest"
-      ],
-      "description": "Provides access to Jira issues, projects, boards, and sprints."
-    }
-  }
-}
-```
-
-4. **Save your new mcp.json configuration**  
-   Go to **File → Save** and then restart Cursor (**Ctrl+Shift+P** → "Developer: Reload Window")
-   
-   > **Note**: Alternatively, you can fully exit Cursor (**Ctrl+Q**) and restart it, which will also reload the new settings.
-
-### Testing Each Agent
-
-After configuration, test each agent in Cursor:
-
-**GitHub Agent:**
-```
-@github-reviewer-agent Review https://github.com/openstack-k8s-operators/horizon-operator/pull/402
-```
-
-**OpenDev Agent:**
-```
-@opendev-reviewer-agent Analyze https://review.opendev.org/c/openstack/horizon/+/960204
-```
-
-**GitLab Agent:**
-```
-@gitlab-cee-agent Analyze commit https://gitlab.cee.redhat.com/eng/openstack/python-django/-/commit/848fd870bb51ae6d8ea44512665dab8257f9c27a
-```
-Or for issues/MRs:
-```
-@gitlab-cee-agent Analyze issue openstack-konflux/osp-director-operator-17.1/issues/24
-```
-
-**Jira Agent:**
-```
-@jiraMcp Get details for issue OSPRH-13100
-```
 
 ## What These Agents Can Do
 
