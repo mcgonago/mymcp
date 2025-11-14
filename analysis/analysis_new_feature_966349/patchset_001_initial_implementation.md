@@ -422,9 +422,9 @@ Based on reviewer feedback, the next patchset will address:
 ## Source Documents
 
 This patchset summary synthesizes:
-- `analysis_osprh_12803_review_of_first_set_of_changes.md` - Technical review
-- `analysis_osprh_12803_review_what_new_things_were_introduced.md` - Feature analysis
-- `analysis_osprh_12803_Add_chevrons_to_the_key_pair_table.org` - Initial investigation
+- [`analysis_osprh_12803_review_of_first_set_of_changes.md`](../analysis_osprh_12803_review_of_first_set_of_changes.md) - Technical review
+- [`analysis_osprh_12803_review_what_new_things_were_introduced.md`](../analysis_osprh_12803_review_what_new_things_were_introduced.md) - Feature analysis
+- [`analysis_osprh_12803_Add_chevrons_to_the_key_pair_table.org`](../analysis_osprh_12803_Add_chevrons_to_the_key_pair_table.org) - Initial investigation
 
 ---
 

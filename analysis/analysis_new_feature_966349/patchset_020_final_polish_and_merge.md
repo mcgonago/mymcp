@@ -586,7 +586,7 @@ PASSED ✅
 ## Source Documents
 
 This patchset summary synthesizes:
-- `analysis_osprh_12803_fix_javascript_collapse_phase5_comment_DONE.org` - Final phase and topic management
+- [`analysis_osprh_12803_fix_javascript_collapse_phase5_comment_DONE.org`](../analysis_osprh_12803_fix_javascript_collapse_phase5_comment_DONE.org) - Final phase and topic management
 - Gerrit review history and comments
 - Personal development notes
 
