@@ -14,7 +14,7 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 - [GitLab RH Agent](#gitlab-rh-agent)
 - [Jira Agent](#jira-agent)
 - [Complete MCP Configuration](#complete-mcp-configuration)
-- [Use Case: fetch_review.sh for reviewing Horizon Operator code](#use-case-fetch_reviewsh-for-reviewing-horizon-operator-code) ⭐ **START HERE FOR AI**
+- [Use Cases](#use-cases) ⭐ **START HERE FOR AI**
 - [What These Agents Can Do](#what-these-agents-can-do)
 - [Next Steps](#next-steps)
 - [Additional Resources](#additional-resources)
@@ -162,126 +162,29 @@ Or for issues/MRs:
 @jiraMcp Get details for issue OSPRH-13100
 ```
 
-## Use Case: fetch_review.sh for reviewing Horizon Operator code
+---
 
-### When User Asks to Analyze a Review
+## Use Cases
 
-**User says any of:**
-- "Analyze review [URL]"
-- "Analyze OpenDev review [NUMBER]"
-- "Fetch and analyze review [URL] with full assessment"
-- "Please review https://review.opendev.org/c/openstack/horizon/+/965215"
+Practical workflows and examples for using these MCP agents in your development process.
 
-**You can try the following to see one example of an MCP workflow**
+### Review Automation ⭐ **START HERE FOR AI**
 
-#### Step 1: Fetch the Review Code
+Automate code review analysis across multiple platforms (OpenDev, GitHub, GitLab) using `fetch_review.sh`.
+
+**For detailed instructions, see [usecases/review_automation/README.md](usecases/review_automation/README.md).**
+
+**Quick Example:**
 ```bash
 cd /home/omcgonag/Work/mymcp/workspace
 ./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965215
 ```
 
-This creates:
-- `workspace/openstack-965215/` - the review (checked out) code
-- `results/review_965215.md`    - review assessment
-
-Here is the checked in version [`results/review_965215.md`](results/review_965215.md)
-
-#### Step 2: Query the MCP Agent (manual)
-```
-@opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/965215
-```
-
-This fetches:
-- Review metadata (author, status, commit message)
-- File changes and statistics
-- Comments and review history
-
-#### Step 3: What the assessment contains
-- **Executive Summary** - What this review does and your recommendation
-- **Code Quality Assessment** - Strengths, concerns, suggestions
-- **Technical Analysis** - File-by-file analysis
-- **Review Checklist** - Code quality, testing, security, performance
-- **Testing Verification** - How to test this change
-- **Recommendations** - What should be addressed before merge
-- **Decision** - Final recommendation (+2/+1/0/-1)
-
-### Other examples
-
-#### Example 1: OpenDev Review
-```
-User wants to: "Analyze review https://review.opendev.org/c/openstack/horizon/+/965215"
-
-1. cd workspace && ./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965215
-2. which runs @opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/965215
-3. full assessment at results/review_965215.md"
-```
-
-#### Example 2: GitHub PR
-```
-User wants to: "Review PR https://github.com/openstack-k8s-operators/horizon-operator/pull/402"
-
-1. cd workspace && ./fetch-review.sh --with-assessment github https://github.com/openstack-k8s-operators/horizon-operator/pull/402
-2. Which runs @github-reviewer-agent Analyze PR https://github.com/openstack-k8s-operators/horizon-operator/pull/402
-3. full assessment at results/review_pr_402.md
-```
-
-#### Example 3: GitLab MR
-```
-User wants to: "Analyze GitLab MR https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123"
-
-1. cd workspace && ./fetch-review.sh --with-assessment gitlab https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
-2. which runs @gitlab-cee-agent Analyze the merge request at https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
-3. full assessment at results/review_mr_123.md
-```
-### Available MCP Agents
-
-- `@opendev-reviewer-agent` - For review.opendev.org (Gerrit)
-- `@github-reviewer-agent` - For github.com Pull Requests
-- `@gitlab-cee-agent` - For gitlab.cee.redhat.com (internal Red Hat)
-- `@jiraMcp` - For Jira issues
-
-### Directory Structure You Should Know
-
-```
-/home/omcgonag/Work/mymcp/
-├── workspace/              # Run fetch-review.sh here (gitignored)
-├── results/                # Assessment documents go here (can commit)
-├── analysis/               # Permanent research (always commit)
-└── README.md               # This file
-```
-
-### Error Handling
-
-**If fetch-review.sh fails:**
-- Check the URL format
-- Try manual git clone and fetch
-
-**If MCP agent fails:**
-- Continue anyway using git show HEAD
-- Note in assessment that MCP data unavailable
-
-**If review is very large:**
-- Focus on changed files only
-- Summarize rather than detail every file
-
-### Quick Reference Commands
-
-```bash
-# Fetch review with assessment
-cd /home/omcgonag/Work/mymcp/workspace
-./fetch-review.sh --with-assessment opendev [URL]
-
-# View changes
-cd [project]-[number]
-git show HEAD
-git log -1
-
-# Run tests
-tox -e pep8
-
-# Complete assessment location
-/home/omcgonag/Work/mymcp/results/review_[number].md
-```
+This workflow:
+- ✅ Fetches the review code automatically
+- ✅ Creates a structured assessment document
+- ✅ Queries the appropriate MCP agent for metadata
+- ✅ Provides complete context for code analysis
 
 ---
 
@@ -370,6 +273,9 @@ mymcp/
 │   ├── example.env                     # Environment variables template
 │   ├── example.mcp.json                # MCP configuration template
 │   └── LICENSE                         # MIT License
+├── usecases/                           # Practical use case examples and workflows
+│   └── review_automation/              # Automated review analysis workflow
+│       └── README.md                   # Review automation guide
 ├── images/                             # Screenshots and documentation images
 ├── workspace/                          # Temporary workspace for code review analysis (gitignored)
 │   ├── README.md                       # Workspace usage guide
@@ -384,9 +290,7 @@ mymcp/
 │   ├── README.md                       # Analysis directory guide
 │   ├── analysis_template.md            # Template for creating new analyses
 │   └── analysis_direct_mode.md         # Horizon/Glance direct mode upload analysis
-├── test-mcp-setup.sh                   # Verification script for all agents
-├── docs/                               # Additional documentation
-└── use-case/                           # Example use cases and reviews
+└── test-mcp-setup.sh                   # Verification script for all agents
 ```
 
 ### Workspace for Code Review Analysis
