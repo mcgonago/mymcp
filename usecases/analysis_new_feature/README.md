@@ -1,5 +1,21 @@
 # Feature Development (Analysis) Workflow Using Cursor
 
+## Features Completed
+
+This section tracks OpenStack Horizon features that were successfully developed and merged upstream using this systematic analysis workflow.
+
+### Review 966349: Expandable Key Pairs Table
+
+**Link**: [analysis/analysis_new_feature_966349](../../analysis/analysis_new_feature_966349/)
+
+**Feature**: De-angularized the Key Pairs table by implementing a Bootstrap-based expandable row system that displays detailed key pair information (fingerprint, type, creation date) on demand. This feature replaced the AngularJS implementation with Django templates and CSS-driven interactions, improving maintainability and aligning with Horizon's modernization efforts. The implementation uses Bootstrap's native collapse component with Font Awesome chevron icons to provide a clean, accessible user experience.
+
+**Upstream Review**: [https://review.opendev.org/c/openstack/horizon/+/966349](https://review.opendev.org/c/openstack/horizon/+/966349)
+
+**Status**: ✅ Merged (+2 approval, Nov 2025)
+
+---
+
 ## Overview
 
 This use case demonstrates how to use Cursor with MCP agents to perform systematic feature development analysis. The `analysis/` directory provides a permanent knowledge base for documenting research, methodology, and findings during feature development work.

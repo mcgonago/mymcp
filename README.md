@@ -168,7 +168,9 @@ Or for issues/MRs:
 
 Practical workflows and examples for using these MCP agents in your development process.
 
-### Review Automation
+If you come up with different use cases using the MCP agents, please follow the model, add a section and detailed instructions for each new add.
+
+### #1: Review Automation
 
 Automate code review analysis across multiple platforms (OpenDev, GitHub, GitLab) using `fetch_review.sh`.
 
@@ -186,7 +188,7 @@ This workflow:
 - ✅ Queries the appropriate MCP agent for metadata
 - ✅ Provides complete context for code analysis
 
-### Feature Development (Analysis) Workflow Using Cursor
+### #2: Feature Development (Analysis) Workflow Using Cursor
 
 Systematically develop features using Cursor with comprehensive analysis documentation. This workflow demonstrates how to use the `analysis/` directory to track research, decisions, and methodology throughout feature development.
 
