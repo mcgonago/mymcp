@@ -181,12 +181,14 @@ cd /home/omcgonag/Work/mymcp/workspace
 ```
 
 This creates:
-- `workspace/[project]-[number]/` - The review code
-- `results/review_[number].md` - Assessment template (basic metadata only)
+- `workspace/openstack-965215/` - the review (checked out) code
+- `results/review_965215.md`    - review assessment
 
-#### Step 2: Query the MCP Agent
+Here is the checked in version [`results/review_965215.md`](results/review_965215.md)
+
+#### Step 2: Query the MCP Agent (manual)
 ```
-@opendev-reviewer-agent Analyze the review at [URL]
+@opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/965215
 ```
 
 This fetches:
@@ -194,22 +196,7 @@ This fetches:
 - File changes and statistics
 - Comments and review history
 
-#### Step 3: Analyze the Code
-```bash
-cd workspace/[project]-[number]
-git show HEAD
-git log -1
-```
-
-Examine:
-- What files changed
-- What the code does
-- Potential issues
-- Testing needs
-- Security implications
-
-#### Step 4: Complete the Assessment
-Update `results/review_[number].md` with:
+#### Step 3: What the assessment contains
 - **Executive Summary** - What this review does and your recommendation
 - **Code Quality Assessment** - Strengths, concerns, suggestions
 - **Technical Analysis** - File-by-file analysis
@@ -218,59 +205,34 @@ Update `results/review_[number].md` with:
 - **Recommendations** - What should be addressed before merge
 - **Decision** - Final recommendation (+2/+1/0/-1)
 
-#### Step 5: Report to User
-Provide a summary including:
-- What the review does
-- Key findings (good and bad)
-- Your recommendation
-- Location of full assessment: `results/review_[number].md`
-
-### Examples
+### Other examples
 
 #### Example 1: OpenDev Review
 ```
-User: "Analyze review https://review.opendev.org/c/openstack/horizon/+/965215"
+User wants to: "Analyze review https://review.opendev.org/c/openstack/horizon/+/965215"
 
-You do:
 1. cd workspace && ./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965215
-2. @opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/965215
-3. cd horizon-965215 && git show HEAD
-4. Fill in results/review_965215.md completely
-5. Tell user: "✅ Analyzed review 965215. Recommendation: [your verdict]. Full assessment at results/review_965215.md"
+2. which runs @opendev-reviewer-agent Analyze the review at https://review.opendev.org/c/openstack/horizon/+/965215
+3. full assessment at results/review_965215.md"
 ```
 
 #### Example 2: GitHub PR
 ```
-User: "Review PR https://github.com/openstack-k8s-operators/horizon-operator/pull/402"
+User wants to: "Review PR https://github.com/openstack-k8s-operators/horizon-operator/pull/402"
 
-You do:
 1. cd workspace && ./fetch-review.sh --with-assessment github https://github.com/openstack-k8s-operators/horizon-operator/pull/402
-2. @github-reviewer-agent Analyze PR https://github.com/openstack-k8s-operators/horizon-operator/pull/402
-3. cd horizon-operator-pr-402 && git show HEAD
-4. Fill in results/review_pr_402.md completely
-5. Report findings
+2. Which runs @github-reviewer-agent Analyze PR https://github.com/openstack-k8s-operators/horizon-operator/pull/402
+3. full assessment at results/review_pr_402.md
 ```
 
 #### Example 3: GitLab MR
 ```
-User: "Analyze GitLab MR https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123"
+User wants to: "Analyze GitLab MR https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123"
 
-You do:
 1. cd workspace && ./fetch-review.sh --with-assessment gitlab https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
-2. @gitlab-cee-agent Analyze the merge request at https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
-3. cd python-django-mr-123 && git show HEAD
-4. Fill in results/review_mr_123.md completely
-5. Report findings
+2. which runs @gitlab-cee-agent Analyze the merge request at https://gitlab.cee.redhat.com/eng/openstack/python-django/-/merge_requests/123
+3. full assessment at results/review_mr_123.md
 ```
-
-### Key Principles
-
-1. **Always run the fetch script first** - Don't just use the MCP agent alone
-2. **Always create the assessment document** - Use `--with-assessment` flag
-3. **Always read the actual code** - Don't rely only on MCP agent data
-4. **Always complete the full template** - Fill in ALL sections of the assessment
-5. **Always provide a recommendation** - +2/+1/0/-1 with reasoning
-
 ### Available MCP Agents
 
 - `@opendev-reviewer-agent` - For review.opendev.org (Gerrit)
@@ -285,7 +247,7 @@ You do:
 ├── workspace/              # Run fetch-review.sh here (gitignored)
 ├── results/                # Assessment documents go here (can commit)
 ├── analysis/               # Permanent research (always commit)
-└── README.md              # This file
+└── README.md               # This file
 ```
 
 ### Error Handling
