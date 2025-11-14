@@ -1,12 +1,12 @@
-#+OPTIONS: ^:nil num:nil \n:t
-#+TITLE: HOWTO_install_devstack_on_laptop
-#+SETUPFILE: theme-readtheorg.setup
+#+OPTIONS:  ^: nil num: nil \n: t
+#+TITLE:  HOWTO_install_devstack_on_laptop
+#+SETUPFILE:  theme-readtheorg.setup
 
 * TL;DR
 
-This page describes how to install devstack following the docs at [[https://docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]
+This page describes how to install devstack following the docs at [[https: //docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]]
 
-You have a few choices:
+You have a few choices: 
 - get a PSI account and install devstack in your psi instance
 - get *Virtual Machine Manager* (virt-manager) and install devstack under Ubuntu 22.04 VM on your laptop
 
@@ -15,53 +15,53 @@ This page describes using virt-manager on your laptop
 * Point your browser at your new Horizon controlled devstack
 After completing [[*clone and run (tox) horizon on devstack][clone and run (tox) horizon on devstack]] - point your browser at your VM, and login as admin
 
-[[file:../../images/virt_manager_openstack_connect.png]]
+[[file: ../../images/virt_manager_openstack_connect.png]]
 
 ** See Openstack running
-[[file:../../images/virt_manager_openstack_running.png]]
+[[file: ../../images/virt_manager_openstack_running.png]]
 
 
 * clone and run (tox) horizon on devstack
 After completing [[*Steps to create your VM][Steps to create your VM]]
 
-: git clone https://github.com/openstack/horizon
-: cd horizon
+:  git clone https: //github.com/openstack/horizon
+:  cd horizon
 
 ** Create/update openstack_dashboard/local/local_settings.py
 
-: cp openstack_dashboard/local/local_settings.py.example openstack_dashboard/local/local_settings.py
+:  cp openstack_dashboard/local/local_settings.py.example openstack_dashboard/local/local_settings.py
 
 *REMEMBER* to change change OPENSTACK_HOST to IP of your VM
-: OPENSTACK_HOST = "192.168.122.169"
+:  OPENSTACK_HOST = "192.168.122.169"
 
 #+BEGIN_SRC python   # openstack_dashboard/local/local_settings.py
 .
 .
 .
 OPENSTACK_HOST = "192.168.122.169"
-OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_URL = "http: //%s/identity/v3" % OPENSTACK_HOST
 .
 .
 .
 # If horizon is running in production (DEBUG is False), set this
 # with the list of host/domain names that the application can serve.
-# For more information see:
-# https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+# For more information see: 
+# https: //docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 #ALLOWED_HOSTS = ['horizon.example.com', ]
 ALLOWED_HOSTS = ['*']
 .
 .
 # Help URL can be made available for the client. To provide a help URL, edit the
 # following attribute to the URL of your choice.
-#HORIZON_CONFIG["help_url"] = "http://openstack.mycompany.org"
+#HORIZON_CONFIG["help_url"] = "http: //openstack.mycompany.org"
 
-OPENSTACK_KEYSTONE_URL = "https://keystone-public-openstack.apps-crc.testing/v3"
+OPENSTACK_KEYSTONE_URL = "https: //keystone-public-openstack.apps-crc.testing/v3"
 OPENSTACK_SSL_NO_VERIFY = True
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
+    'default':  {
+        'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION':  'unique-snowflake',
     }
 }
 
@@ -69,116 +69,116 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 #+END_SRC
 
 ** run tox runserver
-: tox -e runserver -- 0.0.0.0:8080
+:  tox -e runserver -- 0.0.0.0: 8080
 
 * Steps to create your VM
 These steps show how to use virt-manager to create your Ubuntu 22.04 VM running devstack
 
-*EDITORS NOTE:*
+*EDITORS NOTE: *
 - steps below do it the *long way*
 - the *ubuntu-22.04.4-live-server-amd64.iso* is downloaded and raw installation steps are executed
 - after figuring out how to update *virt-manager* with Ubuntu 22.04 support... these download steps can be skipped.
 
 ** Install virt-manager
-: sudo yum install virt-manager
+:  sudo yum install virt-manager
 
 ** Download ubuntu-22.04.4-live-server-amd64.iso
-[[https://docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]] requires (highly recommends) *Ubuntu-22.04*
+[[https: //docs.openstack.org/devstack/latest/][docs.openstack.org/devstack/latest/]] requires (highly recommends) *Ubuntu-22.04*
 
 This version of *virt-builder* did not include *Ubuntu-22.04*
 
-: $ virt-builder --list | grep ubuntu
-: virt-builder --list | grep ubuntu
-: ubuntu-10.04             x86_64     Ubuntu 10.04 (Lucid)
-: ubuntu-12.04             x86_64     Ubuntu 12.04 (Precise)
-: ubuntu-14.04             x86_64     Ubuntu 14.04 (Trusty)
-: ubuntu-16.04             x86_64     Ubuntu 16.04 (Xenial)
-: ubuntu-18.04             x86_64     Ubuntu 18.04 (bionic)
-: ubuntu-20.04             x86_64     Ubuntu 20.04 (focal)
+:  $ virt-builder --list | grep ubuntu
+:  virt-builder --list | grep ubuntu
+:  ubuntu-10.04             x86_64     Ubuntu 10.04 (Lucid)
+:  ubuntu-12.04             x86_64     Ubuntu 12.04 (Precise)
+:  ubuntu-14.04             x86_64     Ubuntu 14.04 (Trusty)
+:  ubuntu-16.04             x86_64     Ubuntu 16.04 (Xenial)
+:  ubuntu-18.04             x86_64     Ubuntu 18.04 (bionic)
+:  ubuntu-20.04             x86_64     Ubuntu 20.04 (focal)
 
 We downloaded the *ubuntu-22.04.4-live-server-amd64.iso* from
-: https://releases.ubuntu.com/22.04/
+:  https: //releases.ubuntu.com/22.04/
 
-Download the [[https://releases.ubuntu.com/22.04/ubuntu-22.04.4-live-server-amd64.iso][64-bit PC (AMD64) server install image]] version.
+Download the [[https: //releases.ubuntu.com/22.04/ubuntu-22.04.4-live-server-amd64.iso][64-bit PC (AMD64) server install image]] version.
 
 ** Fire up virt-manager
-: virt-manager
+:  virt-manager
 
 ** Mouse pointer disappearing (preparing for VM Console)
 Better to tackle the *mouse pointer disappearing* issue right away.
 
 I removed the default *tablet* setting, and replaced it with *PS/2 Mouse*
-[[file:../../images/virt_manager_mouse.png]]
+[[file: ../../images/virt_manager_mouse.png]]
 
 This allowed me to use the *host keys* (grab keys) to toggle the mouse pointer between the Console VM and desktop
-: hit the Control Left Key (Control_L) and Alt Left Key (Alt_L) to toggle mouse pointer
+:  hit the Control Left Key (Control_L) and Alt Left Key (Alt_L) to toggle mouse pointer
 
 If you want to change the *grab keys* - click *change* and follow direction (I kept it at default)
-[[file:../../images/virt_manager_grab_keys_change.png]]
+[[file: ../../images/virt_manager_grab_keys_change.png]]
 
-** Step 1: Create a new virtual machine: import disk image
+** Step 1:  Create a new virtual machine:  import disk image
 We will do it using *Import existing disk image*
 
-[[file:../../images/virt_manager_create_a_new_virtual_machine_step_1.png]]
+[[file: ../../images/virt_manager_create_a_new_virtual_machine_step_1.png]]
 
-** Step 2: Create a new virtual machine: choose ubuntu-22.04.4-live-server-amd64.iso
+** Step 2:  Create a new virtual machine:  choose ubuntu-22.04.4-live-server-amd64.iso
 Browse to your *ubuntu-22.04.4-live-server-amd64.iso*
-: Choose the operating system you are installing: Ubuntu 24.04 LTS
+:  Choose the operating system you are installing:  Ubuntu 24.04 LTS
 
-[[file:../../images/virt_manager_create_a_new_virtual_machine_step_2.png]]
+[[file: ../../images/virt_manager_create_a_new_virtual_machine_step_2.png]]
 
-** Step 3: Create a new virtual machine: Choose Memory and CPU settings
+** Step 3:  Create a new virtual machine:  Choose Memory and CPU settings
 
 This example allocates ~13G of memory
-: (12288 * 1024 * 1024) = 12,884,901,888 = ~13G
+:  (12288 * 1024 * 1024) = 12,884,901,888 = ~13G
 
-: Choose Memory and CPU settings
-: Memory: [12288  -  +]
-: Up to 62915 MiB available on host
+:  Choose Memory and CPU settings
+:  Memory:  [12288  -  +]
+:  Up to 62915 MiB available on host
+:  
+:  CPUs:  [8]
+:  Up to 16 available
+
+[[file: ../../images/virt_manager_create_a_new_virtual_machine_step_3.png]]
+
+
+** Step 4:  Create a new virtual machine:  Ready to begin the installation
+
+:  Ready to being the installation
 : 
-: CPUs: [8]
-: Up to 16 available
+:  Name:               ubuntu24.04
+:  OS:                 Ubuntu 24.04 LTS
+:  Install:            Import existing OS image
+:  Memory:             12288 MiB
+:  CPUs:               8
+:  Storage:            ubuntu-22.04.4-live-server-amd64.iso
+:                     [ ] Customize configuration before install
+:  Network Selection:  Virtual network 'default':  NAT
 
-[[file:../../images/virt_manager_create_a_new_virtual_machine_step_3.png]]
+:  +------+
+:  |FINISH|
+:  +------+
 
-
-** Step 4: Create a new virtual machine: Ready to begin the installation
-
-: Ready to being the installation
-:
-: Name:              ubuntu24.04
-: OS:                Ubuntu 24.04 LTS
-: Install:           Import existing OS image
-: Memory:            12288 MiB
-: CPUs:              8
-: Storage:           ubuntu-22.04.4-live-server-amd64.iso
-:                    [ ] Customize configuration before install
-: Network Selection: Virtual network 'default': NAT
-
-: +------+
-: |FINISH|
-: +------+
-
-[[file:../../images/virt_manager_create_a_new_virtual_machine_step_4.png]]
+[[file: ../../images/virt_manager_create_a_new_virtual_machine_step_4.png]]
 
 ** Choose English
 
-[[file:../../images/virt_manager_choose_english.png]]
+[[file: ../../images/virt_manager_choose_english.png]]
 
 ** Continue without updating
 
-[[file:../../images/virt_manager_continue_without_updating.png]]
+[[file: ../../images/virt_manager_continue_without_updating.png]]
 
 ** Choose type of install
 Use *<tab>* to move, and *<space-bar>* to select, and then *Done*
 
-: [x] Ubuntu Server (minimized)
+:  [x] Ubuntu Server (minimized)
 
-[[file:../../images/virt_manager_ubuntu_server_minimized.png]]
+[[file: ../../images/virt_manager_ubuntu_server_minimized.png]]
 
 ** Network connections
 
-[[file:../../images/virt_manager_network_connections.png]]
+[[file: ../../images/virt_manager_network_connections.png]]
 
 ** Skip configure proxy
 Skip
@@ -186,148 +186,148 @@ Skip
 
 ** Configure Ubuntu archive mirror
 This mirror location passed tests
-: http://us.archive.ubuntu.com/ubuntu/
+:  http: //us.archive.ubuntu.com/ubuntu/
 
-[[file:../../images/virt_manager_configure_ubuntu_archive_mirror.png]]
+[[file: ../../images/virt_manager_configure_ubuntu_archive_mirror.png]]
 
 ** Opps - Block probing did not discover any disks
 
-[[file:../../images/virt_manager_configure_block_probing_did_not_discover_disks.png]]
+[[file: ../../images/virt_manager_configure_block_probing_did_not_discover_disks.png]]
 
 ** Go back (unfortunately) and add storage
 First, click *information* blue icon
 
-[[file:../../images/virt_manager_add_storage_step_1.png]]
+[[file: ../../images/virt_manager_add_storage_step_1.png]]
 
 ** Add Hardware - Storage
 Add 50G of storage
 
-[[file:../../images/virt_manager_add_storage_step_2_50G.png]]
+[[file: ../../images/virt_manager_add_storage_step_2_50G.png]]
 
-** See new Virtual Disk: ubuntu24.04.qcow2
+** See new Virtual Disk:  ubuntu24.04.qcow2
 
-: Virutal Disk
-: Source path:   /home/omcgonag/VirtualMachienes/ubuntu24.04.qcow2
-: Device type:   VirtIO Disk 2
-: Disk bus:      VirtIO
-: Storage size:  50.00 GiB
+:  Virutal Disk
+:  Source path:    /home/omcgonag/VirtualMachienes/ubuntu24.04.qcow2
+:  Device type:    VirtIO Disk 2
+:  Disk bus:       VirtIO
+:  Storage size:   50.00 GiB
 
-[[file:../../images/virt_manager_add_storage_step_3_50G_details.png]]
+[[file: ../../images/virt_manager_add_storage_step_3_50G_details.png]]
 
 ** Reboot and start over
 
-[[file:../../images/virt_manager_add_storage_reboot_and_start_over.png]]
+[[file: ../../images/virt_manager_add_storage_reboot_and_start_over.png]]
 
 ** After reboot - Guided storage configuration
 
-[[file:../../images/virt_manager_guided_storage_configuration.png]]
+[[file: ../../images/virt_manager_guided_storage_configuration.png]]
 
 ** Storage configuration
 
 FILE SYSTEM SUMMARY
 
-: | MOUNT POINT | SIZE    | TYPE     | DEVICE TYPE                 |
-: |-------------+---------+----------+-----------------------------|
-: | /           | 23.996G | new ext4 | new LVM logical volume      |
-: | /boot       | 2.000G  | new ext4 | new partition of local disk |
+:  | MOUNT POINT | SIZE    | TYPE     | DEVICE TYPE                 |
+:  |-------------+---------+----------+-----------------------------|
+:  | /           | 23.996G | new ext4 | new LVM logical volume      |
+:  | /boot       | 2.000G  | new ext4 | new partition of local disk |
 
 AVAILABLE DEVICES
 
-: | DEVICE           | TYPE              | SIZE    |
-: |------------------+-------------------+---------|
-: | nubuntu-vg (new) | LVM volumen group | 47.996G |
-: | free space       | -                 | 24.000G |
+:  | DEVICE           | TYPE              | SIZE    |
+:  |------------------+-------------------+---------|
+:  | nubuntu-vg (new) | LVM volumen group | 47.996G |
+:  | free space       | -                 | 24.000G |
 
-: | DEVICE      | TYPE                                            | SIZE    |
-: |-------------+-------------------------------------------------+---------|
-: | /dev/vda    | local disk                                      | 1.959G  |
-: | partition 2 | existing, unused SPP, already formatted as vfat | 4.916M  |
-: | partition 3 | existing, unsed                                 | 300.00K |
+:  | DEVICE      | TYPE                                            | SIZE    |
+:  |-------------+-------------------------------------------------+---------|
+:  | /dev/vda    | local disk                                      | 1.959G  |
+:  | partition 2 | existing, unused SPP, already formatted as vfat | 4.916M  |
+:  | partition 3 | existing, unsed                                 | 300.00K |
 
-: [Create software RAID (md)]
-: [Create volume group (LVM)]
+:  [Create software RAID (md)]
+:  [Create volume group (LVM)]
 
 USED DEVICES
 
-: | DEVICE          | TYPE                                        | SIZE   |
-: |-----------------+---------------------------------------------+--------|
-: | ubuntu-vg (new) | LVM volume group                            | 47.00G |
-: | ubuntu-lv       | new, to be forrmatted as ext4, mounted at / | 23.99G |
+:  | DEVICE          | TYPE                                        | SIZE   |
+:  |-----------------+---------------------------------------------+--------|
+:  | ubuntu-vg (new) | LVM volume group                            | 47.00G |
+:  | ubuntu-lv       | new, to be forrmatted as ext4, mounted at / | 23.99G |
 
-: | DEVICE   | TYPE        | SIZE                                           |        |
-: |----------+-------------+------------------------------------------------+--------|
-: | /dev/vda | partition 1 | existing, already formatted as iso9660, in use | 1.954G |
+:  | DEVICE   | TYPE        | SIZE                                           |        |
+:  |----------+-------------+------------------------------------------------+--------|
+:  | /dev/vda | partition 1 | existing, already formatted as iso9660, in use | 1.954G |
 
-: | DEVICE      | TYPE                                           | SIZE    |
-: |-------------+------------------------------------------------+---------|
-: | /dev/vdb    | local disk                                     | 50.000G |
-: | partition 1 | new, BIOS grub spacer                          | 1.000M  |
-: | partition 2 | new, to be formatted as ext4, mounted at /boot | 2.000G  |
-: | partition 1 | new, PV of LVM volume group ubuntu-vg          | 47.007G |
+:  | DEVICE      | TYPE                                           | SIZE    |
+:  |-------------+------------------------------------------------+---------|
+:  | /dev/vdb    | local disk                                     | 50.000G |
+:  | partition 1 | new, BIOS grub spacer                          | 1.000M  |
+:  | partition 2 | new, to be formatted as ext4, mounted at /boot | 2.000G  |
+:  | partition 1 | new, PV of LVM volume group ubuntu-vg          | 47.007G |
 
-[[file:../../images/virt_manager_storage_configuration.png]]
+[[file: ../../images/virt_manager_storage_configuration.png]]
 
 ** Profile setup
 
-: Your name: Openstack Nextgen
-: Your servers name: nextgen_server_1
-: Pick a username: ospng
-: confirm:  123456
+:  Your name:  Openstack Nextgen
+:  Your servers name:  nextgen_server_1
+:  Pick a username:  ospng
+:  confirm:   123456
 
-[[file:../../images/virt_manager_profile_setup.png]]
+[[file: ../../images/virt_manager_profile_setup.png]]
 
 ** Skip Upgrade to Ubuntu Pro
 
 ** Install OpenSSH server
-: [x] Install OpenSSH server
+:  [x] Install OpenSSH server
 
 ** Let'er rip
 Next step will be what?
 
 ** Install complete! Delete VirtIO Disk1
 Before a reboot - need/must remove VirtIO Disk1
-: Virtual Disk
-: Source path: /home/omcgonag/Downloads/ubuntu-22.04.4-live-server.amd64.iso
+:  Virtual Disk
+:  Source path:  /home/omcgonag/Downloads/ubuntu-22.04.4-live-server.amd64.iso
 
 Click *Information* icon
 
-[[file:../../images/virt_manager_remove_virtio_disk1.png]]
+[[file: ../../images/virt_manager_remove_virtio_disk1.png]]
 
 ** Hit reboot - oops, must power cycle the VM
 A power cycle is needed to finish remove of VirtIO Disk1
 
 ** Click console - login
 
-[[file:../../images/virt_manager_login.png]]
+[[file: ../../images/virt_manager_login.png]]
 
 * Congrats, VM is up
 
 ** Grab IP for ssh from laptop
 From diagram - IP is *192.168.122.169*
 
-: ssh ospng@192.168.122.169
+:  ssh ospng@192.168.122.169
 
-Use *ssh-copy-id* so that it is passwordless next time:
-: ssh-copy-id ospng@192.168.122.169
+Use *ssh-copy-id* so that it is passwordless next time: 
+:  ssh-copy-id ospng@192.168.122.169
 
-[[file:../../images/virt_manager_network_interface.png]]
+[[file: ../../images/virt_manager_network_interface.png]]
 
 ** Enable sudo privelage for ospng user
 
-: sudo chown root:root /etc/sudoers.d/ospng
-: sudo chmod 0660 /etc/sudoers.d/ospng
+:  sudo chown root: root /etc/sudoers.d/ospng
+:  sudo chmod 0660 /etc/sudoers.d/ospng
 
 * Install devstack
-Pulled directly from [[https://docs.openstack.org/devstack/latest/][Devstack install]]
+Pulled directly from [[https: //docs.openstack.org/devstack/latest/][Devstack install]]
 
-git was missing:
-: sudo apt install git
+git was missing: 
+:  sudo apt install git
 
-: sudo useradd -s /bin/bash -d /opt/stack -m stack
-: sudo chmod +x /opt/stack
-: sudo -u stack -i
-: git clone https://opendev.org/openstack/devstack
-: cd devstack
+:  sudo useradd -s /bin/bash -d /opt/stack -m stack
+:  sudo chmod +x /opt/stack
+:  sudo -u stack -i
+:  git clone https: //opendev.org/openstack/devstack
+:  cd devstack
 
 A bit about *local.conf*
 
@@ -336,56 +336,56 @@ A bit about *local.conf*
 This is the minimum required config to get started with DevStack.
 #+END_SRC
 
-NOTE:
+NOTE: 
 - There is a sample local.conf file under the samples directory in the devstack repository.
 - Only use alphanumeric characters in your passwords, as some services fail to work when using special characters.
 
-*EDITORS NOTE*: I took the sames local.conf and updated as above
-: cp ./samples/local.conf local.conf
+*EDITORS NOTE*:  I took the sames local.conf and updated as above
+:  cp ./samples/local.conf local.conf
 
 Start the install
-: ./stack.sh
+:  ./stack.sh
 
 This will take 15 - 30 minutes, largely depending on the speed of your internet connection. 
 Many git trees and packages will be installed during this process.
 
-*EDITORS NOTE:* wait until the end!
+*EDITORS NOTE: * wait until the end!
 
-: .
-: .
-: .
-: Services are running under systemd unit files.
-: For more information see:
-: https://docs.openstack.org/devstack/latest/systemd.html
-: 
-: DevStack Version: 2024.2
-: Change: 6990b06cd321930f69907ba42ee744755f8029fe Install simplejson in devstack venv 2024-07-25 14:37:41 +0200
-: OS Version: Ubuntu 22.04 jammy
-: 
-: stack@laptopserver1:~/devstack$
+:  .
+:  .
+:  .
+:  Services are running under systemd unit files.
+:  For more information see: 
+:  https: //docs.openstack.org/devstack/latest/systemd.html
+:  
+:  DevStack Version:  2024.2
+:  Change:  6990b06cd321930f69907ba42ee744755f8029fe Install simplejson in devstack venv 2024-07-25 14: 37: 41 +0200
+:  OS Version:  Ubuntu 22.04 jammy
+:  
+:  stack@laptopserver1: ~/devstack$
 
-* Misc: Is 13G large enough to run devstack?
+* Misc:  Is 13G large enough to run devstack?
 top shows *12.1g* of memory being used by the qemu-system-x86 process
 - is this *enough*?
 
-: top
-:           +-------------+ +------------+ +------------+
-: MiB Mem : |62915.9 total| |26658.8 free| |17244.6 used|  19839.3 buff/cache
-:           +-------------+ +------------+ +------------+
-:                                                        
-: MiB Swap:   8192.0 total,   7663.7 free,    528.2 used.  45671.3 avail Mem             
-:                                                                                         
-:     PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+   COMMAND                                                                               
-:                                  +-----+                                +---------------+
-:    8825 qemu      20   0   17.7g |12.1g| 25216 S  19.6  19.7  29:40.51  |qemu-system-x86|            
-:                                  +-----+                                +---------------+
+:  top
+:            +-------------+ +------------+ +------------+
+:  MiB Mem :  |62915.9 total| |26658.8 free| |17244.6 used|  19839.3 buff/cache
+:            +-------------+ +------------+ +------------+
+:                                                         
+:  MiB Swap:    8192.0 total,   7663.7 free,    528.2 used.  45671.3 avail Mem             
+:                                                                                          
+:      PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+   COMMAND                                                                               
+:                                   +-----+                                +---------------+
+:     8825 qemu      20   0   17.7g |12.1g| 25216 S  19.6  19.7  29: 40.51  |qemu-system-x86|            
+:                                   +-----+                                +---------------+
 
-This comes from using *12288* when allocating VM memory:
-: (12288 * 1024 * 1024) = 12,884,901,888 = ~13G
+This comes from using *12288* when allocating VM memory: 
+:  (12288 * 1024 * 1024) = 12,884,901,888 = ~13G
 
-: Memory
-: Total host memory: 62915 MiB
-: 
-: Current allocation: [12288  - +] MiB
-: Max allocation:     [12288  - +] MiB
-:                                      [ ] Enable shared memory
+:  Memory
+:  Total host memory:  62915 MiB
+:  
+:  Current allocation:  [12288  - +] MiB
+:  Max allocation:      [12288  - +] MiB
+:                                       [ ] Enable shared memory
