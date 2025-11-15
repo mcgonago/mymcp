@@ -1051,7 +1051,7 @@ spec:
 
 ### Related Analyses
 
-- [analysis_pr_483_verify_horizon_operator_content.md](analysis_pr_483_verify_horizon_operator_content.md)
+- [doc/analysis_pr_483_verify_horizon_operator_content.md](analysis_pr_483_verify_horizon_operator_content.md)
   - PR #483 provides IncludeOptional mechanism needed for custom httpd configs
   - Foundation for WSGIDaemonProcess override approach
 

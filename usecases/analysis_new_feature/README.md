@@ -50,7 +50,7 @@ For more info on guidelines and templates please see [Analysis directory README]
 ```bash
 # Create a new analysis from template
 cd analysis
-cp analysis_template.md analysis_<topic>.md
+cp doc/analysis_template.md doc/analysis_<topic>.md
 ```
 
 ### Step 2: Query MCP Agents for Information
@@ -132,8 +132,9 @@ The analysis directory is organized at the top level:
 /home/omcgonag/Work/mymcp/
 ├── analysis/                           # Permanent research documents
 │   ├── README.md                       # Analysis directory guide
-│   ├── analysis_template.md            # Template for new analyses
-│   ├── analysis_template_random_topics.md  # Template for Q&A style analyses
+│   ├── doc/                             # Individual analysis documents
+│   │   ├── analysis_template.md        # Template for new analyses
+│   │   ├── analysis_template_random_topics.md  # Template for Q&A style analyses
 │   ├── analysis_osprh_12803_*.md       # Key Pairs feature development docs
 │   └── HOWTO_osprh_12803_*.org         # Phase-by-phase development guides
 ├── workspace/                          # Temporary code checkout (gitignored)
@@ -204,8 +205,8 @@ MCP agents enhance the analysis process:
 ## Additional Resources
 
 - [Analysis Directory README](../../analysis/README.md) - Detailed guidelines and templates
-- [Analysis Template](../../analysis/analysis_template.md) - Standard template
-- [Analysis Template (Random Topics)](../../analysis/analysis_template_random_topics.md) - Q&A style template
+- [Analysis Template](../../analysis/doc/analysis_template.md) - Standard template
+- [Analysis Template (Random Topics)](../../analysis/doc/analysis_template_random_topics.md) - Q&A style template
 - [Review Automation Use Case](../review_automation/README.md) - Automated review workflow
 - [Main Repository README](../../README.md) - Repository overview
 

@@ -307,8 +307,10 @@ mymcp/
 │   └── review_*.md                     # Generated assessment documents
 ├── analysis/                           # Permanent technical analyses and research
 │   ├── README.md                       # Analysis directory guide
-│   ├── analysis_template.md            # Template for creating new analyses
-│   └── analysis_direct_mode.md         # Horizon/Glance direct mode upload analysis
+│   ├── doc/                             # Individual analysis documents
+│   │   ├── analysis_template.md        # Template for creating new analyses
+│   │   ├── analysis_direct_mode.md     # Horizon/Glance direct mode upload analysis
+│   │   └── ...                          # Other analysis documents
 └── test-mcp-setup.sh                   # Verification script for all agents
 ```
 

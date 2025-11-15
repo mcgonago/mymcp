@@ -526,7 +526,7 @@ Both scripts saved in `/home/omcgonag/Work/mymcp/analysis/` directory for future
 
 ## Related Documentation
 
-- **`analysis_fix_devstack_authentication_error.md`** - Comprehensive troubleshooting guide
+- **`doc/analysis_fix_devstack_authentication_error.md`** - Comprehensive troubleshooting guide
 - **`debug_keystone_from_host.sh`** - Host-side diagnostic script
 - **`debug_keystone_on_devstack.sh`** - VM-side diagnostic script
 

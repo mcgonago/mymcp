@@ -15,7 +15,7 @@
 
 **Date:** YYYY-MM-DD  
 **Asked to:** @agent-name  
-**References:** [Link to original section above](#original-inquiry) or [analysis_random_topics.md](analysis_random_topics.md)
+**References:** [Link to original section above](#original-inquiry) or [doc/analysis_random_topics.md](analysis_random_topics.md)
 **Query:**
 ```
 [follow-up question related to the original inquiry]

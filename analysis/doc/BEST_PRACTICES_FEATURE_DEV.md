@@ -20,7 +20,7 @@
 
 ## Best Practices Overview
 
-These practices emerged from successful development of [Review 966349: Expandable Key Pairs Table](analysis_new_feature_966349/README.md), which was merged upstream with +2 approval in November 2025.
+These practices emerged from successful development of [Review 966349: Expandable Key Pairs Table](../analysis_new_feature_966349/README.md), which was merged upstream with +2 approval in November 2025.
 
 ### Practice Categories
 
@@ -40,31 +40,31 @@ This table tracks which features have used each best practice, with links to spe
 
 | # | Practice | Category | Review 966349 | Future Features |
 |---|----------|----------|---------------|-----------------|
-| 1 | **Create Spike Document** | Investigation | ✅ [spike.md](analysis_new_feature_966349/spike.md) | |
-| 2 | **Document Two Dev Environments** | Dev Environment | ✅ [PSI](analysis_new_feature_966349/HOWTO_install_devstack_on_psi.org), [Laptop](analysis_new_feature_966349/HOWTO_install_devstack_on_laptop.org) | |
-| 3 | **Create Phase-Based Analysis Documents** | Documentation | ✅ [PS001](analysis_new_feature_966349/patchset_001_initial_implementation.md), [PS008](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md), [PS018](analysis_new_feature_966349/patchset_018_css_refinement.md), [PS020](analysis_new_feature_966349/patchset_020_final_polish_and_merge.md) | |
-| 4 | **Keep WIP Analysis Separate** | Documentation | ✅ [analysis_new_feature_966349_wip/](analysis_new_feature_966349_wip/) (24 docs) | |
-| 5 | **Check Framework Solutions First** | Implementation | ✅ [Bootstrap over custom JS](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-2-bootstrap-native-collapse) | |
-| 6 | **Use Helper Functions (DRY)** | Implementation | ✅ [get_chevron_id()](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-1-unique-chevron-id-generation) | |
-| 7 | **Test with Multiple Items (3+)** | Quality Assurance | ✅ [3+ key pairs](analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md#testing-checklist) | |
-| 8 | **Use datum for Unique IDs** | Implementation | ✅ [datum usage](analysis_new_feature_966349/patchset_001_initial_implementation.md#issue-1-duplicate-chevron-ids-critical) | |
-| 9 | **Prefer CSS over !important** | Implementation | ✅ [CSS specificity](analysis_new_feature_966349/patchset_018_css_refinement.md) | |
-| 10 | **Accept Feedback Gracefully** | Code Review | ✅ [~20 patchsets](analysis_new_feature_966349/README.md#development-journey), [feedback summary](analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#key-success-factors) | |
-| 11 | **Use Consistent Topics** | Git & Gerrit | ✅ [de-angularize topic](analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#phase-topic-management) | |
-| 12 | **Write Detailed Commit Messages** | Git & Gerrit | ✅ [commit message improvement](analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#phase-commit-message-improvement) | |
-| 13 | **Create README Index** | Documentation | ✅ [README](analysis_new_feature_966349/README.md) | |
-| 14 | **Document Git Commands** | Documentation | ✅ [View patchset changes](analysis_new_feature_966349/README.md#how-to-view-patchset-changes) | |
-| 15 | **Run PEP8/Lint After Each Change** | Quality Assurance | ✅ [PEP8 phase](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-4-pep8-compliance) | |
-| 16 | **Document Technical Decisions** | Documentation | ✅ [Key decisions](analysis_new_feature_966349/README.md#key-technical-decisions) | |
-| 17 | **Learn from Maintainers** | Code Review | ✅ [CSS simplification](analysis_new_feature_966349/README.md#reviewer-feedback-highlights) | |
-| 18 | **Break Work into Logical Phases** | Investigation | ✅ [4 phases](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md) | |
+| 1 | **Create Spike Document** | Investigation | ✅ [spike.md](../analysis_new_feature_966349/spike.md) | |
+| 2 | **Document Two Dev Environments** | Dev Environment | ✅ [PSI](../analysis_new_feature_966349/HOWTO_install_devstack_on_psi.org), [Laptop](../analysis_new_feature_966349/HOWTO_install_devstack_on_laptop.org) | |
+| 3 | **Create Phase-Based Analysis Documents** | Documentation | ✅ [PS001](../analysis_new_feature_966349/patchset_001_initial_implementation.md), [PS008](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md), [PS018](../analysis_new_feature_966349/patchset_018_css_refinement.md), [PS020](../analysis_new_feature_966349/patchset_020_final_polish_and_merge.md) | |
+| 4 | **Keep WIP Analysis Separate** | Documentation | ✅ [analysis_new_feature_966349_wip/](../analysis_new_feature_966349_wip/) (24 docs) | |
+| 5 | **Check Framework Solutions First** | Implementation | ✅ [Bootstrap over custom JS](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-2-bootstrap-native-collapse) | |
+| 6 | **Use Helper Functions (DRY)** | Implementation | ✅ [get_chevron_id()](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-1-unique-chevron-id-generation) | |
+| 7 | **Test with Multiple Items (3+)** | Quality Assurance | ✅ [3+ key pairs](../analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md#testing-checklist) | |
+| 8 | **Use datum for Unique IDs** | Implementation | ✅ [datum usage](../analysis_new_feature_966349/patchset_001_initial_implementation.md#issue-1-duplicate-chevron-ids-critical) | |
+| 9 | **Prefer CSS over !important** | Implementation | ✅ [CSS specificity](../analysis_new_feature_966349/patchset_018_css_refinement.md) | |
+| 10 | **Accept Feedback Gracefully** | Code Review | ✅ [~20 patchsets](../analysis_new_feature_966349/README.md#development-journey), [feedback summary](../analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#key-success-factors) | |
+| 11 | **Use Consistent Topics** | Git & Gerrit | ✅ [de-angularize topic](../analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#phase-topic-management) | |
+| 12 | **Write Detailed Commit Messages** | Git & Gerrit | ✅ [commit message improvement](../analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#phase-commit-message-improvement) | |
+| 13 | **Create README Index** | Documentation | ✅ [README](../analysis_new_feature_966349/README.md) | |
+| 14 | **Document Git Commands** | Documentation | ✅ [View patchset changes](../analysis_new_feature_966349/README.md#how-to-view-patchset-changes) | |
+| 15 | **Run PEP8/Lint After Each Change** | Quality Assurance | ✅ [PEP8 phase](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-4-pep8-compliance) | |
+| 16 | **Document Technical Decisions** | Documentation | ✅ [Key decisions](../analysis_new_feature_966349/README.md#key-technical-decisions) | |
+| 17 | **Learn from Maintainers** | Code Review | ✅ [CSS simplification](../analysis_new_feature_966349/README.md#reviewer-feedback-highlights) | |
+| 18 | **Break Work into Logical Phases** | Investigation | ✅ [4 phases](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md) | |
 | 19 | **Use MCP Agents for Metadata** | Dev Environment | ✅ [@opendev-reviewer-agent](../README.md#1-review-automation) | |
-| 20 | **Create Comparison Documents** | Documentation | ✅ [Evolution metrics](analysis_new_feature_966349/README.md#evolution-metrics), [patchset comparisons](analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md) | |
-| 21 | **Document "What Worked Well"** | Documentation | ✅ [What worked well](analysis_new_feature_966349/patchset_001_initial_implementation.md#what-worked-well) | |
-| 22 | **Document "Issues Discovered"** | Documentation | ✅ [Issues discovered](analysis_new_feature_966349/patchset_001_initial_implementation.md#issues-discovered) | |
-| 23 | **Capture Reviewer Quotes** | Documentation | ✅ [Feedback highlights](analysis_new_feature_966349/README.md#reviewer-feedback-highlights) | |
-| 24 | **Track Code Metrics** | Documentation | ✅ [Code metrics](analysis_new_feature_966349/README.md#code-metrics), [Evolution](analysis_new_feature_966349/README.md#evolution-metrics) | |
-| 25 | **Create "Lessons Learned"** | Documentation | ✅ [Lessons learned](analysis_new_feature_966349/README.md#lessons-learned), [Each phase](analysis_new_feature_966349/patchset_001_initial_implementation.md#lessons-learned) | |
+| 20 | **Create Comparison Documents** | Documentation | ✅ [Evolution metrics](../analysis_new_feature_966349/README.md#evolution-metrics), [patchset comparisons](../analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md) | |
+| 21 | **Document "What Worked Well"** | Documentation | ✅ [What worked well](../analysis_new_feature_966349/patchset_001_initial_implementation.md#what-worked-well) | |
+| 22 | **Document "Issues Discovered"** | Documentation | ✅ [Issues discovered](../analysis_new_feature_966349/patchset_001_initial_implementation.md#issues-discovered) | |
+| 23 | **Capture Reviewer Quotes** | Documentation | ✅ [Feedback highlights](../analysis_new_feature_966349/README.md#reviewer-feedback-highlights) | |
+| 24 | **Track Code Metrics** | Documentation | ✅ [Code metrics](../analysis_new_feature_966349/README.md#code-metrics), [Evolution](../analysis_new_feature_966349/README.md#evolution-metrics) | |
+| 25 | **Create "Lessons Learned"** | Documentation | ✅ [Lessons learned](../analysis_new_feature_966349/README.md#lessons-learned), [Each phase](../analysis_new_feature_966349/patchset_001_initial_implementation.md#lessons-learned) | |
 
 ---
 
@@ -89,7 +89,7 @@ This table tracks which features have used each best practice, with links to spe
 4. Estimate complexity and time
 5. List risks and mitigation strategies
 
-**Example**: [spike.md](analysis_new_feature_966349/spike.md)
+**Example**: [spike.md](../analysis_new_feature_966349/spike.md)
 
 **Key Sections**:
 - Executive Summary
@@ -119,10 +119,10 @@ This table tracks which features have used each best practice, with links to spe
 4. Document phase goals clearly
 
 **Example**: Review 966349 had 4 phases:
-- [Phase 1: Fix Unique IDs](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-1-unique-chevron-id-generation)
-- [Phase 2: Bootstrap Collapse](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-2-bootstrap-native-collapse)
-- [Phase 3: Chevron Rotation](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-3-automatic-chevron-rotation)
-- [Phase 4: PEP8 Compliance](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-4-pep8-compliance)
+- [Phase 1: Fix Unique IDs](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-1-unique-chevron-id-generation)
+- [Phase 2: Bootstrap Collapse](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-2-bootstrap-native-collapse)
+- [Phase 3: Chevron Rotation](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-3-automatic-chevron-rotation)
+- [Phase 4: PEP8 Compliance](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-4-pep8-compliance)
 
 ---
 
@@ -145,8 +145,8 @@ This table tracks which features have used each best practice, with links to spe
 4. Reference both from spike document
 
 **Examples**:
-- [HOWTO_install_devstack_on_psi.org](analysis_new_feature_966349/HOWTO_install_devstack_on_psi.org)
-- [HOWTO_install_devstack_on_laptop.org](analysis_new_feature_966349/HOWTO_install_devstack_on_laptop.org)
+- [HOWTO_install_devstack_on_psi.org](../analysis_new_feature_966349/HOWTO_install_devstack_on_psi.org)
+- [HOWTO_install_devstack_on_laptop.org](../analysis_new_feature_966349/HOWTO_install_devstack_on_laptop.org)
 
 ---
 
@@ -166,7 +166,7 @@ This table tracks which features have used each best practice, with links to spe
 3. Agent fetches metadata and creates assessment template
 4. Read actual code with `git show HEAD`
 
-**Example**: See [usecases/review_automation/README.md](../usecases/review_automation/README.md)
+**Example**: See [usecases/review_automation/README.md](../../usecases/review_automation/README.md)
 
 ---
 
@@ -194,7 +194,7 @@ This table tracks which features have used each best practice, with links to spe
 - After: 0 lines (Bootstrap `data-toggle="collapse"`)
 - **Result**: Better accessibility, less maintenance
 
-**Reference**: [Bootstrap refactor documentation](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-2-bootstrap-native-collapse)
+**Reference**: [Bootstrap refactor documentation](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-2-bootstrap-native-collapse)
 
 ---
 
@@ -230,7 +230,7 @@ def get_chevron_id(table, datum):
     return "%s_chevron_%s" % (table.name, object_id)
 ```
 
-**Reference**: [Phase 1 documentation](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-1-unique-chevron-id-generation)
+**Reference**: [Phase 1 documentation](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-1-unique-chevron-id-generation)
 
 ---
 
@@ -255,7 +255,7 @@ chevron_id = "%s_chevron_%s" % (table.name, table.get_object_id(datum))
 
 **Example**: Review 966349 bug where all rows had same ID, causing only first row to expand.
 
-**Reference**: [Issue analysis](analysis_new_feature_966349/patchset_001_initial_implementation.md#issue-1-duplicate-chevron-ids-critical)
+**Reference**: [Issue analysis](../analysis_new_feature_966349/patchset_001_initial_implementation.md#issue-1-duplicate-chevron-ids-critical)
 
 ---
 
@@ -284,7 +284,7 @@ chevron_id = "%s_chevron_%s" % (table.name, table.get_object_id(datum))
 
 **Example**: Review 966349 maintainer simplified CSS from 14 `!important` flags to 0.
 
-**Reference**: [CSS refinement phase](analysis_new_feature_966349/patchset_018_css_refinement.md)
+**Reference**: [CSS refinement phase](../analysis_new_feature_966349/patchset_018_css_refinement.md)
 
 ---
 
@@ -313,7 +313,7 @@ chevron_id = "%s_chevron_%s" % (table.name, table.get_object_id(datum))
 - PS 18-19: CSS optimization (maintainer improvements)
 - PS 20+: Final polish
 
-**Reference**: [Success factors](analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#key-success-factors)
+**Reference**: [Success factors](../analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#key-success-factors)
 
 ---
 
@@ -338,7 +338,7 @@ chevron_id = "%s_chevron_%s" % (table.name, table.get_object_id(datum))
 - After: 0 `!important`, 29% code reduction, higher specificity
 - **Learning**: Use `.table>tbody>tr.class>td` specificity instead of brute force
 
-**Reference**: [Reviewer feedback highlights](analysis_new_feature_966349/README.md#reviewer-feedback-highlights)
+**Reference**: [Reviewer feedback highlights](../analysis_new_feature_966349/README.md#reviewer-feedback-highlights)
 
 ---
 
@@ -371,7 +371,7 @@ analysis_new_feature_966349/
 └── patchset_020_final_polish_and_merge.md
 ```
 
-**Reference**: [Review 966349 organization](analysis_new_feature_966349/README.md)
+**Reference**: [Review 966349 organization](../analysis_new_feature_966349/README.md)
 
 ---
 
@@ -395,7 +395,7 @@ analysis_new_feature_966349/
 - `analysis_new_feature_966349/` - 6 polished documents
 - `analysis_new_feature_966349_wip/` - 24 original WIP documents
 
-**Reference**: [WIP directory](analysis_new_feature_966349_wip/)
+**Reference**: [WIP directory](../analysis_new_feature_966349_wip/)
 
 ---
 
@@ -417,7 +417,7 @@ analysis_new_feature_966349/
 5. Add "How to View Patchset Changes" section
 6. Include lessons learned and impact
 
-**Example**: [analysis_new_feature_966349/README.md](analysis_new_feature_966349/README.md)
+**Example**: [analysis_new_feature_966349/README.md](../analysis_new_feature_966349/README.md)
 
 **Key Sections**:
 - Feature Overview
@@ -466,7 +466,7 @@ https://review.opendev.org/c/openstack/horizon/+/966349/1..7
 
 **Example**: Every phase document in review 966349 starts with git commands
 
-**Reference**: [Example from patchset 001](analysis_new_feature_966349/patchset_001_initial_implementation.md#view-patchset-changes)
+**Reference**: [Example from patchset 001](../analysis_new_feature_966349/patchset_001_initial_implementation.md#view-patchset-changes)
 
 ---
 
@@ -501,7 +501,7 @@ https://review.opendev.org/c/openstack/horizon/+/966349/1..7
 - Option B: Why not chosen
 ```
 
-**Example**: [Key technical decisions section](analysis_new_feature_966349/README.md#key-technical-decisions)
+**Example**: [Key technical decisions section](../analysis_new_feature_966349/README.md#key-technical-decisions)
 
 ---
 
@@ -521,7 +521,7 @@ https://review.opendev.org/c/openstack/horizon/+/966349/1..7
 3. Include code snippets showing key differences
 4. Quantify improvements (lines of code, performance, etc.)
 
-**Example**: [Evolution metrics table](analysis_new_feature_966349/README.md#evolution-metrics)
+**Example**: [Evolution metrics table](../analysis_new_feature_966349/README.md#evolution-metrics)
 
 | Metric | Initial | Final | Change |
 |--------|---------|-------|--------|
@@ -529,7 +529,7 @@ https://review.opendev.org/c/openstack/horizon/+/966349/1..7
 | JavaScript | 30 | 0 | -30 (-100%) |
 | CSS with `!important` | 14 | 0 | -14 (-100%) |
 
-**Reference**: [PHASE_1_TO_4_COMPLETE_SUMMARY.md](analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md)
+**Reference**: [PHASE_1_TO_4_COMPLETE_SUMMARY.md](../analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md)
 
 ---
 
@@ -556,7 +556,7 @@ Description of what worked and why it was successful.
 **Reusable**: Yes/No and in what contexts
 ```
 
-**Example**: [What worked well section](analysis_new_feature_966349/patchset_001_initial_implementation.md#what-worked-well)
+**Example**: [What worked well section](../analysis_new_feature_966349/patchset_001_initial_implementation.md#what-worked-well)
 
 ---
 
@@ -589,7 +589,7 @@ Description of what worked and why it was successful.
 **Reference**: Link to fix documentation
 ```
 
-**Example**: [Issues discovered section](analysis_new_feature_966349/patchset_001_initial_implementation.md#issues-discovered)
+**Example**: [Issues discovered section](../analysis_new_feature_966349/patchset_001_initial_implementation.md#issues-discovered)
 
 ---
 
@@ -615,7 +615,7 @@ Description of what worked and why it was successful.
 **Action Taken**: How you addressed it
 ```
 
-**Example**: [Reviewer feedback highlights](analysis_new_feature_966349/README.md#reviewer-feedback-highlights)
+**Example**: [Reviewer feedback highlights](../analysis_new_feature_966349/README.md#reviewer-feedback-highlights)
 
 ---
 
@@ -635,7 +635,7 @@ Description of what worked and why it was successful.
 3. Calculate before/after differences
 4. Include in executive summaries
 
-**Example**: [Code metrics section](analysis_new_feature_966349/README.md#code-metrics)
+**Example**: [Code metrics section](../analysis_new_feature_966349/README.md#code-metrics)
 
 ```markdown
 ### Evolution Metrics
@@ -679,7 +679,7 @@ Description of what worked and why it was successful.
    **Applied**: How to use this learning
 ```
 
-**Example**: [Lessons learned sections](analysis_new_feature_966349/README.md#lessons-learned)
+**Example**: [Lessons learned sections](../analysis_new_feature_966349/README.md#lessons-learned)
 
 ---
 
@@ -705,7 +705,7 @@ Description of what worked and why it was successful.
 - Query: `project:openstack/horizon topic:de-angularize`
 - Groups all de-angularization work together
 
-**Reference**: [Topic management](analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#phase-topic-management)
+**Reference**: [Topic management](../analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#phase-topic-management)
 
 ---
 
@@ -736,7 +736,7 @@ Change-Id: <gerrit-change-id>
 Signed-off-by: Your Name <email>
 ```
 
-**Example**: [Commit message improvement](analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#phase-commit-message-improvement)
+**Example**: [Commit message improvement](../analysis_new_feature_966349/patchset_020_final_polish_and_merge.md#phase-commit-message-improvement)
 
 **Bad**:
 ```
@@ -784,7 +784,7 @@ Implementation:
 
 **Example**: Review 966349 discovered duplicate ID bug only when testing with 3+ key pairs
 
-**Reference**: [Testing checklist](analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md#testing-checklist)
+**Reference**: [Testing checklist](../analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md#testing-checklist)
 
 ---
 
@@ -809,7 +809,7 @@ tox -e pep8
 
 **Example**: Review 966349 had dedicated Phase 4 for PEP8 compliance
 
-**Reference**: [PEP8 phase](analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-4-pep8-compliance)
+**Reference**: [PEP8 phase](../analysis_new_feature_966349/patchset_008_bootstrap_refactor_phases_1to4.md#phase-4-pep8-compliance)
 
 **Better Approach**: Run after each change to avoid this.
 
