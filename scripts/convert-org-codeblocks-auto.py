@@ -213,7 +213,7 @@ def main():
         print(f"Would convert {converted_count} file(s)")
         print()
         print("To perform the actual conversion, run:")
-        print("  python3 convert-org-codeblocks-auto.py")
+        print("  python3 scripts/convert-org-codeblocks-auto.py")
     else:
         print(f"✅ Converted {converted_count} file(s)")
         print()

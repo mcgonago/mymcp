@@ -129,7 +129,7 @@ Fixed relative paths that were pointing to wrong locations.
 Run the link checker to verify:
 ```bash
 cd /home/omcgonag/Work/mymcp
-python3 check-links.py | grep -A5 "PHASE_1_TO_4_COMPLETE_SUMMARY.md"
+python3 scripts/check-links.py | grep -A5 "PHASE_1_TO_4_COMPLETE_SUMMARY.md"
 ```
 
 **Expected result:** No broken links reported for this file.

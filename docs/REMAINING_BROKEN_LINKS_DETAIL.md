@@ -228,7 +228,7 @@ After deleting the two report files:
 
 **Verify with:**
 ```bash
-python3 check-links.py | grep "Found"
+python3 scripts/check-links.py | grep "Found"
 ```
 
 Should show: `Found 17 broken links:` (all in templates)

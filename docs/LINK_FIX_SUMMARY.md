@@ -93,7 +93,7 @@ rm BROKEN_LINKS_REPORT.md PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
 
 **Verify with:**
 ```bash
-python3 check-links.py
+python3 scripts/check-links.py
 ```
 
 **Expected output:**
@@ -195,7 +195,7 @@ rm BROKEN_LINKS_REPORT.md PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
 
 # Verify the cleanup
 echo "=== Verification ==="
-python3 check-links.py | grep "Found"
+python3 scripts/check-links.py | grep "Found"
 echo ""
 echo "Expected: 17 broken links (all in template files)"
 ```

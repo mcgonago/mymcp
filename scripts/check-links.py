@@ -28,14 +28,15 @@ def should_skip_path(path):
             return True
     
     # Skip temporary report files created during link-fixing sessions
-    filename = Path(path).name
-    skip_files = [
-        'BROKEN_LINKS_REPORT.md',
-        'PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md',
-        'REMAINING_BROKEN_LINKS_DETAIL.md',
-        'LINK_FIX_SUMMARY.md',
+    # These are now in docs/ directory
+    skip_paths = [
+        'docs/BROKEN_LINKS_REPORT.md',
+        'docs/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md',
+        'docs/REMAINING_BROKEN_LINKS_DETAIL.md',
+        'docs/LINK_FIX_SUMMARY.md',
     ]
-    if filename in skip_files:
+    rel_path = str(Path(path).relative_to(BASE_DIR)) if BASE_DIR in Path(path).parents or BASE_DIR == Path(path).parent else str(path)
+    if rel_path in skip_paths:
         return True
     
     return False
