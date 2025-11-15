@@ -1,0 +1,24 @@
+type: analysis_doc_create
+output_document: analysis/analysis_osprh_12803_fix_chevron_id.org
+context_description: |
+  We are working on review https://review.opendev.org/c/openstack/horizon/+/966349
+  Patchset 7 was just pushed.
+  The current chevron_id generation uses creation_counter which does not work correctly.
+specific_questions: |
+  Please figure out how we can get unique chevron_id for each row.
+  
+  The way it is being done now does not work - these chevron_ids need
+  to be based on the row id somehow - but, the row id is not available at this context?
+  
+  I have heard we may need some way to expose the unique "cell id" for where this chevron symbol appears.
+  
+  class ExpandableKeyPairColumn(tables.Column):
+      def get_data(self, datum):
+          chevron_id = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+          return render_to_string(
+              "key_pairs/_chevron_column.html",
+              {"chevron_id": chevron_id}
+          )
+  
+  Can you please analyze and give the details on why this approach does not work?
+

@@ -1,0 +1,22 @@
+ask:
+
+one step at a time...
+
+my current working directory is at {WORKSPACE_PATH}
+
+Now that we have a {MILESTONE} on {REVIEW_URL}
+
+This will be our last {PHASE_TYPE} phase for our chain of analysis documents named {DOCUMENT_PATTERN}...
+
+Please remember - when I ask you to produce a document, I do not want it to be in the workspace folder, instead, I want it in the analysis folder.
+
+Do not create a new analysis folder - use the one that is at the same directory level as workspace.
+
+For your answers to my inquiry below - please create a new (from top level) {OUTPUT_DOCUMENT}
+
+This will be the place where we (follow up) add our last few actions before officially saying {REVIEW_URL} is ready for a merge.
+
+My question(s):
+
+{FINAL_QUESTIONS}
+

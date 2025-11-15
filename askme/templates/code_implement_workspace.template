@@ -1,0 +1,11 @@
+ask:
+
+I already have done the following
+
+: cd {WORKSPACE_PATH}
+: {GIT_SETUP_COMMANDS}
+
+I want you to make all your recommended changes
+
+Show me how you would do this work in this {WORKSPACE_NAME} directory?
+

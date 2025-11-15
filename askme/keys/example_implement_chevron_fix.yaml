@@ -1,0 +1,10 @@
+type: code_implement_workspace
+workspace_path: /home/omcgonag/Work/mymcp/workspace
+workspace_name: horizon-osprh-12803-working
+git_setup_commands: |
+  git clone https://review.opendev.org/openstack/horizon horizon-osprh-12803-working
+  cd horizon-osprh-12803-working
+  git fetch https://review.opendev.org/openstack/horizon refs/changes/49/966349/5
+  git checkout FETCH_HEAD
+  git checkout -b osprh-12803-template-refactor
+

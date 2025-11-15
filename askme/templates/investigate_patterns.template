@@ -1,0 +1,20 @@
+ask:
+
+For your answers to my inquiry below - please create a new {OUTPUT_DOCUMENT}
+
+{PHASE_CONTEXT}
+
+I want to start simple.
+
+Information:
+
+{CURRENT_STATE_INFO}
+
+For the changes below (using + for add, - for removed)
+
+I want to focus the simple change to get this code to put the {TARGET_ELEMENT} to come from somewhere?
+
+When programming this type of code in {FRAMEWORK} - what is the recommened way to put this code somewhere? template? other?
+
+{CODE_DIFF}
+

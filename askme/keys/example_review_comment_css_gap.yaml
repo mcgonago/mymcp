@@ -1,0 +1,27 @@
+type: code_review_response
+output_document: analysis/analysis_osprh_12803_fix_javascript_collapse_phase5_comment_6.org
+review_comment_url: https://review.opendev.org/c/openstack/horizon/+/966349/comment/9cf9a894_d4bd10a0/
+reviewer_name: Radomir Dopieralski
+patchset_number: Patchset 11
+specific_investigation: |
+  First, please explain what these two lines do:
+  
+  tr.keypair-detail-row td { padding: 0 };
+  tr.keypair-detail-row tod div.keypair-details { margin: 8px };
+  
+  and how would they get applied to openstack_dashboard/dashboards/project/key_pairs/tables.py
+reviewer_comment: |
+  I would add something like:
+  
+  tr.keypair-detail-row td { padding: 0 };
+  tr.keypair-detail-row tod div.keypair-details { margin: 8px };
+  
+  to the style, to get rid of that gap when the details are collapsed.
+file_path: openstack_dashboard/dashboards/project/key_pairs/tables.py
+code_context: |
+     40   /* Rotate chevron 90 degrees when row is expanded (not collapsed) */
+     41   .chevron-toggle:not(.collapsed) .fa-chevron-right {
+     42     transform: rotate(90deg);
+     43   }
+     44   </style>
+

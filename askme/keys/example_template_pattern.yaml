@@ -1,0 +1,20 @@
+type: investigate_patterns
+output_document: analysis_osprh_12803_ExpandableKeyPairColumn_mark_safe.org
+phase_context: We are starting with changes for next Patchset 5
+current_state_info: |
+  Patchset 4 changes can be seen as:
+  cd /home/omcgonag/Work/mymcp/workspace/horizon-osprh-12803-patch-set-4
+  git diff --stat 6737fdbfb..365530300 && echo "---" && git diff 6737fdbfb..365530300
+target_element: <a role... </a>
+framework: Horizon
+code_diff: |
+  +class ExpandableKeyPairColumn(tables.Column):
+  +    def get_data(self, datum):
+  +        name = "%s_table_chevron%d" % (self.table.name, self.creation_counter)
+  +        return mark_safe("""
+  +<a role="button" data-toggle="collapse"
+  +href="#%s" aria-expanded="false" aria-controls="collapseExample">
+  +<span class="fa fa-chevron-right"></span>
+  +</a>
+  +""" % name)
+

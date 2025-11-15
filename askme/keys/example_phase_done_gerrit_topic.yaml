@@ -1,0 +1,26 @@
+type: phase_done
+workspace_path: workspace/horizon-osprh-12803-working
+milestone: "+2"
+review_url: https://review.opendev.org/c/openstack/horizon/+/966349
+phase_type: DONE
+document_pattern: HOWTO_osprh_12803_patchset_8_fix_javascript_collapse_phase5_comment_X.org
+output_document: analysis/analysis_osprh_12803_fix_javascript_collapse_phase5_comment_DONE.org
+final_questions: |
+  do we have a Topic for de-angularize? How do we find that topic?
+  
+  You can search our horizon open/closed review list at:
+  https://review.opendev.org/q/project:openstack/horizon+status:open
+  https://review.opendev.org/q/project:openstack/horizon+status:closed
+  
+  to see how other topics have been created
+  
+  for whatever reason, the topic showing up at https://review.opendev.org/c/openstack/horizon/+/966349 is "keypair-chevron-patch19"
+  
+  I want it to be de-angularize
+  
+  Then, after that is set, how does one view a "topic"? Where do I go to see tickets tagged with de-angularize?
+  
+  For my next angularjs task, what do you recommend as far as setting this topic? Do I always use a branch name that matches the topic?
+  
+  I need to understand better in how this is done.
+

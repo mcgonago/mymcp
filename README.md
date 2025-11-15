@@ -203,6 +203,34 @@ This approach was successfully used to develop and merge the expandable Key Pair
 - Provide reproducible research methodology
 - Make onboarding easier for new team members
 
+### #3: Ask Automation System
+
+Generate consistent, well-formatted prompts for AI-assisted development using templates and YAML key files. This system was designed by analyzing patterns from 19 "ask" documents created during Review 966349 development.
+
+**For detailed instructions, see [askme/README.md](askme/README.md).**
+
+**Quick Example:**
+```bash
+# Generate an ask from a template
+./ask_me.sh analysis_doc_create askme/keys/my_investigation.yaml
+
+# Copy output and paste to your AI assistant
+```
+
+This system:
+- ✅ Standardizes prompt formatting for consistency
+- ✅ Separates template structure from content
+- ✅ Enables reusable patterns across features
+- ✅ Reduces cognitive load when formulating questions
+- ✅ Preserves institutional knowledge in version control
+
+**Available Templates:**
+- `analysis_doc_create` - Start new investigations
+- `code_implement_workspace` - Implement code changes
+- `code_review_response` - Address reviewer feedback
+- `investigate_patterns` - Research design patterns
+- `phase_done` - Wrap up and transition phases
+
 ---
 
 ## What These Agents Can Do
@@ -259,6 +287,21 @@ This script will:
 ```
 mymcp/
 ├── README.md                           # This file
+├── ask_me.sh                           # Ask automation script
+├── askme/                              # Ask automation system
+│   ├── README.md                       # Ask automation guide
+│   ├── templates/                      # Ask templates
+│   │   ├── analysis_doc_create.template
+│   │   ├── code_implement_workspace.template
+│   │   ├── code_review_response.template
+│   │   ├── investigate_patterns.template
+│   │   └── phase_done.template
+│   └── keys/                           # YAML key files (your configs)
+│       ├── example_fix_chevron_id.yaml
+│       ├── example_implement_chevron_fix.yaml
+│       ├── example_review_comment_css_gap.yaml
+│       ├── example_template_pattern.yaml
+│       └── example_phase_done_gerrit_topic.yaml
 ├── github-agent/                       # GitHub PR review agent
 │   ├── server.py                       # Main MCP server
 │   ├── server.sh                       # Launch script

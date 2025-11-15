@@ -1,0 +1,20 @@
+ask:
+
+For your answers to my inquiry below - please create a new (from top level) {OUTPUT_DOCUMENT}
+
+From {REVIEW_COMMENT_URL}
+
+From the comment below:
+
+{SPECIFIC_INVESTIGATION}
+
+Comment:
+
+{REVIEWER_NAME} {PATCHSET_NUMBER}
+
+{REVIEWER_COMMENT}
+
+file: {FILE_PATH}
+
+{CODE_CONTEXT}
+
