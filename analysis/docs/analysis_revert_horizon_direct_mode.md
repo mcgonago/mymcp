@@ -664,7 +664,7 @@ def test_image_create_and_activate():
 
 ### Related Analyses
 
-- [doc/analysis_direct_mode.md](analysis_direct_mode.md) - Complete technical documentation of direct mode implementation, CORS configuration, and deployment procedures (878 lines, comprehensive)
+- [docs/analysis_direct_mode.md](analysis_direct_mode.md) - Complete technical documentation of direct mode implementation, CORS configuration, and deployment procedures (878 lines, comprehensive)
 
 ### External References
 

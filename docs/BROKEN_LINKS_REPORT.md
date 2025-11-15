@@ -106,7 +106,7 @@ These files are templates with placeholder links - **no action needed**:
 - `analysis_other_topic.md`
 - `link` (placeholder for PR #XXX, Review XXXXXX, etc.) (5 occurrences)
 
-### `workspace/review_template.md` (4 placeholder links)
+### `workspace/docs/review_template.md` (4 placeholder links)
 - `link` (placeholder for review/issue numbers) (4 occurrences)
 
 ---

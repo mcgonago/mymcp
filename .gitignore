@@ -62,5 +62,11 @@ Makefile~
 *.*~
 
 # Review workspace - temporary clones for code review analysis
+# Allow documentation and scripts in workspace
 workspace/
+!workspace/docs/
+!workspace/docs/**
+!workspace/scripts/
+!workspace/scripts/**
+!workspace/README.md
 reviews/

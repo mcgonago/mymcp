@@ -1,11 +1,11 @@
 # Complete Analysis: Horizon Direct Mode Revert Investigation
 # Date: October 31, 2025
-# Analysis Document: analysis/doc/analysis_revert_horizon_direct_mode.md
+# Analysis Document: analysis/docs/analysis_revert_horizon_direct_mode.md
 
 ## COMMANDS EXECUTED AND THEIR OUTPUTS
 
 ### 1. Read Analysis Template
-Command: read_file doc/analysis_template.md
+Command: read_file docs/analysis_template.md
 Status: ✅ Success
 Output: Retrieved 213-line template with all required sections
 
@@ -260,7 +260,7 @@ Command: search_replace analysis/README.md
 Status: ✅ Success
 Output: Added new entry to Current Analyses section:
 ---
-- **[doc/analysis_revert_horizon_direct_mode.md](analysis_revert_horizon_direct_mode.md)** - 
+- **[docs/analysis_revert_horizon_direct_mode.md](analysis_revert_horizon_direct_mode.md)** - 
   FR4 blocker investigation: Direct mode upload causing images stuck in "Queued" status, 
   timeline of implementation and emergency revert [✅ Complete]
 ---
@@ -339,14 +339,14 @@ Output: Added new entry to Current Analyses section:
 
 ## ANALYSIS DOCUMENT LOCATION
 
-File: /home/omcgonag/Work/mymcp/analysis/doc/analysis_revert_horizon_direct_mode.md
+File: /home/omcgonag/Work/mymcp/analysis/docs/analysis_revert_horizon_direct_mode.md
 Size: 878 lines
 Status: ✅ Complete
 Last Updated: 2025-10-31
 
 ## RELATED DOCUMENTS
 
-- analysis/doc/analysis_direct_mode.md - Technical implementation details
-- analysis/doc/analysis_template.md - Template for future analyses
+- analysis/docs/analysis_direct_mode.md - Technical implementation details
+- analysis/docs/analysis_template.md - Template for future analyses
 - analysis/README.md - Analysis directory guide
 

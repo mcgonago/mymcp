@@ -72,9 +72,9 @@ curl -X POST http://192.168.122.140/identity/v3/auth/tokens \
 ## Files Created
 
 📁 **Analysis Files:**
-- `doc/analysis_fix_devstack_authentication_error.md` - Full troubleshooting guide
-- `doc/analysis_fix_devstack_authentication_error_session.md` - Live session log
-- `doc/DEVSTACK_AUTH_FIX_SUMMARY.md` - This quick summary
+- `docs/analysis_fix_devstack_authentication_error.md` - Full troubleshooting guide
+- `docs/analysis_fix_devstack_authentication_error_session.md` - Live session log
+- `docs/DEVSTACK_AUTH_FIX_SUMMARY.md` - This quick summary
 
 🔧 **Diagnostic Scripts:**
 - `debug_keystone_from_host.sh` - Test from host machine

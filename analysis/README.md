@@ -34,19 +34,19 @@ The template includes sections for:
 1. **Copy the template**
    ```bash
    cd <your-mymcp-cloned-repo-path>/analysis
-   cp doc/analysis_template.md doc/analysis_<topic-name>.md
+   cp docs/analysis_template.md docs/analysis_<topic-name>.md
    ```
-2. Ask Cursor a question - example question for doc/analysis_direct_mode.md
+2. Ask Cursor a question - example question for docs/analysis_direct_mode.md
 
-   Create a new doc/analysis_direct_mode.md from doc/analysis_template.md (copy) and fill in with your answer to:
+   Create a new docs/analysis_direct_mode.md from docs/analysis_template.md (copy) and fill in with your answer to:
    search for any work done with respect to Horizon/Glance and the changes made (CORS, httpd.conf, ..) to support direct mode upload by default
 
 ## Current Analyses
 
-- **[doc/analysis_template.md](doc/analysis_template.md)** - 📝 Template for creating new analyses (copy this to start)
-- **[doc/analysis_direct_mode.md](doc/analysis_direct_mode.md)** - Horizon/Glance direct mode upload changes (CORS, httpd.conf, etc.) [✅ Complete - awaiting PR/review searches]
-- **[doc/analysis_pr_483_verify_horizon_operator_content.md](doc/analysis_pr_483_verify_horizon_operator_content.md)** - Verifying PR #483 inclusion in RHOSO 1.0 operator builds via midstream SHA verification [✅ Complete]
-- **[doc/analysis_revert_horizon_direct_mode.md](doc/analysis_revert_horizon_direct_mode.md)** - FR4 blocker: Direct mode upload causing images stuck in "Queued" status, complete timeline from implementation to emergency revert with all Jira/PR details [✅ Complete - October 31, 2025]
+- **[docs/analysis_template.md](docs/analysis_template.md)** - 📝 Template for creating new analyses (copy this to start)
+- **[docs/analysis_direct_mode.md](docs/analysis_direct_mode.md)** - Horizon/Glance direct mode upload changes (CORS, httpd.conf, etc.) [✅ Complete - awaiting PR/review searches]
+- **[docs/analysis_pr_483_verify_horizon_operator_content.md](docs/analysis_pr_483_verify_horizon_operator_content.md)** - Verifying PR #483 inclusion in RHOSO 1.0 operator builds via midstream SHA verification [✅ Complete]
+- **[docs/analysis_revert_horizon_direct_mode.md](docs/analysis_revert_horizon_direct_mode.md)** - FR4 blocker: Direct mode upload causing images stuck in "Queued" status, complete timeline from implementation to emergency revert with all Jira/PR details [✅ Complete - October 31, 2025]
 
 ## Benefits of This Approach
 
@@ -72,7 +72,7 @@ analysis_<topic-name>.md
 ```
 
 Examples:
-- `doc/analysis_direct_mode.md`
+- `docs/analysis_direct_mode.md`
 - `analysis_integration_tests_removal.md`
 - `analysis_django5_migration.md`
 - `analysis_cors_configuration.md`

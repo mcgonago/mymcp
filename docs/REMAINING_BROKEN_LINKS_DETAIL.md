@@ -63,7 +63,7 @@ These are intentional placeholders in template files. **Recommendation: Leave as
 
 ---
 
-### File 3: `workspace/review_template.md` (4 links)
+### File 3: `workspace/docs/review_template.md` (4 links)
 
 **Purpose**: Template for code review assessments
 
@@ -150,7 +150,7 @@ vim /home/omcgonag/Work/mymcp/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
 |------|--------------|------|-------------------|
 | `analysis/analysis_template.md` | 7 | Template placeholders | **Keep as-is** |
 | `analysis/analysis_template_random_topics.md` | 6 | Template placeholders | **Keep as-is** |
-| `workspace/review_template.md` | 4 | Template placeholders | **Keep as-is** |
+| `workspace/docs/review_template.md` | 4 | Template placeholders | **Keep as-is** |
 | `BROKEN_LINKS_REPORT.md` | 16 | Old report with examples | **DELETE** ✂️ |
 | `PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md` | 3 | Report with examples | **Fix or DELETE** ✂️ |
 | `analysis/analysis_direct_mode.md` | 0 | (Not in this list) | (Already noted elsewhere) |
@@ -187,7 +187,7 @@ Eliminates 3 more broken links (total: 19 fixed)
 These 17 links should **NOT** be "fixed" - they're intentional placeholders:
 - ✅ `analysis/analysis_template.md` (7 links)
 - ✅ `analysis/analysis_template_random_topics.md` (6 links)
-- ✅ `workspace/review_template.md` (4 links)
+- ✅ `workspace/docs/review_template.md` (4 links)
 
 ---
 
@@ -240,7 +240,7 @@ Should show: `Found 17 broken links:` (all in templates)
 ### Template Files (Keep)
 - `/home/omcgonag/Work/mymcp/analysis/analysis_template.md`
 - `/home/omcgonag/Work/mymcp/analysis/analysis_template_random_topics.md`
-- `/home/omcgonag/Work/mymcp/workspace/review_template.md`
+- `/home/omcgonag/Work/mymcp/workspace/docs/review_template.md`
 
 ### Report Files (Delete)
 - `/home/omcgonag/Work/mymcp/BROKEN_LINKS_REPORT.md` ← DELETE THIS
@@ -258,7 +258,7 @@ Want exact line numbers? Run:
 cd /home/omcgonag/Work/mymcp
 grep -n "\[.*\](link)" analysis/analysis_template.md
 grep -n "\[.*\](link)" analysis/analysis_template_random_topics.md
-grep -n "\[.*\](link)" workspace/review_template.md
+grep -n "\[.*\](link)" workspace/docs/review_template.md
 ```
 
 ---

@@ -434,9 +434,9 @@ The colleague confirmed:
 
 ### Related Analyses
 
-- [PR #483 Verification Script](../workspace/verify-pr-483.sh) - Runtime verification tool
-- [PR #483 Verification Guide](../workspace/PR-483-VERIFICATION-GUIDE.md) - Detailed guide
-- [PR #483 Summary](../workspace/PR-483-SUMMARY.md) - Quick reference
+- [PR #483 Verification Script](../../workspace/scripts/verify-pr-483.sh) - Runtime verification tool
+- [PR #483 Verification Guide](../../workspace/docs/PR-483-VERIFICATION-GUIDE.md) - Detailed guide
+- [PR #483 Summary](../../workspace/docs/PR-483-SUMMARY.md) - Quick reference
 
 ### External References
 
@@ -513,7 +513,7 @@ cd /home/omcgonag/Work/mymcp/workspace
 ### Recommendations
 
 1. ✅ **Trust the timeline** - The math checks out: Aug 8 < Oct 25
-2. ✅ **Verify in deployment** - Run `/workspace/verify-pr-483.sh` to confirm runtime behavior
+2. ✅ **Verify in deployment** - Run `/workspace/scripts/verify-pr-483.sh` to confirm runtime behavior
 3. ✅ **Document the process** - This analysis serves as documentation for future verifications
 4. ✅ **Test the functionality** - Verify that conf.d/*.conf works without TLS in your environment
 5. ✅ **Confirm with colleague** - The colleague's verification method is sound and correct

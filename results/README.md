@@ -99,6 +99,6 @@ results/
 
 **See also:**
 - [`workspace/README.md`](../workspace/README.md) - Workspace usage guide
-- [`workspace/REVIEW_ASSESSMENT_GUIDE.md`](../workspace/REVIEW_ASSESSMENT_GUIDE.md) - Detailed assessment guide
+- [`workspace/docs/REVIEW_ASSESSMENT_GUIDE.md`](../workspace/docs/REVIEW_ASSESSMENT_GUIDE.md) - Detailed assessment guide
 - [`analysis/README.md`](../analysis/README.md) - Permanent analysis guide
 

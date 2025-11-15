@@ -80,7 +80,7 @@ cd workspace
 - ✅ Git-ignored to avoid cluttering the repo
 - ✅ Persistent across sessions
 
-See [`workspace/README.md`](../../workspace/README.md) and [`workspace/REVIEW_ASSESSMENT_GUIDE.md`](../../workspace/REVIEW_ASSESSMENT_GUIDE.md) for detailed usage instructions.
+See [`workspace/README.md`](../../workspace/README.md) and [`workspace/docs/REVIEW_ASSESSMENT_GUIDE.md`](../../workspace/docs/REVIEW_ASSESSMENT_GUIDE.md) for detailed usage instructions.
 
 ## Platform-Specific Examples
 
@@ -167,8 +167,8 @@ tox -e pep8
 ## Additional Resources
 
 - [Workspace README](../../workspace/README.md) - Detailed workspace usage
-- [Review Assessment Guide](../../workspace/REVIEW_ASSESSMENT_GUIDE.md) - Comprehensive assessment feature guide
-- [Quick Start](../../workspace/QUICK_START.md) - Quick reference commands
+- [Review Assessment Guide](../../workspace/docs/REVIEW_ASSESSMENT_GUIDE.md) - Comprehensive assessment feature guide
+- [Quick Start](../../workspace/docs/QUICK_START.md) - Quick reference commands
 - [Main README](../../README.md) - Repository overview
 
 ## See Also

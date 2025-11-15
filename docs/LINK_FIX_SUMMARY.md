@@ -36,7 +36,7 @@
    - Example cross-reference: `analysis_other_topic.md` (1×)
    - Example external links: `[PR #XXX](link)`, etc. (5×)
    
-3. **`workspace/review_template.md`** - 4 placeholder links
+3. **`workspace/docs/review_template.md`** - 4 placeholder links
    - Example review links: `[XXXXXX](link)`, etc. (4×)
 
 **Why keep them?** These templates show users the format for links. Users fill in actual URLs when using the templates.
@@ -108,7 +108,7 @@ Found 17 broken links:
 ------------------------------------------------------------
   [6 placeholder links - expected]
 
-📄 workspace/review_template.md
+📄 workspace/docs/review_template.md
 ------------------------------------------------------------
   [4 placeholder links - expected]
 ```
@@ -119,7 +119,7 @@ Found 17 broken links:
 
 ✅ `/home/omcgonag/Work/mymcp/analysis/analysis_template.md`  
 ✅ `/home/omcgonag/Work/mymcp/analysis/analysis_template_random_topics.md`  
-✅ `/home/omcgonag/Work/mymcp/workspace/review_template.md`  
+✅ `/home/omcgonag/Work/mymcp/workspace/docs/review_template.md`  
 
 **Why?** These are templates that users copy and fill in with real links.
 
