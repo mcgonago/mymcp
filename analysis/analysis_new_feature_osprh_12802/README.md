@@ -11,8 +11,8 @@
 
 **Review**: [967269 - De-angularize Key Pairs: Add Django-based Create form](https://review.opendev.org/c/openstack/horizon/+/967269)  
 **Submitted**: November 17, 2025  
-**Topic**: `osprh-12802-on-966349`  
-**Depends-On**: [Review 966349](https://review.opendev.org/c/openstack/horizon/+/966349) (Merged ✅)
+**Topic**: [`de-angularize`](https://review.opendev.org/q/topic:de-angularize) (grouped with related de-angularization work)  
+**Depends-On**: [Review 966349](https://review.opendev.org/c/openstack/horizon/+/966349) (Approved +2, awaiting merge)
 
 This patchset implements the core "Generate Key Pair" form infrastructure, replacing the AngularJS client-side implementation with Django server-side forms. It is the first of five planned patchsets to complete the de-angularization of the Key Pairs panel.
 
@@ -39,7 +39,8 @@ This directory contains complete documentation for implementing the Key Pair cre
 
 ### Upstream Reviews
 - **[Review 967269](https://review.opendev.org/c/openstack/horizon/+/967269)** - Patchset 1: Generate Key Pair Form 🚀 **Active**
-  - Depends on: [Review 966349](https://review.opendev.org/c/openstack/horizon/+/966349) (Key Pairs expandable rows - Merged ✅)
+  - Topic: [`de-angularize`](https://review.opendev.org/q/topic:de-angularize)
+  - Depends on: [Review 966349](https://review.opendev.org/c/openstack/horizon/+/966349) (Key Pairs expandable rows - Approved +2 ⏳)
 
 ## Implementation Phases
 
@@ -67,8 +68,9 @@ Follow these documents in order:
 ### Phase 3: Review & Merge
 
 #### Patchset 1 (In Progress)
-- [x] Submit to Gerrit with topic: `osprh-12802-on-966349`
+- [x] Submit to Gerrit with topic: `de-angularize`
 - [x] Link dependency: Review 966349
+- [ ] Wait for Review 966349 to merge (has +2 approval)
 - [ ] CI tests pass
 - [ ] Address reviewer feedback
 - [ ] Achieve +2 approval
@@ -256,11 +258,11 @@ Total: ~1,115 lines of new/modified code
 
 ### Dependencies
 
-- **Review 966349** (Key Pairs expandable rows) - ✅ Merged
+- **Review 966349** (Key Pairs expandable rows) - ⏳ Awaiting Merge
   - Link: https://review.opendev.org/c/openstack/horizon/+/966349
   - Provides foundation (custom row rendering, chevron functionality)
   - Reference: [analysis/analysis_new_feature_966349/](../analysis_new_feature_966349/)
-  - Status: Merged to master (Nov 2025)
+  - Status: Approved +2 (Nov 2025), waiting for merge
 
 ### Downstream Work
 
