@@ -201,8 +201,8 @@ A structured, predictable approach to feature development using Cursor with AI a
 - **AI pattern conformance** - Train LLM on proven "patterns of success" for consistent output
 
 **Proven Results:**
-- Review 966349 (Key Pairs): Merged upstream with +2 approval
-- Review 967269 (Create Form): 1-day implementation vs. 2-day estimate (50% faster)
+- [Review 966349](https://review.opendev.org/c/openstack/horizon/+/966349) (Key Pairs expandable rows): Merged upstream with +2 approval
+- [Review 967269](https://review.opendev.org/c/openstack/horizon/+/967269) (Create Form): 1-day implementation vs. 2-day estimate (50% faster)
 - Improved capacity planning through measured complexity scores
 - Earlier test planning and parallel test development
 - Reduced scope creep through incremental delivery validation
