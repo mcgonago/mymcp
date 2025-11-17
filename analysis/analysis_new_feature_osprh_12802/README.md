@@ -2,8 +2,23 @@
 
 **Jira**: [OSPRH-12802](https://issues.redhat.com/browse/OSPRH-12802)  
 **Epic**: [OSPRH-12801](https://issues.redhat.com/browse/OSPRH-12801) - Remove angular.js from Horizon  
-**Status**: 📋 Planning  
+**Status**: 🚀 In Progress - Patchset 1 Submitted  
 **Estimated Effort**: 7 days (1.5 sprints)
+
+---
+
+## 🚀 Current Status: Patchset 1 Submitted for Review
+
+**Review**: [967269 - De-angularize Key Pairs: Add Django-based Create form](https://review.opendev.org/c/openstack/horizon/+/967269)  
+**Submitted**: November 17, 2025  
+**Topic**: `osprh-12802-on-966349`  
+**Depends-On**: [Review 966349](https://review.opendev.org/c/openstack/horizon/+/966349) (Merged ✅)
+
+This patchset implements the core "Generate Key Pair" form infrastructure, replacing the AngularJS client-side implementation with Django server-side forms. It is the first of five planned patchsets to complete the de-angularization of the Key Pairs panel.
+
+**Implementation Time**: 1 day (faster than 2-day estimate)  
+**Lines Added**: 144 lines across 6 files  
+**Testing**: 6 manual test scenarios completed successfully  
 
 ---
 
@@ -13,12 +28,18 @@ This directory contains complete documentation for implementing the Key Pair cre
 
 ## Quick Links
 
+### Documentation
 - **[spike.md](spike.md)** - Initial investigation and planning
-- **[Patchset 1: Generate Form](patchset_1_generate_key_pair_form.md)** - 2 days
+- **[Patchset 1: Generate Form](patchset_1_generate_key_pair_form.md)** - 2 days ✅ **Submitted**
+- **[Patchset 1: Design Document](patchset_1_generate_key_pair_form_design.md)** - Detailed design rationale ✅ **Complete**
 - **[Patchset 2: Import Form](patchset_2_import_key_pair_form.md)** - 2 days
 - **[Patchset 3: Download Page](patchset_3_private_key_download.md)** - 1.5 days
 - **[Patchset 4: Error Handling](patchset_4_error_handling_polish.md)** - 1 day
 - **[Patchset 5: Tests & PEP8](patchset_5_tests_pep8.md)** - 2 days
+
+### Upstream Reviews
+- **[Review 967269](https://review.opendev.org/c/openstack/horizon/+/967269)** - Patchset 1: Generate Key Pair Form 🚀 **Active**
+  - Depends on: [Review 966349](https://review.opendev.org/c/openstack/horizon/+/966349) (Key Pairs expandable rows - Merged ✅)
 
 ## Implementation Phases
 
@@ -33,19 +54,31 @@ This directory contains complete documentation for implementing the Key Pair cre
 Follow these documents in order:
 
 ```
-1. spike.md              → Understand the problem and approach
-2. patchset_1_*.md       → Implement Generate Key Pair form
-3. patchset_2_*.md       → Implement Import Key Pair form  
-4. patchset_3_*.md       → Implement private key download page
-5. patchset_4_*.md       → Polish error handling and UX
-6. patchset_5_*.md       → Add tests and ensure PEP8 compliance
+1. spike.md              → ✅ Complete - Understand the problem and approach
+2. patchset_1_*.md       → 🚀 SUBMITTED - Implement Generate Key Pair form (Review 967269)
+3. patchset_2_*.md       → 📋 Next - Implement Import Key Pair form  
+4. patchset_3_*.md       → 📋 Pending - Implement private key download page
+5. patchset_4_*.md       → 📋 Pending - Polish error handling and UX
+6. patchset_5_*.md       → 📋 Pending - Add tests and ensure PEP8 compliance
 ```
 
-### Phase 3: Review & Merge (Pending)
-- [ ] Submit to Gerrit with topic: `de-angularize`
+**Current Status**: Patchset 1 submitted for review. Awaiting CI results and reviewer feedback.
+
+### Phase 3: Review & Merge
+
+#### Patchset 1 (In Progress)
+- [x] Submit to Gerrit with topic: `osprh-12802-on-966349`
+- [x] Link dependency: Review 966349
+- [ ] CI tests pass
 - [ ] Address reviewer feedback
 - [ ] Achieve +2 approval
 - [ ] Merge upstream
+
+#### Future Patchsets
+- [ ] Submit remaining patchsets (2-5)
+- [ ] Iterative review and refinement
+- [ ] Final integration testing
+- [ ] Complete feature merge
 
 ---
 
@@ -106,14 +139,22 @@ Each patchset document follows this comprehensive format:
 
 ### Actual vs. Estimated
 
-| Patchset | Estimated | Actual | Status |
-|----------|-----------|--------|--------|
-| Patchset 1 | 2 days | TBD | 📋 Pending |
-| Patchset 2 | 2 days | TBD | 📋 Pending |
-| Patchset 3 | 1.5 days | TBD | 📋 Pending |
-| Patchset 4 | 1 day | TBD | 📋 Pending |
-| Patchset 5 | 2 days | TBD | 📋 Pending |
-| **Total** | **8.5 days** | **TBD** | 📋 Planning |
+| Patchset | Estimated | Actual | Review | Status |
+|----------|-----------|--------|--------|--------|
+| Patchset 1 | 2 days | 1 day | [967269](https://review.opendev.org/c/openstack/horizon/+/967269) | 🚀 Submitted (Nov 17, 2025) |
+| Patchset 2 | 2 days | TBD | - | 📋 Pending |
+| Patchset 3 | 1.5 days | TBD | - | 📋 Pending |
+| Patchset 4 | 1 day | TBD | - | 📋 Pending |
+| Patchset 5 | 2 days | TBD | - | 📋 Pending |
+| **Total** | **8.5 days** | **1 day / 8.5** | - | 🚀 In Progress |
+
+**Patchset 1 Highlights**:
+- Implementation: 1 day (Nov 17, 2025)
+- Files modified: 4 (forms.py, views.py, urls.py, tables.py)
+- Files created: 2 (create.html, _create.html)
+- Total lines: 144 lines added
+- Design document: Complete with full reference analysis
+- Dependency: Built on Review 966349 (expandable rows)
 
 *Note: Timeline will be updated as work progresses*
 
@@ -152,19 +193,33 @@ You'll need access to a running DevStack instance for testing:
 
 ## Success Criteria
 
+### Planning & Documentation
 - [x] Spike document complete
 - [x] All patchset documents created
-- [ ] Generate Key Pair form implemented
-- [ ] Import Key Pair form implemented
-- [ ] Private key download page implemented
+- [x] Design document with code references complete
+
+### Implementation Progress
+- [x] Patchset 1: Generate Key Pair form implemented
+- [x] Patchset 1: Submitted to Gerrit (Review 967269)
+- [ ] Patchset 1: CI tests passing
+- [ ] Patchset 1: +2 approval received
+- [ ] Import Key Pair form implemented (Patchset 2)
+- [ ] Private key download page implemented (Patchset 3)
+- [ ] Error handling polish (Patchset 4)
+- [ ] Unit tests and PEP8 (Patchset 5)
+
+### Quality Assurance
+- [x] Patchset 1: Manual testing complete (6 scenarios)
 - [ ] All forms validated and functional
 - [ ] Error handling comprehensive
 - [ ] Unit tests written and passing
 - [ ] PEP8 compliant
-- [ ] Manual testing complete (30+ scenarios)
-- [ ] Upstream review submitted
-- [ ] +2 approval received
-- [ ] Merged to master
+- [ ] Complete manual testing (30+ scenarios)
+
+### Upstream Delivery
+- [x] First patchset submitted upstream
+- [ ] All patchsets reviewed and approved
+- [ ] Feature merged to master
 
 ---
 
@@ -201,9 +256,11 @@ Total: ~1,115 lines of new/modified code
 
 ### Dependencies
 
-- **Review 966349** (Key Pairs expandable rows) - ✅ Complete
+- **Review 966349** (Key Pairs expandable rows) - ✅ Merged
+  - Link: https://review.opendev.org/c/openstack/horizon/+/966349
   - Provides foundation (custom row rendering, chevron functionality)
   - Reference: [analysis/analysis_new_feature_966349/](../analysis_new_feature_966349/)
+  - Status: Merged to master (Nov 2025)
 
 ### Downstream Work
 
@@ -304,9 +361,24 @@ See: [askme/README.md](../../askme/README.md) for complete guide.
 
 ---
 
+## Recent Updates
+
+### November 17, 2025
+- ✅ **Patchset 1 Submitted**: Review 967269 created and pushed to Gerrit
+- ✅ **Design Document Complete**: Full reference analysis with GitHub links
+- ✅ **WIP Documentation**: Complete development log in `analysis_new_feature_osprh_12802_wip/`
+- 🎯 **Next**: Monitor CI results and prepare for reviewer feedback
+
+### November 15, 2025
+- ✅ **Planning Complete**: All patchset documents created
+- ✅ **Spike Complete**: Investigation and approach defined
+- ✅ **Environment Setup**: DevStack ready, workspace configured
+
+---
+
 **Created**: November 15, 2025  
-**Last Updated**: November 15, 2025  
-**Status**: 📋 Ready for implementation  
-**Next Action**: Start Patchset 1
+**Last Updated**: November 17, 2025  
+**Status**: 🚀 In Progress - Patchset 1 Under Review  
+**Next Action**: Monitor Review 967269, prepare Patchset 2
 
 
