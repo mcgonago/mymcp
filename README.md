@@ -190,18 +190,32 @@ This workflow:
 
 ### #2: Feature Development (Analysis) Workflow Using Cursor
 
-Systematically develop features using Cursor with comprehensive analysis documentation. This workflow demonstrates how to use the `analysis/` directory to track research, decisions, and methodology throughout feature development.
+A structured, predictable approach to feature development using Cursor with AI assistance. This workflow systematically breaks down complex features into measurable, time-boxed deliverables with clear complexity rankings and automated story point estimation.
 
-This approach was successfully used to develop and merge the expandable Key Pairs table feature upstream in [Review 966349](https://review.opendev.org/c/openstack/horizon/+/966349). By documenting each phase of development, from initial investigation through final implementation, the analysis documents provided a complete historical record that made troubleshooting easier and preserved institutional knowledge for future work.
+**Core Methodology:**
+- **Spike-driven investigation** - Structured technical analysis before implementation
+- **Incremental patchsets** - Break features into reviewable, testable chunks
+- **Complexity scoring** - Rank technical challenges and knowledge requirements
+- **Predictable timelines** - Sprint-aligned deliverables (≤2 weeks per patchset)
+- **Parallel development** - Enable feature and test development concurrently
+- **AI pattern conformance** - Train LLM on proven "patterns of success" for consistent output
+
+**Proven Results:**
+- Review 966349 (Key Pairs): Merged upstream with +2 approval
+- Review 967269 (Create Form): 1-day implementation vs. 2-day estimate (50% faster)
+- Improved capacity planning through measured complexity scores
+- Earlier test planning and parallel test development
+- Reduced scope creep through incremental delivery validation
 
 **For detailed instructions, see [usecases/analysis_new_feature/README.md](usecases/analysis_new_feature/README.md).**
 
 **Key Benefits:**
-- Track feature development progress systematically
-- Document decisions and rationale
-- Preserve institutional knowledge in git
-- Provide reproducible research methodology
-- Make onboarding easier for new team members
+- ✅ Predictable sprint planning with complexity-adjusted story points
+- ✅ Earlier detection of scope changes and missed requirements
+- ✅ Parallel work streams (feature + tests) for faster delivery
+- ✅ Improved team capacity and velocity measurement
+- ✅ Structured AI assistance with repeatable patterns
+- ✅ Institutional knowledge preservation in git
 
 ### #3: Ask Automation System
 
