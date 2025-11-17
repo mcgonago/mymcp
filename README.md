@@ -247,6 +247,20 @@ This system:
 
 ---
 
+### ⚠️ Use Cases: Work in Progress
+
+The use cases documented above are **actively evolving** and represent a **work in progress**. Most features have been implemented and tested in real-world projects (Reviews 966349 and 967269), but documentation and tooling continue to be refined.
+
+**If you encounter:**
+- Missing features or documentation
+- Incorrect information or broken links
+- Unclear instructions or examples
+- Ideas for improvements
+
+**Please [create an issue](https://github.com/yourusername/mymcp/issues)** and we'll address it. Contributions and feedback are welcome!
+
+---
+
 ## What These Agents Can Do
 
 These MCP agents enable Cursor's AI to seamlessly interact with your development workflow:
