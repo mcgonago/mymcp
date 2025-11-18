@@ -2559,3 +2559,549 @@ This document details:
 **Last Updated**: November 15, 2025, 9:15 PM  
 **Next Update**: After commit and Gerrit submission
 
+---
+
+## WIP Session 7: Removing Dependency and Rebasing on Main
+
+**Date**: November 18, 2025  
+**Goal**: Remove dependency on Review 966349 and rebase directly on master branch  
+**Current Branch**: `osprh-12802-on-966349`  
+**Target Branch**: `osprh-12802-rebased-on-main` (new)
+
+### Why This Is Needed
+
+The user wants to remove the dependency on Review 966349 and rebase the patchset directly on the master branch. This might be needed because:
+1. Review 966349 has been merged, so we don't need the dependency anymore
+2. Want to test without the expandable rows feature
+3. Want to change the dependency chain for Gerrit
+
+### Current State
+
+```bash
+[omcgonag@omcgonag-thinkpadp16vgen1 horizon-osprh-12802-working]$ pwd
+/home/omcgonag/Work/mymcp/workspace/horizon-osprh-12802-working
+
+[omcgonag@omcgonag-thinkpadp16vgen1 horizon-osprh-12802-working]$ git status
+On branch osprh-12802-on-966349
+nothing to commit, working tree clean
+```
+
+**What this means:**
+- Currently on branch `osprh-12802-on-966349` (built on top of Review 966349)
+- All changes are committed (clean working tree)
+- Need to move these changes to a branch based on master instead
+
+### Rebase Process: Remove Dependency on Review 966349
+
+This is the REVERSE of what we did in **WIP Session 2** where we added the dependency.
+
+#### Step 1: Verify Current Branch and Commits
+
+```bash
+cd /home/omcgonag/Work/mymcp/workspace/horizon-osprh-12802-working
+
+# Check current branch
+git branch --show-current
+# Output: osprh-12802-on-966349
+
+# Show recent commits
+git log --oneline -3
+# Expected output:
+#   28e4be1ee (HEAD -> osprh-12802-on-966349) De-angularize Key Pairs: Add Django-based Create form
+#   305bc7b50 de-angularize the Key Pairs table  ← Review 966349 (base)
+#   2eba5ab37 Merge "Add integration tests..."
+```
+
+**What this shows:**
+- Our commit `28e4be1ee` is on top of Review 966349 (`305bc7b50`)
+- This is the dependency we want to remove
+
+#### Step 2: Fetch Latest Master
+
+```bash
+# Update your local master branch
+git fetch origin master
+
+# OR if you don't have origin remote:
+git fetch https://review.opendev.org/openstack/horizon master
+```
+
+**What this does:**
+- Gets the latest commits from upstream master
+- Doesn't change your current branch yet
+
+#### Step 3: Find Your Commit (Before Stashing)
+
+Since your working tree is clean (all changes are committed), we need to identify exactly what commit contains your changes.
+
+```bash
+# Show the diff of your commit compared to its parent
+git show HEAD
+
+# OR just see the commit SHA
+git rev-parse HEAD
+# Output: 28e4be1ee...
+```
+
+**What this does:**
+- `HEAD` is your current commit (the one with all your Create form changes)
+- We'll use this to cherry-pick or rebase
+
+#### Step 4A: Option A - Cherry-Pick (Recommended for Single Commit)
+
+This is the **simplest** approach when you have just one commit:
+
+```bash
+# Save your commit SHA
+YOUR_COMMIT=$(git rev-parse HEAD)
+echo $YOUR_COMMIT  # Should show: 28e4be1ee...
+
+# Checkout master
+git checkout master
+
+# Pull latest changes
+git pull origin master
+# OR: git pull https://review.opendev.org/openstack/horizon master
+
+# Create new branch from master
+git checkout -b osprh-12802-rebased-on-main
+
+# Cherry-pick your commit
+git cherry-pick $YOUR_COMMIT
+```
+
+**What this does:**
+- Switches to master branch
+- Gets latest updates
+- Creates new branch from master (NOT from Review 966349)
+- Applies your commit on top of master
+
+**If you get conflicts:**
+```bash
+# Git will show which files have conflicts
+# Open each file and resolve the conflicts (look for <<<<<<< markers)
+# Then:
+git add <conflicted-files>
+git cherry-pick --continue
+```
+
+#### Step 4B: Option B - Interactive Rebase (For Multiple Commits)
+
+If you have multiple commits or want more control:
+
+```bash
+# Checkout master
+git checkout master
+
+# Pull latest changes
+git pull origin master
+
+# Create new branch from master
+git checkout -b osprh-12802-rebased-on-main
+
+# Go back to your old branch
+git checkout osprh-12802-on-966349
+
+# Find the commit BEFORE Review 966349
+# (This is the point where Review 966349 branched from master)
+git log --oneline -10
+# Look for the commit before "de-angularize the Key Pairs table"
+# Let's say it's 2eba5ab37
+
+# Interactive rebase to pick only your commit(s)
+git rebase -i 305bc7b50  # This is Review 966349's commit
+```
+
+**In the interactive rebase editor:**
+```
+# You'll see:
+pick 28e4be1ee De-angularize Key Pairs: Add Django-based Create form
+
+# Just save and quit (this will rebase your commit)
+```
+
+**Then:**
+```bash
+# Now your commit is rebased, but still on the old branch
+# Switch to the new branch
+git checkout osprh-12802-rebased-on-main
+
+# Cherry-pick your rebased commit
+git cherry-pick 28e4be1ee
+```
+
+#### Step 4C: Option C - Manual Diff/Patch (If Conflicts Are Too Complex)
+
+If rebasing causes too many conflicts:
+
+```bash
+# Create a patch of your changes
+git format-patch -1 HEAD
+# This creates: 0001-De-angularize-Key-Pairs-Add-Django-based-Create-form.patch
+
+# Checkout master
+git checkout master
+git pull origin master
+
+# Create new branch
+git checkout -b osprh-12802-rebased-on-main
+
+# Apply the patch
+git am 0001-De-angularize-Key-Pairs-Add-Django-based-Create-form.patch
+
+# If conflicts occur:
+git am --show-current-patch  # See what's conflicting
+# Fix conflicts manually
+git add <fixed-files>
+git am --continue
+```
+
+#### Step 5: Verify the New Branch
+
+```bash
+# Check you're on the new branch
+git branch --show-current
+# Output: osprh-12802-rebased-on-main
+
+# Check the commit history
+git log --oneline -5
+# Expected output:
+#   <new-sha> De-angularize Key Pairs: Add Django-based Create form
+#   <master-sha> (latest master commit)  ← NOT Review 966349!
+#   <master-sha-1> (previous master commit)
+#   ...
+
+# Verify Review 966349 is NOT in the history
+git log --oneline --all | grep "de-angularize the Key Pairs table"
+# Should show Review 966349 on OLD branch, but NOT on new branch
+```
+
+**What to verify:**
+- ✅ New branch is based on master (not on Review 966349)
+- ✅ Your commit is present with all changes
+- ✅ Review 966349 commit is NOT in the ancestry
+
+#### Step 6: Check for Conflicts with Master
+
+Since you originally built on Review 966349, and now you're building on master without it, you might have conflicts in `tables.py`:
+
+```bash
+# Check if your changes conflict with master
+git diff master..HEAD
+
+# Specifically check tables.py
+git show HEAD:openstack_dashboard/dashboards/project/key_pairs/tables.py | \
+  grep -A 10 "class Meta"
+```
+
+**Expected issue in tables.py:**
+
+Your commit includes these changes from Session 2 conflict resolution:
+```python
+class Meta(object):
+    name = "keypairs"
+    verbose_name = _("Key Pairs")
+    row_class = ExpandableKeyPairRow              # FROM 966349
+    template = 'key_pairs/_keypairs_table.html'   # FROM 966349
+    table_actions = (CreateKeyPair, ImportKeyPair, DeleteKeyPairs,  # OUR CHANGE
+                     KeypairsFilterAction,)
+```
+
+But on master (without Review 966349), these lines don't exist:
+- `row_class = ExpandableKeyPairRow`
+- `template = 'key_pairs/_keypairs_table.html'`
+
+**Resolution:**
+
+If cherry-pick/rebase succeeded without conflicts, git automatically removed those lines. Verify:
+
+```bash
+# Show the Meta class in your new commit
+git show HEAD:openstack_dashboard/dashboards/project/key_pairs/tables.py | \
+  sed -n '/class Meta/,/^$/p' | head -20
+```
+
+**Should show:**
+```python
+class Meta(object):
+    name = "keypairs"
+    verbose_name = _("Key Pairs")
+    # NO row_class or template lines (those were from 966349)
+    table_actions = (CreateKeyPair, ImportKeyPair, DeleteKeyPairs,  # OUR CHANGE
+                     KeypairsFilterAction,)
+    row_actions = (DeleteKeyPairs,)
+```
+
+**If you DO see conflict markers or incorrect code:**
+
+```bash
+# Edit the file manually
+vim openstack_dashboard/dashboards/project/key_pairs/tables.py
+
+# Remove these lines if present:
+#   row_class = ExpandableKeyPairRow
+#   template = 'key_pairs/_keypairs_table.html'
+
+# Keep only our change:
+#   table_actions = (CreateKeyPair, ...
+
+# Stage and amend
+git add openstack_dashboard/dashboards/project/key_pairs/tables.py
+git commit --amend --no-edit
+```
+
+#### Step 7: Update Commit Message (Remove Depends-On)
+
+Your current commit message includes `Depends-On: Review 966349`. Remove it:
+
+```bash
+# Edit the commit message
+git commit --amend
+
+# In the editor, remove or comment out this line:
+# Depends-On: I<CHANGE-ID-FROM-966349>
+
+# Save and quit
+```
+
+**New commit message should look like:**
+```
+De-angularize Key Pairs: Add Django-based Create form
+
+Implements the "Generate Key Pair" form using Django forms and views,
+replacing the AngularJS implementation for OSPRH-12802.
+
+This form allows users to:
+- Generate a new SSH key pair (default)
+- Generate a new X509 certificate key pair
+- Receive the private key for download (Patchset 3)
+
+Changes:
+- Add GenerateKeyPairForm to forms.py
+  ... (rest of description)
+
+Partial-Bug: #OSPRH-12802
+Change-Id: I<ORIGINAL-CHANGE-ID>  # Keep the same Change-Id!
+Topic: de-angularize
+
+# REMOVED: Depends-On: I<CHANGE-ID-FROM-966349>
+```
+
+**IMPORTANT**: Keep the **same Change-Id** so Gerrit treats this as a new patchset of the same review, not a new review.
+
+#### Step 8: Test the Changes
+
+Before pushing, test that everything still works:
+
+```bash
+# If testing locally with tox:
+cd /home/omcgonag/Work/mymcp/workspace/horizon-osprh-12802-working
+tox -e runserver
+# Then test in browser: http://localhost:8000
+
+# OR sync to DevStack and test there
+```
+
+**Test scenarios:**
+1. ✅ Navigate to Key Pairs page
+2. ✅ Click "Create Key Pair" button
+3. ✅ Modal opens with form
+4. ✅ Create a key pair
+5. ✅ Verify success message
+6. ✅ Key pair appears in table
+
+**Without Review 966349, you should NOT see:**
+- ❌ Expandable rows with chevrons
+- ❌ Chevron column in table
+
+**You SHOULD see:**
+- ✅ "Create Key Pair" button works
+- ✅ Form submits successfully
+- ✅ Regular (non-expandable) table rows
+
+#### Step 9: Push to Gerrit (When Ready)
+
+```bash
+# Push the new patchset
+git review
+
+# Gerrit will recognize the same Change-Id and create a new patchset
+```
+
+**What Gerrit will show:**
+- Review 967269: Patchset 2 (or next number)
+- **No longer depends on Review 966349**
+- CI will test against latest master
+
+#### Step 10: Clean Up Old Branch (Optional)
+
+```bash
+# After successfully pushing and verifying
+# You can delete the old branch
+
+# Make sure you're NOT on the old branch
+git checkout osprh-12802-rebased-on-main
+
+# Delete the old branch
+git branch -D osprh-12802-on-966349
+
+# Verify it's gone
+git branch --list | grep osprh
+# Should only show: osprh-12802-rebased-on-main
+```
+
+---
+
+### Comparison: What Changed
+
+#### Before (With Dependency on Review 966349)
+
+```
+Git History:
+  28e4be1ee  De-angularize Key Pairs: Add Django-based Create form  ← OUR COMMIT
+  305bc7b50  de-angularize the Key Pairs table                      ← Review 966349
+  2eba5ab37  Merge "Add integration tests..."                       ← Master
+  ...
+
+Commit message includes:
+  Depends-On: I<change-id-of-966349>
+
+tables.py includes:
+  row_class = ExpandableKeyPairRow     # From 966349
+  template = 'key_pairs/_keypairs_table.html'  # From 966349
+  table_actions = (CreateKeyPair, ...)  # Our change
+```
+
+#### After (Rebased on Master)
+
+```
+Git History:
+  <new-sha>  De-angularize Key Pairs: Add Django-based Create form  ← OUR COMMIT
+  <latest>   (latest master commit)                                 ← Master HEAD
+  <master-1> (previous master commit)                               ← Master
+  ...
+
+Commit message:
+  (NO Depends-On line)
+
+tables.py includes:
+  # NO row_class or template lines
+  table_actions = (CreateKeyPair, ...)  # Our change only
+```
+
+---
+
+### Quick Command Reference
+
+**Simplest approach (cherry-pick):**
+```bash
+# 1. Save your commit
+YOUR_COMMIT=$(git rev-parse HEAD)
+
+# 2. Switch to master
+git checkout master
+git pull origin master
+
+# 3. Create new branch
+git checkout -b osprh-12802-rebased-on-main
+
+# 4. Apply your commit
+git cherry-pick $YOUR_COMMIT
+
+# 5. Fix conflicts if any
+# (edit files, then: git add <files> && git cherry-pick --continue)
+
+# 6. Remove Depends-On from commit message
+git commit --amend  # Edit message, remove Depends-On line
+
+# 7. Test
+tox -e runserver  # or sync to DevStack
+
+# 8. Push when ready
+git review
+```
+
+---
+
+### Troubleshooting
+
+#### Issue: Cherry-pick has conflicts in tables.py
+
+**Expected conflict:**
+```python
+<<<<<<< HEAD
+# Master version (no expandable rows)
+class Meta(object):
+    name = "keypairs"
+    verbose_name = _("Key Pairs")
+    table_actions = (CreateLinkNG, ImportKeyPair, DeleteKeyPairs,
+=======
+# Your version (from branch with 966349)
+class Meta(object):
+    name = "keypairs"
+    verbose_name = _("Key Pairs")
+    row_class = ExpandableKeyPairRow
+    template = 'key_pairs/_keypairs_table.html'
+    table_actions = (CreateKeyPair, ImportKeyPair, DeleteKeyPairs,
+>>>>>>> 28e4be1ee
+                     KeypairsFilterAction,)
+    row_actions = (DeleteKeyPairs,)
+```
+
+**Resolution:**
+```python
+# Keep this (without row_class and template from 966349):
+class Meta(object):
+    name = "keypairs"
+    verbose_name = _("Key Pairs")
+    table_actions = (CreateKeyPair, ImportKeyPair, DeleteKeyPairs,  # Changed from CreateLinkNG
+                     KeypairsFilterAction,)
+    row_actions = (DeleteKeyPairs,)
+```
+
+Then:
+```bash
+git add openstack_dashboard/dashboards/project/key_pairs/tables.py
+git cherry-pick --continue
+```
+
+#### Issue: "Cannot cherry-pick - need a commit"
+
+```bash
+# Make sure you saved the commit SHA before switching branches
+git log --oneline --all | grep "De-angularize Key Pairs"
+# Find the SHA and use it:
+git cherry-pick <sha>
+```
+
+#### Issue: Tests fail without Review 966349
+
+If your changes depended on Review 966349's code:
+- Check imports (do you reference `ExpandableKeyPairRow`?)
+- Check templates (do you use chevron templates?)
+- Remove/adjust any code that depends on 966349
+
+---
+
+### Summary of Session 7
+
+**Goal**: Remove dependency on Review 966349, rebase on master
+
+**Method**: Cherry-pick commit from old branch to new branch based on master
+
+**Key Steps**:
+1. Save commit SHA
+2. Create new branch from master
+3. Cherry-pick commit
+4. Resolve conflicts (remove 966349-specific code)
+5. Update commit message (remove Depends-On)
+6. Test without expandable rows
+7. Push new patchset to Gerrit
+
+**Result**: Same changes, but no longer dependent on Review 966349
+
+---
+
+**Last Updated**: November 18, 2025  
+**Next Update**: After successful rebase and testing
+
