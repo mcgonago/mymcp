@@ -49,6 +49,51 @@ cp <your-mymcp-cloned-repo-path>/jira-agent/example.env ~/.rh-jira-agent.env
 
 ---
 
+### Issue: "Missing JIRA_URL or JIRA_API_TOKEN environment variables"
+
+**Problem**: Environment variables are incorrectly named or not being loaded.
+
+**Error Message**:
+```
+RuntimeError: Missing JIRA_URL or JIRA_API_TOKEN environment variables
+```
+
+**Root Cause**: The environment variable is named `JIRA_TOKEN` instead of `JIRA_API_TOKEN`.
+
+**Solution**:
+
+1. **Check your environment file**:
+   ```bash
+   cat ~/.rh-jira-agent.env
+   ```
+
+2. **Ensure the variable is named correctly**:
+   ```bash
+   # WRONG ❌
+   JIRA_TOKEN=your_token_here
+   
+   # CORRECT ✅
+   JIRA_API_TOKEN=your_token_here
+   ```
+
+3. **Edit the file to fix the variable name**:
+   ```bash
+   nano ~/.rh-jira-agent.env
+   ```
+   
+   Change `JIRA_TOKEN=` to `JIRA_API_TOKEN=`
+
+4. **Restart the test**:
+   ```bash
+   cd <your-mymcp-cloned-repo-path>
+   ./test-mcp-setup.sh
+   ```
+
+> [!IMPORTANT]
+> The server code (server.py) expects `JIRA_API_TOKEN`, not `JIRA_TOKEN`. This is the exact variable name required.
+
+---
+
 ### Issue: "Authentication failed" or "401 Unauthorized"
 
 **Problem**: Jira API token is incorrect, expired, or credentials are misconfigured.

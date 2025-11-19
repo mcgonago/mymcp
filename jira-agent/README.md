@@ -73,6 +73,10 @@ JIRA_API_TOKEN=your-actual-jira-token-here
 > **Security Note**  
 > Keep the `.rh-jira-agent.env` file in your home directory (outside the repository) to protect your credentials. The file contains your personal API token.
 
+> [!IMPORTANT]
+> **Environment Variable Names**  
+> The environment variable MUST be named `JIRA_API_TOKEN` (not `JIRA_TOKEN`). The server code expects this exact variable name.
+
 ## MCP Server Implementation
 
 The server implementation uses FastMCP and the Jira Python library to provide tools for interacting with Jira.
