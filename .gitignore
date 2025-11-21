@@ -62,11 +62,10 @@ Makefile~
 *.*~
 
 # Review workspace - temporary clones for code review analysis
+# Use workspace/* (not workspace/) to allow negation patterns to work
 # Allow documentation and scripts in workspace
-workspace/
+workspace/*
 !workspace/docs/
-!workspace/docs/**
 !workspace/scripts/
-!workspace/scripts/**
 !workspace/README.md
 reviews/
