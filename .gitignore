@@ -70,12 +70,5 @@ workspace/*
 !workspace/README.md
 reviews/
 
-# External work areas (confidential, not tracked in public repo)
-# Note: No trailing slash for symlinks - gitignore pattern customer-work (not customer-work/)
-customer-work
-rh-internal
-scratch-*/
-
-# Personal configuration with sensitive paths
-.mymcp-config
+# External work areas (not tracked)
 workspace/external/

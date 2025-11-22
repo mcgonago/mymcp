@@ -44,7 +44,6 @@ WITH_MASTER=false
 DO_REBASE=false
 WITH_EXPERIMENT=false
 WITH_ASSESSMENT=false
-CONTEXT="default"
 
 # Parse options
 while [[ $# -gt 0 ]]; do
@@ -66,10 +65,6 @@ while [[ $# -gt 0 ]]; do
             WITH_ASSESSMENT=true
             shift
             ;;
-        --context)
-            CONTEXT="$2"
-            shift 2
-            ;;
         --all)
             WITH_MASTER=true
             WITH_EXPERIMENT=true
@@ -83,7 +78,6 @@ while [[ $# -gt 0 ]]; do
             echo "  --rebase           Rebase the review on latest master (implies --with-master)"
             echo "  --experiment       Create an experiment directory for testing"
             echo "  --with-assessment  Create review assessment document (review_XXXXX.md)"
-            echo "  --context <name>   Context for saving results: default|customer|rh-internal"
             echo "  --all              Equivalent to --with-master --experiment"
             echo ""
             echo "Types:"
@@ -94,7 +88,6 @@ while [[ $# -gt 0 ]]; do
             echo "Examples:"
             echo "  $0 opendev https://review.opendev.org/c/openstack/horizon/+/964897"
             echo "  $0 --with-master --with-assessment opendev https://review.opendev.org/.../964897"
-            echo "  $0 --with-assessment --context customer opendev https://review.opendev.org/.../967773"
             echo "  $0 --rebase github https://github.com/org/repo/pull/402"
             echo "  $0 --all opendev https://review.opendev.org/c/openstack/horizon/+/964897"
             exit 0
@@ -135,57 +128,6 @@ prompt_overwrite() {
     return 0
 }
 
-get_results_path() {
-    local context="$1"
-    local config_file="$SCRIPT_DIR/../../.mymcp-config"
-    
-    # Default paths
-    local default_path="$SCRIPT_DIR/../../results"
-    local customer_path="$SCRIPT_DIR/../../customer-work/results"
-    local rh_internal_path="$SCRIPT_DIR/../../rh-internal/results"
-    
-    # Try to read from config file if it exists
-    if [ -f "$config_file" ]; then
-        case "$context" in
-            customer)
-                # Try to parse customer results path from config
-                local config_path=$(grep -A1 "^\[customer\]" "$config_file" | grep "^results=" | cut -d= -f2)
-                if [ -n "$config_path" ]; then
-                    echo "$SCRIPT_DIR/../../$config_path"
-                else
-                    echo "$customer_path"
-                fi
-                ;;
-            rh-internal)
-                # Try to parse rh-internal results path from config
-                local config_path=$(grep -A1 "^\[rh-internal\]" "$config_file" | grep "^results=" | cut -d= -f2)
-                if [ -n "$config_path" ]; then
-                    echo "$SCRIPT_DIR/../../$config_path"
-                else
-                    echo "$rh_internal_path"
-                fi
-                ;;
-            *)
-                # Default context
-                echo "$default_path"
-                ;;
-        esac
-    else
-        # No config file, use hardcoded defaults
-        case "$context" in
-            customer)
-                echo "$customer_path"
-                ;;
-            rh-internal)
-                echo "$rh_internal_path"
-                ;;
-            *)
-                echo "$default_path"
-                ;;
-        esac
-    fi
-}
-
 create_review_assessment() {
     local type="$1"
     local number="$2"
@@ -193,18 +135,12 @@ create_review_assessment() {
     local project="$4"
     local dir_name="$5"
     
-    # Get results directory based on context (default/customer/rh-internal)
-    local results_dir=$(get_results_path "$CONTEXT")
+    # Create results directory at repository root (mymcp/results/)
+    local results_dir="$SCRIPT_DIR/../../results"
     mkdir -p "$results_dir"
     
     local assessment_file="$results_dir/review_${number}.md"
-    local template_file="$SCRIPT_DIR/../../results/review_template.md"
-    
-    # Show which context is being used
-    if [ "$CONTEXT" != "default" ]; then
-        echo -e "${BLUE}Using context: ${CONTEXT}${NC}"
-        echo -e "${BLUE}Saving to: ${results_dir}${NC}"
-    fi
+    local template_file="$results_dir/review_template.md"
     
     echo -e "${BLUE}Creating review assessment document: results/review_${number}.md${NC}"
     
@@ -561,14 +497,8 @@ case "$TYPE" in
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  cd ${EXPERIMENT_DIR}                              # Make experimental changes"
         
         if [ "$WITH_ASSESSMENT" = true ]; then
-            results_path=$(get_results_path "$CONTEXT")
-            rel_path=$(echo "$results_path" | sed "s|$SCRIPT_DIR/../../||")
             echo ""
-            if [ "$CONTEXT" != "default" ]; then
-                echo -e "${GREEN}📋 Assessment template ready [${CONTEXT} context]: ${rel_path}/review_${CHANGE}.md${NC}"
-            else
-                echo -e "${GREEN}📋 Assessment template ready: ${rel_path}/review_${CHANGE}.md${NC}"
-            fi
+            echo -e "${GREEN}📋 Assessment template ready: results/review_${CHANGE}.md${NC}"
             echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze review ${CHANGE}'${NC}"
         fi
         ;;
@@ -677,14 +607,8 @@ case "$TYPE" in
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  cd ${EXPERIMENT_DIR}                              # Make experimental changes"
         
         if [ "$WITH_ASSESSMENT" = true ]; then
-            results_path=$(get_results_path "$CONTEXT")
-            rel_path=$(echo "$results_path" | sed "s|$SCRIPT_DIR/../../||")
             echo ""
-            if [ "$CONTEXT" != "default" ]; then
-                echo -e "${GREEN}📋 Assessment template ready [${CONTEXT} context]: ${rel_path}/review_pr_${PR}.md${NC}"
-            else
-                echo -e "${GREEN}📋 Assessment template ready: ${rel_path}/review_pr_${PR}.md${NC}"
-            fi
+            echo -e "${GREEN}📋 Assessment template ready: results/review_pr_${PR}.md${NC}"
             echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze PR ${PR}'${NC}"
         fi
         ;;
@@ -794,14 +718,8 @@ case "$TYPE" in
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  cd ${EXPERIMENT_DIR}                              # Make experimental changes"
         
         if [ "$WITH_ASSESSMENT" = true ]; then
-            results_path=$(get_results_path "$CONTEXT")
-            rel_path=$(echo "$results_path" | sed "s|$SCRIPT_DIR/../../||")
             echo ""
-            if [ "$CONTEXT" != "default" ]; then
-                echo -e "${GREEN}📋 Assessment template ready [${CONTEXT} context]: ${rel_path}/review_mr_${MR}.md${NC}"
-            else
-                echo -e "${GREEN}📋 Assessment template ready: ${rel_path}/review_mr_${MR}.md${NC}"
-            fi
+            echo -e "${GREEN}📋 Assessment template ready: results/review_mr_${MR}.md${NC}"
             echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze MR ${MR}'${NC}"
         fi
         ;;

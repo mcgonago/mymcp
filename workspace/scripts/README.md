@@ -16,7 +16,6 @@ Helper script to fetch OpenDev reviews, GitHub PRs, or GitLab MRs into the works
 | `--rebase` | Rebase the review on top of latest master (implies --with-master) |
 | `--experiment` | Create an experiment directory for testing changes |
 | `--with-assessment` | Create review assessment document template |
-| `--context <name>` | Context for saving results: `default`, `customer`, `rh-internal` |
 | `--all` | Equivalent to `--with-master --experiment` |
 
 ## Review Types
@@ -26,18 +25,6 @@ Helper script to fetch OpenDev reviews, GitHub PRs, or GitLab MRs into the works
 | `opendev` | OpenDev/Gerrit review | `https://review.opendev.org/c/openstack/horizon/+/967773` |
 | `github` | GitHub Pull Request | `https://github.com/org/repo/pull/5232` |
 | `gitlab` | GitLab Merge Request | `https://gitlab.example.com/group/project/-/merge_requests/123` |
-
-## Contexts
-
-The `--context` option determines where assessment files are saved:
-
-| Context | Location | Git Tracked? | Use For |
-|---------|----------|--------------|---------|
-| `default` | `results/` | ✅ Yes | Public/upstream work |
-| `customer` | `customer-work/results/` | ❌ No | Customer confidential |
-| `rh-internal` | `rh-internal/results/` | ❌ No | RH internal only |
-
-**Note:** Context paths are configured in `../../.mymcp-config`
 
 ## Examples
 
@@ -60,7 +47,7 @@ Creates:
 - `workspace/horizon-967773/` - Review code
 - `workspace/horizon-master/` - Clean master branch
 
-### With Assessment (Default Context)
+### With Assessment
 
 ```bash
 ./fetch-review.sh --with-master --with-assessment opendev \
@@ -71,32 +58,6 @@ Creates:
 - `workspace/horizon-967773/` - Review code
 - `workspace/horizon-master/` - Master branch
 - `results/review_967773.md` - Assessment template (git-tracked)
-
-### Customer Confidential Assessment
-
-```bash
-./fetch-review.sh --with-assessment --context customer opendev \
-  https://review.opendev.org/c/openstack/horizon/+/967773
-```
-
-Creates:
-- `workspace/horizon-967773/` - Review code
-- `customer-work/results/review_967773.md` - Assessment (gitignored, never pushed)
-
-**Use this for:** Support Exceptions, customer-specific bugs
-
-### RH Internal Assessment
-
-```bash
-./fetch-review.sh --with-assessment --context rh-internal opendev \
-  https://review.opendev.org/c/openstack/horizon/+/967773
-```
-
-Creates:
-- `workspace/horizon-967773/` - Review code
-- `rh-internal/results/review_967773.md` - Assessment (gitignored)
-
-**Use this for:** Internal bugs, pre-release work
 
 ### GitHub PR with Assessment
 
@@ -171,39 +132,15 @@ workspace/
 └── scripts/
     └── fetch-review.sh
 
-results/                         # Default context
+results/
 ├── review_967773.md            # Assessment (git-tracked)
 └── review_template.md
-
-customer-work/results/           # Customer context
-└── review_967773.md            # Confidential (gitignored)
-
-rh-internal/results/             # RH internal context
-└── review_967773.md            # Internal (gitignored)
 ```
-
-## Configuration
-
-Context paths are defined in `../../.mymcp-config`:
-
-```ini
-[default]
-results=results/
-
-[customer]
-results=customer-work/results/
-
-[rh-internal]
-results=rh-internal/results/
-```
-
-See `../../CONTEXTS.md` for full context documentation.
 
 ## Related Documentation
 
-- `../../CONTEXTS.md` - Context usage guide
 - `../../results/README.md` - Results directory guide
-- `../../.mymcp-config.template` - Configuration template
+- `../../analysis/HOW_TO_ASK.md` - How to request reviews and analysis
 
 ---
 

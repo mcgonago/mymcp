@@ -46,37 +46,22 @@ Check review 966349 for updates
 Analyze review 967773, compare with master
 ```
 
-**If it's customer confidential:**
-```
-Analyze review 967773, customer context
-```
-
-**If it's RH internal:**
-```
-Analyze PR 5192, rh-internal context
-```
-
-**Combined:**
-```
-Analyze review 967773, compare with master, customer context
-```
-
 ### Running the Script Yourself?
 
 **If you prefer to control fetch parameters:**
 ```bash
 # You run:
-./scripts/fetch-review.sh --with-assessment --context customer opendev <url>
+./scripts/fetch-review.sh --with-assessment opendev <url>
 
 # Then tell me:
 Please analyze review 967773
 ```
 
 **I'll automatically:**
-- Find the assessment file (in customer-work/ or results/)
+- Find the assessment file in results/
 - Read the code from workspace/
 - Complete all sections
-- Save back to the correct location
+- Save back to results/
 
 ---
 
@@ -207,7 +192,6 @@ Analyze how Review 966349 implemented expandable rows
 | "Analyze review 967773" | Fetch, read, assess, recommend |
 | "Check 967773" | Check for updates, summarize changes |
 | "Analyze PR 5192" | Fetch GitHub PR, complete assessment |
-| "Review 967773, customer context" | Assess and save to customer-work/ |
 
 ### Feature Development
 
@@ -245,26 +229,6 @@ Find how volumes handles modals, then apply that pattern to patchset 1
 Check review 966349 status, if merged, rebase my patchset on main
 ```
 
-### Context Detection
-
-**I'll auto-detect from keywords:**
-
-**Customer work:**
-- "Support Exception"
-- "customer confidential"
-- "SE request"
-- "account-specific"
-
-**RH Internal:**
-- "internal GitLab"
-- "RH-only"
-- "bugzilla"
-- "pre-release"
-
-**Public/Upstream:**
-- "OpenDev review"
-- "GitHub upstream"
-- "public PR"
 
 ### Complexity Adjustments
 
@@ -498,9 +462,9 @@ Tell me your preference once, and I'll remember for the session.
 - I'll ask if I need clarification
 
 **Be specific when it matters:**
-- Context (customer vs public)
 - Depth (quick vs deep)
 - Output (summary vs full doc)
+- Options (compare with master, create experiment)
 
 **Everything else:**
 - Just ask naturally
