@@ -32,6 +32,9 @@ WORK_DIR="$(pwd)"
 # Remember where the script is located (for finding results directory)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# iProject directory (for storing work artifacts)
+IPROJECT_DIR="$WORK_DIR/iproject"
+
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -128,6 +131,43 @@ prompt_overwrite() {
     return 0
 }
 
+verify_iproject() {
+    # Check if iproject directory exists
+    if [ ! -d "$IPROJECT_DIR" ]; then
+        echo -e "${RED}Error: iproject not found at $IPROJECT_DIR${NC}"
+        echo ""
+        echo "Please clone your iproject repository:"
+        echo ""
+        echo "  cd $WORK_DIR"
+        if [ -n "$WORKSPACE_IPROJECT_REPO" ]; then
+            echo "  git clone $WORKSPACE_IPROJECT_REPO iproject"
+        else
+            echo "  git clone <your-iproject-repo-url> iproject"
+            echo ""
+            echo "Or set WORKSPACE_IPROJECT_REPO environment variable:"
+            echo "  export WORKSPACE_IPROJECT_REPO=\"https://gitlab.cee.redhat.com/yourusername/iproject.git\""
+        fi
+        echo ""
+        echo "See ../IPROJECT.md for complete setup instructions"
+        return 1
+    fi
+    
+    # Check for required directories
+    if [ ! -d "$IPROJECT_DIR/results" ]; then
+        echo -e "${RED}Error: $IPROJECT_DIR/results/ directory not found${NC}"
+        echo "Creating it..."
+        mkdir -p "$IPROJECT_DIR/results"
+    fi
+    
+    if [ ! -d "$IPROJECT_DIR/analysis" ]; then
+        echo -e "${RED}Error: $IPROJECT_DIR/analysis/ directory not found${NC}"
+        echo "Creating it..."
+        mkdir -p "$IPROJECT_DIR/analysis"
+    fi
+    
+    return 0
+}
+
 create_review_assessment() {
     local type="$1"
     local number="$2"
@@ -135,14 +175,17 @@ create_review_assessment() {
     local project="$4"
     local dir_name="$5"
     
-    # Create results directory at repository root (mymcp/results/)
-    local results_dir="$SCRIPT_DIR/../../results"
-    mkdir -p "$results_dir"
+    # Verify iproject exists
+    if ! verify_iproject; then
+        exit 1
+    fi
     
+    # Create assessment in iproject/results/
+    local results_dir="$IPROJECT_DIR/results"
     local assessment_file="$results_dir/review_${number}.md"
-    local template_file="$results_dir/review_template.md"
+    local template_file="$SCRIPT_DIR/../../results/review_template.md"
     
-    echo -e "${BLUE}Creating review assessment document: results/review_${number}.md${NC}"
+    echo -e "${BLUE}Creating review assessment document: iproject/results/review_${number}.md${NC}"
     
     # Get basic info from the review (using WORK_DIR as base)
     cd "$WORK_DIR/$dir_name"
@@ -498,7 +541,7 @@ case "$TYPE" in
         
         if [ "$WITH_ASSESSMENT" = true ]; then
             echo ""
-            echo -e "${GREEN}📋 Assessment template ready: results/review_${CHANGE}.md${NC}"
+            echo -e "${GREEN}📋 Assessment template ready: iproject/results/review_${CHANGE}.md${NC}"
             echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze review ${CHANGE}'${NC}"
         fi
         ;;
@@ -608,7 +651,7 @@ case "$TYPE" in
         
         if [ "$WITH_ASSESSMENT" = true ]; then
             echo ""
-            echo -e "${GREEN}📋 Assessment template ready: results/review_pr_${PR}.md${NC}"
+            echo -e "${GREEN}📋 Assessment template ready: iproject/results/review_pr_${PR}.md${NC}"
             echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze PR ${PR}'${NC}"
         fi
         ;;
@@ -719,7 +762,7 @@ case "$TYPE" in
         
         if [ "$WITH_ASSESSMENT" = true ]; then
             echo ""
-            echo -e "${GREEN}📋 Assessment template ready: results/review_mr_${MR}.md${NC}"
+            echo -e "${GREEN}📋 Assessment template ready: iproject/results/review_mr_${MR}.md${NC}"
             echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze MR ${MR}'${NC}"
         fi
         ;;

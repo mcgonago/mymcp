@@ -170,6 +170,12 @@ Practical workflows and examples for using these MCP agents in your development 
 
 If you come up with different use cases using the MCP agents, please follow the model, add a section and detailed instructions for each new add.
 
+> [!IMPORTANT]
+> **New: iProject Integration**  
+> This repository now uses an **iproject** system to keep `mymcp` clean and focused on tools + examples, while storing your actual work in a separate repository.
+> 
+> **See [IPROJECT.md](IPROJECT.md) for complete setup instructions.**
+
 ### #1: Review Automation
 
 Automate code review analysis across multiple platforms (OpenDev, GitHub, GitLab) using `fetch_review.sh`.
@@ -295,6 +301,17 @@ Once you have these agents set up, you can:
 ---
 
 ## Additional Resources
+
+### iProject Integration
+
+This repository uses an **iproject** system for separating tools from work:
+
+- **[IPROJECT.md](IPROJECT.md)** - Complete setup guide for iproject integration
+- **[MIGRATION_PLAN.md](MIGRATION_PLAN.md)** - Details on what was migrated and why
+
+**Quick Summary:**
+- `mymcp/` - Tools, scripts, documentation, examples (this repo)
+- `workspace/iproject/` - Your actual work: reviews, analysis, spikes (separate git repo)
 
 ### Verification Script
 
