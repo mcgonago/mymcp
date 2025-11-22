@@ -8,6 +8,33 @@
 
 ---
 
+## 💡 How This Analysis Was Created
+
+**What was asked:**
+```
+I need to add expandable rows to the Horizon Key Pairs table
+```
+
+**How to request similar analysis:**
+```
+Full spike for OSPRH-XXXXX
+```
+or
+```
+Create spike and patchsets for implementing [feature description]
+```
+
+This triggered the creation of:
+- ✅ `spike.md` - Initial investigation and complexity analysis
+- ✅ 20+ patchset documents - Step-by-step implementation guides
+- ✅ WIP documents - Session tracking and troubleshooting
+- ✅ Design documents - Architectural decisions and rationale
+- ✅ This README - Project overview and navigation
+
+**Want to do the same for your feature?** See [How to Ask](../HOW_TO_ASK.md) for guidance on requesting feature analysis.
+
+---
+
 ## Quick Navigation
 
 ### Phase Documents (Read in Order)
