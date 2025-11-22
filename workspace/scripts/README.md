@@ -1,96 +1,210 @@
-# Workspace Scripts Directory
+# Fetch Review Script
 
-This directory contains scripts for automating code review and verification workflows.
+Helper script to fetch OpenDev reviews, GitHub PRs, or GitLab MRs into the workspace for analysis.
 
-## Script Index
+## Usage
 
-| Script | Purpose | Usage |
-|--------|---------|-------|
-| [fetch-review.sh](fetch-review.sh) | 🔄 **Review Fetcher** | Automatically fetch code reviews from OpenDev, GitHub, or GitLab and create assessment templates |
-| [verify-pr-483.sh](verify-pr-483.sh) | ✅ **PR Verifier** | Verify that PR #483 changes are included in RHOSO 1.0 operator builds |
-
-## Detailed Descriptions
-
-### fetch-review.sh
-
-**Purpose**: Streamline the code review analysis workflow by automatically fetching review code and creating structured assessment documents.
-
-**Features**:
-- Fetches reviews from OpenDev (Gerrit), GitHub, or GitLab
-- Creates git clones in workspace for code analysis
-- Generates assessment templates in `results/` directory
-- Supports `--with-assessment` flag for automatic template creation
-- Integrates with MCP agents for metadata retrieval
-
-**Usage**:
 ```bash
-# OpenDev review
-./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965215
-
-# GitHub PR
-./fetch-review.sh --with-assessment github https://github.com/openstack-k8s-operators/horizon-operator/pull/483
-
-# GitLab MR
-./fetch-review.sh --with-assessment gitlab <gitlab-mr-url>
+./fetch-review.sh [options] <type> <url>
 ```
 
-**Options**:
-- `--with-assessment` - Create assessment template automatically
-- First argument: Platform type (`opendev`, `github`, `gitlab`)
-- Second argument: Review URL
+## Options
 
-**Output**:
-- Git clone in `workspace/<project>-<review-number>/`
-- Assessment document in `results/review_<number>.md` (if using `--with-assessment`)
+| Option | Description |
+|--------|-------------|
+| `--with-master` | Also clone clean master branch for side-by-side comparison |
+| `--rebase` | Rebase the review on top of latest master (implies --with-master) |
+| `--experiment` | Create an experiment directory for testing changes |
+| `--with-assessment` | Create review assessment document template |
+| `--context <name>` | Context for saving results: `default`, `customer`, `rh-internal` |
+| `--all` | Equivalent to `--with-master --experiment` |
 
-**Documentation**: See [../docs/REVIEW_ASSESSMENT_GUIDE.md](../docs/REVIEW_ASSESSMENT_GUIDE.md)
+## Review Types
 
----
+| Type | Description | Example URL |
+|------|-------------|-------------|
+| `opendev` | OpenDev/Gerrit review | `https://review.opendev.org/c/openstack/horizon/+/967773` |
+| `github` | GitHub Pull Request | `https://github.com/org/repo/pull/5232` |
+| `gitlab` | GitLab Merge Request | `https://gitlab.example.com/group/project/-/merge_requests/123` |
 
-### verify-pr-483.sh
+## Contexts
 
-**Purpose**: Runtime verification that PR #483 (horizon-operator IncludeOptional support) is correctly included in deployments.
+The `--context` option determines where assessment files are saved:
 
-**Features**:
-- Checks for IncludeOptional directive in httpd configuration
-- Verifies conf.d directory structure
-- Tests configuration file inclusion
-- Provides detailed verification output
+| Context | Location | Git Tracked? | Use For |
+|---------|----------|--------------|---------|
+| `default` | `results/` | ✅ Yes | Public/upstream work |
+| `customer` | `customer-work/results/` | ❌ No | Customer confidential |
+| `rh-internal` | `rh-internal/results/` | ❌ No | RH internal only |
 
-**Usage**:
+**Note:** Context paths are configured in `../../.mymcp-config`
+
+## Examples
+
+### Basic: Fetch OpenDev Review
+
 ```bash
-# Run in deployed environment
-./verify-pr-483.sh
+./fetch-review.sh opendev https://review.opendev.org/c/openstack/horizon/+/967773
 ```
 
-**What it checks**:
-1. Presence of `IncludeOptional` directive in base httpd.conf
-2. Existence of `/etc/httpd/conf.d/` directory
-3. Loading of custom configuration files from conf.d/
-4. Proper Apache configuration syntax
+Creates:
+- `workspace/horizon-967773/` - Review code
 
-**Documentation**: See [../docs/PR-483-VERIFICATION-GUIDE.md](../docs/PR-483-VERIFICATION-GUIDE.md)
+### With Master Comparison
+
+```bash
+./fetch-review.sh --with-master opendev https://review.opendev.org/c/openstack/horizon/+/967773
+```
+
+Creates:
+- `workspace/horizon-967773/` - Review code
+- `workspace/horizon-master/` - Clean master branch
+
+### With Assessment (Default Context)
+
+```bash
+./fetch-review.sh --with-master --with-assessment opendev \
+  https://review.opendev.org/c/openstack/horizon/+/967773
+```
+
+Creates:
+- `workspace/horizon-967773/` - Review code
+- `workspace/horizon-master/` - Master branch
+- `results/review_967773.md` - Assessment template (git-tracked)
+
+### Customer Confidential Assessment
+
+```bash
+./fetch-review.sh --with-assessment --context customer opendev \
+  https://review.opendev.org/c/openstack/horizon/+/967773
+```
+
+Creates:
+- `workspace/horizon-967773/` - Review code
+- `customer-work/results/review_967773.md` - Assessment (gitignored, never pushed)
+
+**Use this for:** Support Exceptions, customer-specific bugs
+
+### RH Internal Assessment
+
+```bash
+./fetch-review.sh --with-assessment --context rh-internal opendev \
+  https://review.opendev.org/c/openstack/horizon/+/967773
+```
+
+Creates:
+- `workspace/horizon-967773/` - Review code
+- `rh-internal/results/review_967773.md` - Assessment (gitignored)
+
+**Use this for:** Internal bugs, pre-release work
+
+### GitHub PR with Assessment
+
+```bash
+./fetch-review.sh --with-master --with-assessment github \
+  https://github.com/RedHatInsights/rhsm-subscriptions/pull/5232
+```
+
+Creates:
+- `workspace/rhsm-subscriptions-pr-5232/` - PR code
+- `workspace/rhsm-subscriptions-master/` - Master branch
+- `results/review_pr_5232.md` - Assessment template
+
+### Full Setup with Experiment Directory
+
+```bash
+./fetch-review.sh --all --with-assessment opendev \
+  https://review.opendev.org/c/openstack/horizon/+/967773
+```
+
+Creates:
+- `workspace/horizon-967773/` - Review code (branch: `ws-review-967773`)
+- `workspace/horizon-master/` - Master branch
+- `workspace/horizon-967773-experiment/` - Experiment area (branch: `ws-experiment-967773`)
+- `results/review_967773.md` - Assessment template
+
+## Workflow Branches
+
+The script creates descriptive branch names:
+
+| Checkout Type | Branch Name | Purpose |
+|---------------|-------------|---------|
+| Review/PR/MR | `ws-review-XXXXX` | Working review branch |
+| | `ws-pr-XXXXX` | GitHub PR branch |
+| | `ws-mr-XXXXX` | GitLab MR branch |
+| Experiment | `ws-experiment-XXXXX` | Safe testing area |
+
+**Benefits:**
+- ✅ No detached HEAD warnings
+- ✅ Clear branch purpose
+- ✅ Easy to track changes
+
+## After Fetching
+
+Once fetched, complete the assessment:
+
+```bash
+# 1. Review the code
+cd horizon-967773
+git show HEAD
+
+# 2. Ask Cursor to complete the assessment
+# In Cursor chat:
+"Please analyze review 967773 and complete the assessment"
+
+# 3. Cursor will fill in all sections:
+#    - Executive Summary
+#    - Code Quality Assessment
+#    - Technical Analysis
+#    - Recommendations
+#    - Final Decision (+2/+1/0/-1)
+```
+
+## Directory Structure After Fetch
+
+```
+workspace/
+├── horizon-967773/              # Review code
+│   └── (on branch ws-review-967773)
+├── horizon-master/              # Comparison baseline
+├── horizon-967773-experiment/   # Experiment area (if --experiment)
+└── scripts/
+    └── fetch-review.sh
+
+results/                         # Default context
+├── review_967773.md            # Assessment (git-tracked)
+└── review_template.md
+
+customer-work/results/           # Customer context
+└── review_967773.md            # Confidential (gitignored)
+
+rh-internal/results/             # RH internal context
+└── review_967773.md            # Internal (gitignored)
+```
+
+## Configuration
+
+Context paths are defined in `../../.mymcp-config`:
+
+```ini
+[default]
+results=results/
+
+[customer]
+results=customer-work/results/
+
+[rh-internal]
+results=rh-internal/results/
+```
+
+See `../../CONTEXTS.md` for full context documentation.
+
+## Related Documentation
+
+- `../../CONTEXTS.md` - Context usage guide
+- `../../results/README.md` - Results directory guide
+- `../../.mymcp-config.template` - Configuration template
 
 ---
 
-## Adding New Scripts
-
-When adding new scripts to this directory:
-
-1. **Make executable**: `chmod +x script-name.sh`
-2. **Add shebang**: Start with `#!/usr/bin/env bash`
-3. **Add usage function**: Include `usage()` function with help text
-4. **Update this README**: Add entry to the table above with description
-5. **Document in workspace/docs/**: Create detailed guide if needed
-
-## Related Resources
-
-- [Workspace README](../README.md) - Overview of workspace structure
-- [Review Automation Use Case](../../usecases/review_automation/README.md) - Complete workflow documentation
-- [Workspace Documentation](../docs/) - Related guides and summaries
-
----
-
-**Total Scripts**: 2 files  
-**Last Updated**: November 15, 2025
-
+**Last Updated:** 2025-11-21

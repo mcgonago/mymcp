@@ -26,8 +26,11 @@
 
 set -e
 
+# Remember where the script was called from (for cloning repos)
+WORK_DIR="$(pwd)"
+
+# Remember where the script is located (for finding results directory)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -41,6 +44,7 @@ WITH_MASTER=false
 DO_REBASE=false
 WITH_EXPERIMENT=false
 WITH_ASSESSMENT=false
+CONTEXT="default"
 
 # Parse options
 while [[ $# -gt 0 ]]; do
@@ -62,6 +66,10 @@ while [[ $# -gt 0 ]]; do
             WITH_ASSESSMENT=true
             shift
             ;;
+        --context)
+            CONTEXT="$2"
+            shift 2
+            ;;
         --all)
             WITH_MASTER=true
             WITH_EXPERIMENT=true
@@ -75,6 +83,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --rebase           Rebase the review on latest master (implies --with-master)"
             echo "  --experiment       Create an experiment directory for testing"
             echo "  --with-assessment  Create review assessment document (review_XXXXX.md)"
+            echo "  --context <name>   Context for saving results: default|customer|rh-internal"
             echo "  --all              Equivalent to --with-master --experiment"
             echo ""
             echo "Types:"
@@ -84,7 +93,8 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Examples:"
             echo "  $0 opendev https://review.opendev.org/c/openstack/horizon/+/964897"
-            echo "  $0 --with-master opendev https://review.opendev.org/c/openstack/horizon/+/964897"
+            echo "  $0 --with-master --with-assessment opendev https://review.opendev.org/.../964897"
+            echo "  $0 --with-assessment --context customer opendev https://review.opendev.org/.../967773"
             echo "  $0 --rebase github https://github.com/org/repo/pull/402"
             echo "  $0 --all opendev https://review.opendev.org/c/openstack/horizon/+/964897"
             exit 0
@@ -125,6 +135,57 @@ prompt_overwrite() {
     return 0
 }
 
+get_results_path() {
+    local context="$1"
+    local config_file="$SCRIPT_DIR/../../.mymcp-config"
+    
+    # Default paths
+    local default_path="$SCRIPT_DIR/../../results"
+    local customer_path="$SCRIPT_DIR/../../customer-work/results"
+    local rh_internal_path="$SCRIPT_DIR/../../rh-internal/results"
+    
+    # Try to read from config file if it exists
+    if [ -f "$config_file" ]; then
+        case "$context" in
+            customer)
+                # Try to parse customer results path from config
+                local config_path=$(grep -A1 "^\[customer\]" "$config_file" | grep "^results=" | cut -d= -f2)
+                if [ -n "$config_path" ]; then
+                    echo "$SCRIPT_DIR/../../$config_path"
+                else
+                    echo "$customer_path"
+                fi
+                ;;
+            rh-internal)
+                # Try to parse rh-internal results path from config
+                local config_path=$(grep -A1 "^\[rh-internal\]" "$config_file" | grep "^results=" | cut -d= -f2)
+                if [ -n "$config_path" ]; then
+                    echo "$SCRIPT_DIR/../../$config_path"
+                else
+                    echo "$rh_internal_path"
+                fi
+                ;;
+            *)
+                # Default context
+                echo "$default_path"
+                ;;
+        esac
+    else
+        # No config file, use hardcoded defaults
+        case "$context" in
+            customer)
+                echo "$customer_path"
+                ;;
+            rh-internal)
+                echo "$rh_internal_path"
+                ;;
+            *)
+                echo "$default_path"
+                ;;
+        esac
+    fi
+}
+
 create_review_assessment() {
     local type="$1"
     local number="$2"
@@ -132,25 +193,42 @@ create_review_assessment() {
     local project="$4"
     local dir_name="$5"
     
-    # Create results directory at top level (outside workspace)
-    local results_dir="$SCRIPT_DIR/../results"
+    # Get results directory based on context (default/customer/rh-internal)
+    local results_dir=$(get_results_path "$CONTEXT")
     mkdir -p "$results_dir"
     
     local assessment_file="$results_dir/review_${number}.md"
+    local template_file="$SCRIPT_DIR/../../results/review_template.md"
+    
+    # Show which context is being used
+    if [ "$CONTEXT" != "default" ]; then
+        echo -e "${BLUE}Using context: ${CONTEXT}${NC}"
+        echo -e "${BLUE}Saving to: ${results_dir}${NC}"
+    fi
     
     echo -e "${BLUE}Creating review assessment document: results/review_${number}.md${NC}"
     
-    # Get basic info from the review
-    cd "$dir_name"
+    # Get basic info from the review (using WORK_DIR as base)
+    cd "$WORK_DIR/$dir_name"
     local commit_subject=$(git log -1 --format="%s")
     local commit_author=$(git log -1 --format="%an <%ae>")
     local commit_date=$(git log -1 --format="%ad" --date=short)
     local files_changed=$(git show --name-only --format="" HEAD | wc -l)
     local insertions=$(git show --shortstat HEAD | grep -oP '\d+(?= insertion)')
     local deletions=$(git show --shortstat HEAD | grep -oP '\d+(?= deletion)')
-    cd ..
+    cd "$WORK_DIR"
     
-    # Create assessment from template
+    # Check if template exists, use it as base
+    if [ -f "$template_file" ]; then
+        cp "$template_file" "$assessment_file"
+        echo -e "${GREEN}✓ Copied from results/review_template.md${NC}"
+        echo -e "${YELLOW}✓ Ready for Cursor to complete full analysis${NC}"
+        return 0
+    else
+        echo -e "${YELLOW}⚠ Template not found at results/review_template.md, creating basic template${NC}"
+    fi
+    
+    # Fallback: Create basic assessment template if review_template.md doesn't exist
     cat > "$assessment_file" << EOF
 # Review Assessment: ${number} - ${commit_subject}
 
@@ -188,7 +266,7 @@ create_review_assessment() {
 
 **Instructions:**
 1. Review the changes in \`${dir_name}/\`
-2. Run: \`git show HEAD\` to see the diff
+2. Run: \`cd ${dir_name} && git show HEAD\` to see the diff
 3. Ask Cursor: "Please analyze this review and fill in the assessment sections"
 4. Cursor will populate the remaining sections based on the code changes
 
@@ -281,7 +359,7 @@ create_review_assessment() {
 
 \`\`\`bash
 # Commands to test this change
-cd workspace/${dir_name}
+cd ${dir_name}
 
 # Run linting
 tox -e pep8
@@ -305,7 +383,6 @@ git show HEAD
 
 \`\`\`bash
 # Compare with master
-cd workspace
 diff -u ${project}-master/[file] ${dir_name}/[file]
 \`\`\`
 
@@ -337,7 +414,7 @@ diff -u ${project}-master/[file] ${dir_name}/[file]
 
 \`\`\`bash
 # Fetch the review (already done)
-cd /home/omcgonag/Work/mymcp/workspace/${dir_name}
+cd ${dir_name}
 
 # View changes
 git show HEAD
@@ -399,6 +476,9 @@ case "$TYPE" in
         
         echo -e "${BLUE}Fetching OpenDev review ${CHANGE} for ${ORG}/${PROJECT}${NC}"
         
+        # Change to the working directory where user ran the script
+        cd "$WORK_DIR"
+        
         # Clone the review
         if ! prompt_overwrite "$DIR_NAME"; then
             exit 1
@@ -413,7 +493,7 @@ case "$TYPE" in
         
         if [ "$DO_REBASE" = true ]; then
             echo -e "${GREEN}[3/3] Rebasing on latest master...${NC}"
-            git checkout -b "review-${CHANGE}" FETCH_HEAD
+            git checkout -b "ws-review-${CHANGE}" FETCH_HEAD
             git fetch origin master
             git rebase origin/master
             if [ $? -ne 0 ]; then
@@ -423,20 +503,20 @@ case "$TYPE" in
                 echo -e "${GREEN}✓ Successfully rebased on master${NC}"
             fi
         else
-            echo -e "${GREEN}[3/3] Checking out review...${NC}"
-            git checkout FETCH_HEAD
+            echo -e "${GREEN}[3/3] Checking out review and creating branch ws-review-${CHANGE}...${NC}"
+            git checkout -b "ws-review-${CHANGE}" FETCH_HEAD
         fi
         
-        cd ..
+        cd "$WORK_DIR"
         
         # Clone master branch if requested
         if [ "$WITH_MASTER" = true ]; then
-            if ! prompt_overwrite "$MASTER_DIR"; then
-                echo -e "${YELLOW}Skipping master clone${NC}"
+            if [ -d "$MASTER_DIR" ]; then
+                echo -e "${BLUE}Using existing ${MASTER_DIR}/ for comparison${NC}"
             else
                 echo -e "${BLUE}Cloning clean master branch for comparison...${NC}"
                 git clone --branch "$BRANCH" --single-branch "$CLONE_URL" "$MASTER_DIR"
-                echo -e "${GREEN}✓ Master branch cloned to: workspace/${MASTER_DIR}${NC}"
+                echo -e "${GREEN}✓ Master branch cloned to: ${MASTER_DIR}${NC}"
             fi
         fi
         
@@ -448,14 +528,10 @@ case "$TYPE" in
                 echo -e "${BLUE}Creating experiment directory...${NC}"
                 cp -r "$DIR_NAME" "$EXPERIMENT_DIR"
                 cd "$EXPERIMENT_DIR"
-                if [ "$DO_REBASE" = true ]; then
-                    # Already on a branch from rebase
-                    git checkout -b "experiment-${CHANGE}" 2>/dev/null || true
-                else
-                    git checkout -b "experiment-${CHANGE}"
-                fi
-                cd ..
-                echo -e "${GREEN}✓ Experiment directory created: workspace/${EXPERIMENT_DIR}${NC}"
+                # Switch from ws-review-* to ws-experiment-*
+                git checkout -b "ws-experiment-${CHANGE}"
+                cd "$WORK_DIR"
+                echo -e "${GREEN}✓ Experiment directory created: ${EXPERIMENT_DIR}${NC}"
                 echo -e "${YELLOW}  You can make changes here without affecting the review${NC}"
             fi
         fi
@@ -467,20 +543,34 @@ case "$TYPE" in
         fi
         
         echo ""
-        echo -e "${GREEN}✓ Successfully fetched review into: workspace/${DIR_NAME}${NC}"
+        echo -e "${GREEN}✓ Successfully fetched review into: ${DIR_NAME}${NC}"
         echo -e "${BLUE}Directory structure:${NC}"
-        echo -e "  ${DIR_NAME}/              - The review patchset"
-        [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/         - Clean master branch (for comparison)"
+        echo -e "  ${DIR_NAME}/           - The review patchset"
+        [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/           - Clean master branch (for comparison)"
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  ${EXPERIMENT_DIR}/ - Experiment area (for testing changes)"
         [ "$WITH_ASSESSMENT" = true ] && echo -e "  results/review_${CHANGE}.md  - Review assessment document"
         echo ""
         echo -e "${BLUE}Next steps:${NC}"
-        echo -e "  cd workspace/${DIR_NAME}    # Examine the review"
-        echo -e "  git show HEAD                    # View the changes"
-        echo -e "  tox -e pep8                      # Run linting"
+        echo -e "  cd ${DIR_NAME}                                     # Examine the review"
+        echo -e "  git show HEAD                                         # View the changes"
+        echo -e "  tox -e pep8                                           # Run linting"
+        echo -e "  local_settings.py                                     # Update script to support local Horizon deployment"
+        echo -e "  tox -e runserver -- 0.0.0.0:8080                      # Run tox"
+        echo -e "  http://localhost:8080/auth/login                      # Connect Horizon to your local devstack"
         [ "$WITH_MASTER" = true ] && echo -e "  diff -ur ${MASTER_DIR}/<file> ${DIR_NAME}/<file>  # Compare with master"
-        [ "$WITH_EXPERIMENT" = true ] && echo -e "  cd workspace/${EXPERIMENT_DIR}  # Make experimental changes"
-        [ "$WITH_ASSESSMENT" = true ] && echo -e "  Ask Cursor: 'Please analyze review ${CHANGE} and complete results/review_${CHANGE}.md'"
+        [ "$WITH_EXPERIMENT" = true ] && echo -e "  cd ${EXPERIMENT_DIR}                              # Make experimental changes"
+        
+        if [ "$WITH_ASSESSMENT" = true ]; then
+            results_path=$(get_results_path "$CONTEXT")
+            rel_path=$(echo "$results_path" | sed "s|$SCRIPT_DIR/../../||")
+            echo ""
+            if [ "$CONTEXT" != "default" ]; then
+                echo -e "${GREEN}📋 Assessment template ready [${CONTEXT} context]: ${rel_path}/review_${CHANGE}.md${NC}"
+            else
+                echo -e "${GREEN}📋 Assessment template ready: ${rel_path}/review_${CHANGE}.md${NC}"
+            fi
+            echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze review ${CHANGE}'${NC}"
+        fi
         ;;
         
     github)
@@ -502,6 +592,9 @@ case "$TYPE" in
         
         echo -e "${BLUE}Fetching GitHub PR ${PR} for ${ORG}/${REPO}${NC}"
         
+        # Change to the working directory where user ran the script
+        cd "$WORK_DIR"
+        
         # Clone the PR
         if ! prompt_overwrite "$DIR_NAME"; then
             exit 1
@@ -521,7 +614,7 @@ case "$TYPE" in
         
         if [ "$DO_REBASE" = true ]; then
             echo -e "${GREEN}[3/3] Rebasing on latest ${BRANCH}...${NC}"
-            git checkout "pr-${PR}"
+            git checkout -b "ws-pr-${PR}" "pr-${PR}"
             git fetch origin "$BRANCH"
             git rebase "origin/${BRANCH}"
             if [ $? -ne 0 ]; then
@@ -531,20 +624,20 @@ case "$TYPE" in
                 echo -e "${GREEN}✓ Successfully rebased on ${BRANCH}${NC}"
             fi
         else
-            echo -e "${GREEN}[3/3] Checking out PR...${NC}"
-            git checkout "pr-${PR}"
+            echo -e "${GREEN}[3/3] Checking out PR and creating branch ws-pr-${PR}...${NC}"
+            git checkout -b "ws-pr-${PR}" "pr-${PR}"
         fi
         
-        cd ..
+        cd "$WORK_DIR"
         
         # Clone master/main branch if requested
         if [ "$WITH_MASTER" = true ]; then
-            if ! prompt_overwrite "$MASTER_DIR"; then
-                echo -e "${YELLOW}Skipping master clone${NC}"
+            if [ -d "$MASTER_DIR" ]; then
+                echo -e "${BLUE}Using existing ${MASTER_DIR}/ for comparison${NC}"
             else
                 echo -e "${BLUE}Cloning clean ${BRANCH} branch for comparison...${NC}"
                 git clone --branch "$BRANCH" --single-branch "$CLONE_URL" "$MASTER_DIR"
-                echo -e "${GREEN}✓ ${BRANCH} branch cloned to: workspace/${MASTER_DIR}${NC}"
+                echo -e "${GREEN}✓ ${BRANCH} branch cloned to: ${MASTER_DIR}${NC}"
             fi
         fi
         
@@ -556,18 +649,44 @@ case "$TYPE" in
                 echo -e "${BLUE}Creating experiment directory...${NC}"
                 cp -r "$DIR_NAME" "$EXPERIMENT_DIR"
                 cd "$EXPERIMENT_DIR"
-                git checkout -b "experiment-pr-${PR}"
-                cd ..
-                echo -e "${GREEN}✓ Experiment directory created: workspace/${EXPERIMENT_DIR}${NC}"
+                # Switch from ws-pr-* to ws-experiment-pr-*
+                git checkout -b "ws-experiment-pr-${PR}"
+                cd "$WORK_DIR"
+                echo -e "${GREEN}✓ Experiment directory created: ${EXPERIMENT_DIR}${NC}"
             fi
         fi
         
+        # Create review assessment if requested
+        if [ "$WITH_ASSESSMENT" = true ]; then
+            create_review_assessment "github" "$PR" "$URL" "$REPO" "$DIR_NAME"
+            echo ""
+        fi
+        
         echo ""
-        echo -e "${GREEN}✓ Successfully fetched PR into: workspace/${DIR_NAME}${NC}"
+        echo -e "${GREEN}✓ Successfully fetched PR into: ${DIR_NAME}${NC}"
         echo -e "${BLUE}Directory structure:${NC}"
-        echo -e "  ${DIR_NAME}/              - The PR"
-        [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/         - Clean ${BRANCH} branch"
+        echo -e "  ${DIR_NAME}/           - The PR"
+        [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/           - Clean ${BRANCH} branch"
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  ${EXPERIMENT_DIR}/ - Experiment area"
+        [ "$WITH_ASSESSMENT" = true ] && echo -e "  results/review_pr_${PR}.md  - Review assessment document"
+        echo ""
+        echo -e "${BLUE}Next steps:${NC}"
+        echo -e "  cd ${DIR_NAME}                                     # Examine the PR"
+        echo -e "  git show HEAD                                         # View the changes"
+        [ "$WITH_MASTER" = true ] && echo -e "  diff -ur ${MASTER_DIR}/<file> ${DIR_NAME}/<file>  # Compare with master"
+        [ "$WITH_EXPERIMENT" = true ] && echo -e "  cd ${EXPERIMENT_DIR}                              # Make experimental changes"
+        
+        if [ "$WITH_ASSESSMENT" = true ]; then
+            results_path=$(get_results_path "$CONTEXT")
+            rel_path=$(echo "$results_path" | sed "s|$SCRIPT_DIR/../../||")
+            echo ""
+            if [ "$CONTEXT" != "default" ]; then
+                echo -e "${GREEN}📋 Assessment template ready [${CONTEXT} context]: ${rel_path}/review_pr_${PR}.md${NC}"
+            else
+                echo -e "${GREEN}📋 Assessment template ready: ${rel_path}/review_pr_${PR}.md${NC}"
+            fi
+            echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze PR ${PR}'${NC}"
+        fi
         ;;
         
     gitlab)
@@ -590,6 +709,9 @@ case "$TYPE" in
         
         echo -e "${BLUE}Fetching GitLab MR ${MR} for ${PROJECT_PATH}${NC}"
         
+        # Change to the working directory where user ran the script
+        cd "$WORK_DIR"
+        
         # Clone the MR
         if ! prompt_overwrite "$DIR_NAME"; then
             exit 1
@@ -609,7 +731,7 @@ case "$TYPE" in
         
         if [ "$DO_REBASE" = true ]; then
             echo -e "${GREEN}[3/3] Rebasing on latest ${BRANCH}...${NC}"
-            git checkout "mr-${MR}"
+            git checkout -b "ws-mr-${MR}" "mr-${MR}"
             git fetch origin "$BRANCH"
             git rebase "origin/${BRANCH}"
             if [ $? -ne 0 ]; then
@@ -619,20 +741,20 @@ case "$TYPE" in
                 echo -e "${GREEN}✓ Successfully rebased on ${BRANCH}${NC}"
             fi
         else
-            echo -e "${GREEN}[3/3] Checking out MR...${NC}"
-            git checkout "mr-${MR}"
+            echo -e "${GREEN}[3/3] Checking out MR and creating branch ws-mr-${MR}...${NC}"
+            git checkout -b "ws-mr-${MR}" "mr-${MR}"
         fi
         
-        cd ..
+        cd "$WORK_DIR"
         
         # Clone master/main branch if requested
         if [ "$WITH_MASTER" = true ]; then
-            if ! prompt_overwrite "$MASTER_DIR"; then
-                echo -e "${YELLOW}Skipping master clone${NC}"
+            if [ -d "$MASTER_DIR" ]; then
+                echo -e "${BLUE}Using existing ${MASTER_DIR}/ for comparison${NC}"
             else
                 echo -e "${BLUE}Cloning clean ${BRANCH} branch for comparison...${NC}"
                 git clone --branch "$BRANCH" --single-branch "$CLONE_URL" "$MASTER_DIR"
-                echo -e "${GREEN}✓ ${BRANCH} branch cloned to: workspace/${MASTER_DIR}${NC}"
+                echo -e "${GREEN}✓ ${BRANCH} branch cloned to: ${MASTER_DIR}${NC}"
             fi
         fi
         
@@ -644,18 +766,44 @@ case "$TYPE" in
                 echo -e "${BLUE}Creating experiment directory...${NC}"
                 cp -r "$DIR_NAME" "$EXPERIMENT_DIR"
                 cd "$EXPERIMENT_DIR"
-                git checkout -b "experiment-mr-${MR}"
-                cd ..
-                echo -e "${GREEN}✓ Experiment directory created: workspace/${EXPERIMENT_DIR}${NC}"
+                # Switch from ws-mr-* to ws-experiment-mr-*
+                git checkout -b "ws-experiment-mr-${MR}"
+                cd "$WORK_DIR"
+                echo -e "${GREEN}✓ Experiment directory created: ${EXPERIMENT_DIR}${NC}"
             fi
         fi
         
+        # Create review assessment if requested
+        if [ "$WITH_ASSESSMENT" = true ]; then
+            create_review_assessment "gitlab" "$MR" "$URL" "$PROJECT_NAME" "$DIR_NAME"
+            echo ""
+        fi
+        
         echo ""
-        echo -e "${GREEN}✓ Successfully fetched MR into: workspace/${DIR_NAME}${NC}"
+        echo -e "${GREEN}✓ Successfully fetched MR into: ${DIR_NAME}${NC}"
         echo -e "${BLUE}Directory structure:${NC}"
-        echo -e "  ${DIR_NAME}/              - The MR"
-        [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/         - Clean ${BRANCH} branch"
+        echo -e "  ${DIR_NAME}/           - The MR"
+        [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/           - Clean ${BRANCH} branch"
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  ${EXPERIMENT_DIR}/ - Experiment area"
+        [ "$WITH_ASSESSMENT" = true ] && echo -e "  results/review_mr_${MR}.md  - Review assessment document"
+        echo ""
+        echo -e "${BLUE}Next steps:${NC}"
+        echo -e "  cd ${DIR_NAME}                                     # Examine the MR"
+        echo -e "  git show HEAD                                         # View the changes"
+        [ "$WITH_MASTER" = true ] && echo -e "  diff -ur ${MASTER_DIR}/<file> ${DIR_NAME}/<file>  # Compare with master"
+        [ "$WITH_EXPERIMENT" = true ] && echo -e "  cd ${EXPERIMENT_DIR}                              # Make experimental changes"
+        
+        if [ "$WITH_ASSESSMENT" = true ]; then
+            results_path=$(get_results_path "$CONTEXT")
+            rel_path=$(echo "$results_path" | sed "s|$SCRIPT_DIR/../../||")
+            echo ""
+            if [ "$CONTEXT" != "default" ]; then
+                echo -e "${GREEN}📋 Assessment template ready [${CONTEXT} context]: ${rel_path}/review_mr_${MR}.md${NC}"
+            else
+                echo -e "${GREEN}📋 Assessment template ready: ${rel_path}/review_mr_${MR}.md${NC}"
+            fi
+            echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze MR ${MR}'${NC}"
+        fi
         ;;
         
     *)

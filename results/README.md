@@ -97,8 +97,375 @@ results/
 
 ---
 
+## Followup Assessments & Daily Check-ins
+
+### Morning Workflow
+
+When you come in and want to check on your active reviews, just ask naturally:
+
+```
+Check review 967773 for updates
+```
+```
+Any news on 967773?
+```
+```
+Has there been any activity on https://review.opendev.org/c/openstack/horizon/+/967773?
+```
+
+**No scripts to run!** Cursor will automatically:
+1. ✅ Read your previous assessment from `results/review_967773.md`
+2. ✅ Fetch current review state from OpenDev/GitHub/GitLab
+3. ✅ Detect what changed (new patchset, comments, status)
+4. ✅ Analyze the changes
+5. ✅ Add followup section at the TOP of the assessment
+6. ✅ Tell you what to do next
+
+### What Cursor Detects
+
+**New Patchset:**
+- Fetches the new code changes
+- Compares with previous patchset
+- Explains what changed and why
+- Analyzes if it's the right fix
+- Updates recommendation (+2/-1/etc)
+
+**New Comments:**
+- Quotes each new comment
+- Identifies who said it and context
+- Analyzes what they're suggesting
+- Proposes your response/action
+
+**Status Changes:**
+- Merged → Notes when and by whom
+- Abandoned → Explains why (if mentioned)
+- Updated → Shows timeline
+
+### Followup Assessment Format
+
+When updates are found, Cursor adds this at the **TOP** of your assessment file:
+
+```markdown
+# Review Assessment: 967773 - Fix inconsistent borders...
+
+---
+## 🔄 Followup Assessment #2 - 2025-11-22 10:45 AM
+
+### What's New Since Last Check
+- ✅ **Patchset 2 uploaded** (2025-11-22 10:30 AM)
+- 💬 **1 new comment** from author
+- 📊 **Status:** Still NEW (awaiting review)
+
+### New Comments Analysis
+
+**Comment by Tatiana Ovchinnikova (2025-11-22 10:28):**
+> Thanks Owen! Fixed the CSS syntax in patchset 2.
+
+**Cursor's Analysis:** 
+Author acknowledges the CSS issue from your comment and claims to 
+have fixed it. Need to verify the actual code changes match your 
+suggestion of `border-top: 1px solid #ddd;`
+
+### Patchset 2 Code Analysis
+
+**What Changed:**
+```diff
+File: _keypairs_table.html (lines 55-56)
+
+- border-top: 1px;
+- border-bottom: 1px;
++ border-top: 1px solid #ddd;
++ border-bottom: 1px solid #ddd;
+```
+
+**Cursor's Analysis:**
+✅ **Perfect fix!** Author implemented your exact suggestion:
+- Added required `solid` border style
+- Added `#ddd` light gray color
+- CSS is now syntactically valid and will render
+- Browsers will display 1px solid gray borders
+- Addresses the -1 blocker completely
+
+**Quality Check:**
+- ✅ Matches your recommendation exactly
+- ✅ Follows Horizon CSS patterns
+- ✅ No new issues introduced
+- ✅ Minimal, targeted fix
+
+**Comparison:**
+- **Patchset 1:** Invalid CSS (browsers ignore it) → -1
+- **Patchset 2:** Valid CSS (browsers render it) → Ready for +2
+
+### Updated Recommendation
+
+**Previous:** ⚠️ -1 (CSS syntax invalid)
+**Current:** ✅ **+2 APPROVE**
+
+**Reasoning:**
+The blocking issue (invalid CSS syntax) is completely resolved. 
+The author applied your suggested fix exactly as recommended.
+This is now ready to merge.
+
+### Your Next Steps
+
+**Immediate Actions:**
+1. ✅ **Vote +2** - Give approval on the review
+2. ✅ **Add comment:** "Thanks for the quick fix! CSS looks correct now."
+3. ⏭️ **Mark resolved:** Close your inline comment thread
+
+**Optional (if you want to be thorough):**
+4. 🧪 **Local test:** Fetch PS2 and test in browser
+   ```bash
+   cd workspace
+   rm -rf horizon-967773
+   ./scripts/fetch-review.sh opendev https://review.opendev.org/.../967773
+   cd horizon-967773 && tox -e runserver -- 0.0.0.0:8080
+   # Visit Key Pairs page, inspect border rendering
+   ```
+
+**Time Estimate:** 2 minutes (just verify and approve)
+
+---
+## 🔄 Followup Assessment #1 - 2025-11-21 8:15 AM
+[Previous followup if any...]
+
+---
+## 📋 Original Assessment - 2025-11-21
+[Original full assessment remains below...]
+```
+
+### Example Scenarios
+
+#### Scenario 1: No Changes Yet
+
+**You ask:**
+```
+Check review 967773
+```
+
+**Cursor responds:**
+```
+📋 Review 967773 Status Update
+
+Last checked: 2025-11-21 (your assessment)
+Current check: 2025-11-22 10:00 AM
+
+🔄 No updates yet:
+- No new patchsets
+- No new comments  
+- Status: Still NEW
+- Last activity: 2025-11-21 01:52 AM
+
+Your last assessment: -1 (CSS syntax invalid)
+Your comment: Awaiting author response
+
+Suggested action: Continue waiting. Typically authors 
+respond within 1-2 business days.
+
+Next check: Tomorrow morning or when you see email notification.
+```
+
+#### Scenario 2: Multiple Updates
+
+**You ask:**
+```
+What's new with my reviews?
+```
+
+**Cursor responds:**
+```
+📊 Your Active Reviews Update - 2025-11-22 AM
+
+Reviews with updates:
+
+1. ✅ Review 967773 - Updated!
+   - New patchset 2 (fixes your concern)
+   - 1 new comment from author
+   - Action needed: Verify and approve
+
+2. 💬 Review 967269 - New comments
+   - 3 new comments from Rajat
+   - Discussion about approach
+   - Action needed: Respond to questions
+
+3. ⏳ Review 966349 - No updates
+   - Waiting for CI to pass
+   - No action needed yet
+
+Detailed analysis added to:
+- results/review_967773.md (followup #2)
+- results/review_967269.md (followup #3)
+```
+
+#### Scenario 3: Review Merged
+
+**You ask:**
+```
+Check 967773
+```
+
+**Cursor responds:**
+```
+✅ Review 967773 - MERGED!
+
+Status changed: NEW → MERGED
+Merged by: Rajat Dhasmana
+Merged at: 2025-11-22 2:30 PM
+Final votes: +2 (you), +2 (Rajat)
+
+Timeline:
+- 2025-11-21: Your -1 (CSS syntax invalid)
+- 2025-11-22 AM: PS2 uploaded (fix applied)
+- 2025-11-22 AM: Your +2 (approved)
+- 2025-11-22 PM: Rajat +2 & merged
+
+Outcome: Your feedback was addressed, fix looks good!
+
+✅ No further action needed on this review.
+
+Assessment archived at: results/review_967773.md
+```
+
+### Advanced Features
+
+#### Multi-Review Daily Digest
+
+**You ask:**
+```
+Give me my morning review digest
+```
+
+**Cursor checks ALL your active reviews and summarizes:**
+```
+☀️ Morning Review Digest - 2025-11-22
+
+HIGH PRIORITY (needs your action):
+✅ 967773: Author fixed the CSS, ready for your +2
+💬 967269: Questions from Rajat need response
+
+MONITORING (no action yet):
+⏳ 966349: CI running, waiting for results  
+👀 965215: Waiting for other reviewers
+
+COMPLETED:
+✅ 964897: Merged yesterday
+✅ 965216: Abandoned by author
+
+Today's workload: ~15 minutes (2 reviews need attention)
+```
+
+#### Historical Tracking
+
+The followup format creates a timeline:
+```markdown
+## Review History Timeline
+
+- **2025-11-21:** Initial assessment → -1 (invalid CSS)
+- **2025-11-22:** Followup #1 → +2 (fix applied)
+- **2025-11-22:** Followup #2 → Merged ✅
+
+Total time: 1 day from -1 to merged
+Your involvement: 1 blocking issue → fixed → approved
+```
+
+### How It Works Behind the Scenes
+
+**No Scripts Required!** Cursor handles everything:
+
+```
+┌─────────────────────────────────────────┐
+│ You: "Check review 967773"              │
+└────────────┬────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────┐
+│ Cursor Automatically:                   │
+│ 1. Read results/review_967773.md        │
+│ 2. Call MCP OpenDev agent               │
+│ 3. Compare: prev vs current state       │
+│ 4. Detect changes                       │
+│ 5. Fetch new code if patchset           │
+│ 6. Analyze what changed                 │
+│ 7. Update assessment file (add top)    │
+│ 8. Tell you next steps                  │
+└─────────────────────────────────────────┘
+```
+
+**You only run a script IF:**
+- You want to test the new code locally
+- You want to see the diff in your editor
+- Otherwise, just ask Cursor!
+
+### Tips for Best Results
+
+**✅ Good Questions:**
+```
+Check review 967773 for updates
+Any news on my OpenDev reviews?
+What changed in 967773 patchset 2?
+Should I approve 967773 now?
+```
+
+**❌ Less Helpful:**
+```
+Run the review script  (No script needed!)
+Update everything     (Be specific about which review)
+```
+
+**🎯 Power User Tips:**
+
+1. **Daily routine:** Start day with "Check my reviews"
+2. **Specific focus:** "What's new with 967773?"
+3. **Batch mode:** "Summarize all updates since yesterday"
+4. **Deep dive:** "Analyze the patchset 2 changes for 967773"
+
+### Workflow Comparison
+
+**OLD Way (manual):**
+```bash
+# Visit Gerrit in browser
+# Check each review manually
+# Remember what you said before
+# Look up old code
+# Compare changes manually
+# Decide what to do
+Time: 10-15 min per review
+```
+
+**NEW Way (with Cursor):**
+```
+You: "Check my reviews"
+Cursor: [Complete analysis with recommendations]
+You: [Make decision based on clear info]
+Time: 2-3 min per review
+```
+
+### Storage & Organization
+
+```
+results/
+├── review_template.md          # Master template
+├── review_967773.md           # Active (with followups)
+├── review_967269.md           # Active (with followups)
+├── review_966349.md           # Merged (historical record)
+└── review_965215.md           # Archived (optional to keep)
+```
+
+**Files grow with followups:**
+- Initial: ~15 KB (full assessment)
+- After 2 followups: ~25 KB (complete history)
+- Each followup: ~5-8 KB of new analysis
+
+**When to clean up:**
+- Keep active reviews (NEW status)
+- Keep recent merged reviews (last 30 days)
+- Archive or delete old merged/abandoned
+
+---
+
 **See also:**
 - [`workspace/README.md`](../workspace/README.md) - Workspace usage guide
 - [`workspace/docs/REVIEW_ASSESSMENT_GUIDE.md`](../workspace/docs/REVIEW_ASSESSMENT_GUIDE.md) - Detailed assessment guide
 - [`analysis/README.md`](../analysis/README.md) - Permanent analysis guide
+- [`review_template.md`](./review_template.md) - Assessment template reference
 
