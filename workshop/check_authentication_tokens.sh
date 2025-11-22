@@ -90,18 +90,21 @@ else
     else
         echo -e "${GREEN}✓ .env file exists${NC}"
         
-        # Check if GITHUB_TOKEN is set (not placeholder)
-        if grep -q "your_github_token_here" .env 2>/dev/null; then
+        # Check if GITHUB_TOKEN is set (not placeholder) - check only the actual GITHUB_TOKEN= line
+        if grep "^GITHUB_TOKEN=" .env 2>/dev/null | grep -q "your_github_token_here"; then
             echo -e "${RED}✗ GITHUB_TOKEN is still a placeholder${NC}"
             echo -e "${BLUE}  → Edit $REPO_PATH/github-agent/.env and add your actual GitHub token${NC}"
             echo -e "${BLUE}  → Get token from: https://github.com/settings/tokens${NC}"
             ALL_PASSED=false
-        elif grep -q "GITHUB_TOKEN=" .env && ! grep -q "GITHUB_TOKEN=$" .env; then
-            echo -e "${GREEN}✓ GITHUB_TOKEN is configured${NC}"
         else
-            echo -e "${RED}✗ GITHUB_TOKEN is empty${NC}"
-            echo -e "${BLUE}  → Edit $REPO_PATH/github-agent/.env and add your GitHub token${NC}"
-            ALL_PASSED=false
+            # Check if GITHUB_TOKEN exists and is not empty
+            if grep -q "^GITHUB_TOKEN=.\+" .env 2>/dev/null; then
+                echo -e "${GREEN}✓ GITHUB_TOKEN is configured${NC}"
+            else
+                echo -e "${RED}✗ GITHUB_TOKEN is empty${NC}"
+                echo -e "${BLUE}  → Edit $REPO_PATH/github-agent/.env and add your GitHub token${NC}"
+                ALL_PASSED=false
+            fi
         fi
     fi
     
@@ -146,16 +149,19 @@ else
     else
         echo -e "${GREEN}✓ .env file exists${NC}"
         
-        # Check if GITLAB_TOKEN is set (not placeholder)
-        if grep -q "your_gitlab_token_here" .env 2>/dev/null; then
+        # Check if GITLAB_TOKEN is set (not placeholder) - check only the actual GITLAB_TOKEN= line
+        if grep "^GITLAB_TOKEN=" .env 2>/dev/null | grep -q "your_gitlab_token_here"; then
             echo -e "${YELLOW}⚠ GITLAB_TOKEN is still a placeholder${NC}"
             echo -e "${BLUE}  → Edit $REPO_PATH/gitlab-rh-agent/.env and add your actual GitLab token${NC}"
             echo -e "${BLUE}  → Get token from: https://gitlab.cee.redhat.com/-/user_settings/personal_access_tokens${NC}"
-        elif grep -q "GITLAB_TOKEN=" .env && ! grep -q "GITLAB_TOKEN=$" .env; then
-            echo -e "${GREEN}✓ GITLAB_TOKEN is configured${NC}"
         else
-            echo -e "${YELLOW}⚠ GITLAB_TOKEN is empty${NC}"
-            echo -e "${BLUE}  → Edit $REPO_PATH/gitlab-rh-agent/.env and add your GitLab token${NC}"
+            # Check if GITLAB_TOKEN exists and is not empty
+            if grep -q "^GITLAB_TOKEN=.\+" .env 2>/dev/null; then
+                echo -e "${GREEN}✓ GITLAB_TOKEN is configured${NC}"
+            else
+                echo -e "${YELLOW}⚠ GITLAB_TOKEN is empty${NC}"
+                echo -e "${BLUE}  → Edit $REPO_PATH/gitlab-rh-agent/.env and add your GitLab token${NC}"
+            fi
         fi
     fi
     
@@ -199,38 +205,48 @@ else
         fi
     fi
     
-    # Check environment file
-    if [ ! -f "$HOME/.rh-jira-agent.env" ]; then
-        echo -e "${YELLOW}⚠ ~/.rh-jira-agent.env not found${NC}"
-        echo -e "${BLUE}  → Run: cp $REPO_PATH/jira-agent/example.env ~/.rh-jira-agent.env${NC}"
-        echo -e "${BLUE}  → Then edit ~/.rh-jira-agent.env and add your Jira credentials${NC}"
+    # Check environment file (note: test-mcp-setup.sh uses ~/.rh-jira-mcp.env)
+    JIRA_ENV_FILE=""
+    if [ -f "$HOME/.rh-jira-mcp.env" ]; then
+        JIRA_ENV_FILE="$HOME/.rh-jira-mcp.env"
+    elif [ -f "$HOME/.rh-jira-agent.env" ]; then
+        JIRA_ENV_FILE="$HOME/.rh-jira-agent.env"
+    fi
+    
+    if [ -z "$JIRA_ENV_FILE" ]; then
+        echo -e "${YELLOW}⚠ ~/.rh-jira-mcp.env not found${NC}"
+        echo -e "${BLUE}  → Run: cp $REPO_PATH/jira-agent/example.env ~/.rh-jira-mcp.env${NC}"
+        echo -e "${BLUE}  → Then edit ~/.rh-jira-mcp.env and add your Jira credentials${NC}"
     else
-        echo -e "${GREEN}✓ ~/.rh-jira-agent.env exists${NC}"
+        echo -e "${GREEN}✓ $JIRA_ENV_FILE exists${NC}"
         
         # Check if variables are set (not placeholders)
-        if grep -q "your_jira_token_here" ~/.rh-jira-agent.env 2>/dev/null; then
+        if grep -q "your_jira_token_here\|AdDy0urJ1r4ToKenHeR3" "$JIRA_ENV_FILE" 2>/dev/null; then
             echo -e "${YELLOW}⚠ JIRA_API_TOKEN is still a placeholder${NC}"
-            echo -e "${BLUE}  → Edit ~/.rh-jira-agent.env and add your actual Jira API token${NC}"
+            echo -e "${BLUE}  → Edit $JIRA_ENV_FILE and add your actual Jira API token${NC}"
             echo -e "${BLUE}  → Get token from your Jira profile → Security → API Tokens${NC}"
-        elif grep -q "JIRA_API_TOKEN=" ~/.rh-jira-agent.env && ! grep -q "JIRA_API_TOKEN=$" ~/.rh-jira-agent.env; then
-            echo -e "${GREEN}✓ JIRA_API_TOKEN is configured${NC}"
         else
-            # Check for common mistake: JIRA_TOKEN instead of JIRA_API_TOKEN
-            if grep -q "^JIRA_TOKEN=" ~/.rh-jira-agent.env; then
-                echo -e "${RED}✗ Found JIRA_TOKEN but should be JIRA_API_TOKEN${NC}"
-                echo -e "${BLUE}  → Edit ~/.rh-jira-agent.env and rename JIRA_TOKEN to JIRA_API_TOKEN${NC}"
+            # Check if JIRA_API_TOKEN exists and is not empty
+            if grep -q "^JIRA_API_TOKEN=.\+" "$JIRA_ENV_FILE" 2>/dev/null; then
+                echo -e "${GREEN}✓ JIRA_API_TOKEN is configured${NC}"
             else
-                echo -e "${YELLOW}⚠ JIRA_API_TOKEN is empty${NC}"
-                echo -e "${BLUE}  → Edit ~/.rh-jira-agent.env and add your Jira API token${NC}"
+                # Check for common mistake: JIRA_TOKEN instead of JIRA_API_TOKEN
+                if grep -q "^JIRA_TOKEN=" "$JIRA_ENV_FILE"; then
+                    echo -e "${YELLOW}⚠ Found JIRA_TOKEN but should be JIRA_API_TOKEN${NC}"
+                    echo -e "${BLUE}  → Edit $JIRA_ENV_FILE and rename JIRA_TOKEN to JIRA_API_TOKEN${NC}"
+                else
+                    echo -e "${YELLOW}⚠ JIRA_API_TOKEN is empty${NC}"
+                    echo -e "${BLUE}  → Edit $JIRA_ENV_FILE and add your Jira API token${NC}"
+                fi
             fi
         fi
         
         # Check JIRA_URL
-        if grep -q "JIRA_URL=" ~/.rh-jira-agent.env && ! grep -q "JIRA_URL=$" ~/.rh-jira-agent.env; then
+        if grep -q "^JIRA_URL=.\+" "$JIRA_ENV_FILE" 2>/dev/null; then
             echo -e "${GREEN}✓ JIRA_URL is configured${NC}"
         else
             echo -e "${YELLOW}⚠ JIRA_URL is empty${NC}"
-            echo -e "${BLUE}  → Edit ~/.rh-jira-agent.env and add your Jira URL${NC}"
+            echo -e "${BLUE}  → Edit $JIRA_ENV_FILE and add your Jira URL${NC}"
         fi
     fi
     
