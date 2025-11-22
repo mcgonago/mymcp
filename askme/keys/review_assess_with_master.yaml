@@ -1,0 +1,50 @@
+# Review Assessment with Master Comparison
+#
+# Usage in Cursor chat:
+#   "execute key review-assess-master for review https://review.opendev.org/c/openstack/horizon/+/967773"
+#
+# Same as review_assess.yaml but includes --with-master flag
+
+type: review_assessment_execute
+
+action: execute_script_and_assess
+
+script_path: ./scripts/fetch-review.sh
+
+default_options:
+  - --with-master      # Clone master branch for comparison
+  - --with-assessment  # Create assessment
+
+review_types:
+  opendev:
+    pattern: "review.opendev.org"
+    type_arg: "opendev"
+    mcp_agent: "@opendev-reviewer-agent"
+  github:
+    pattern: "github.com"
+    type_arg: "github"
+    mcp_agent: "@github-reviewer-agent"
+  gitlab:
+    pattern: "gitlab.cee.redhat.com"
+    type_arg: "gitlab"
+    mcp_agent: "@gitlab-cee-agent"
+
+assessment_config:
+  use_template: true
+  template_path: results/review_template.md
+  auto_complete: true
+  workspace_project: true
+  include_master_comparison: true  # Include diff with master in analysis
+
+output:
+  show_summary: true
+  show_key_findings: true
+  show_recommendation: true
+  report_location: true
+  show_master_diff: true  # Show key differences from master
+
+examples:
+  - input: "execute key review-assess-master for review https://review.opendev.org/c/openstack/horizon/+/967773"
+    expands_to: "./scripts/fetch-review.sh --with-master --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/967773"
+    then: "AI fetches master, reads code, completes full assessment with master comparison"
+

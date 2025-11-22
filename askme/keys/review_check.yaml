@@ -1,0 +1,77 @@
+# Review Check (Followup Assessment)
+#
+# Usage in Cursor chat:
+#   "check review 967773"
+#   "execute key review-check for 967773"
+#
+# What this does:
+#   1. Finds existing assessment in workspace/iproject/results/review_<number>.md
+#   2. Queries MCP agent for latest review state
+#   3. Detects changes since last check:
+#      - New patchsets
+#      - New comments
+#      - Status changes (merged, abandoned, etc.)
+#   4. Updates assessment with check history
+#   5. Creates new patchset assessment if needed
+
+type: review_check_followup
+
+action: check_and_update_assessment
+
+# Check process
+check_config:
+  read_existing_assessment: true
+  assessment_location: "workspace/iproject/results/review_{number}.md"
+  query_latest_state: true
+  detect_changes: true
+  
+# What to detect
+detect:
+  - new_patchsets
+  - new_comments
+  - status_changes
+  - merge_status
+
+# Update behavior
+update_behavior:
+  add_check_history: true  # Add to "Check History" section
+  create_new_patchset_assessment: true  # If new patchset detected
+  update_metadata: true  # Update review state tracking
+  preserve_previous_analysis: true
+
+# Output
+output:
+  show_changes_summary: true
+  show_new_comments: true
+  recommend_next_steps: true
+  link_to_new_patchset_assessment: true  # If created
+
+# Examples:
+examples:
+  - input: "check review 967773"
+    does:
+      - "Reads workspace/iproject/results/review_967773.md"
+      - "Queries @opendev-reviewer-agent for latest state"
+      - "Compares current state with metadata"
+      - "Adds check entry to Check History"
+      - "Reports: No changes / New patchset / New comments / etc."
+      
+  - input: "check review 967773"
+    scenario: "New patchset detected"
+    does:
+      - "Creates workspace/iproject/results/review_967773_patchset_2.md"
+      - "Fetches new patchset code"
+      - "Completes full assessment for patchset 2"
+      - "Updates review_967773.md dashboard with link"
+      - "Reports: New patchset 2 detected, assessment created"
+
+notes: |
+  This is the "morning check-in" workflow where you ask about reviews
+  you're tracking without re-fetching the code.
+  
+  The AI will intelligently detect what changed and take appropriate action:
+  - No changes → Quick "no updates" message
+  - New comments → Show comments and suggest responses
+  - New patchset → Create full new assessment
+  - Status change → Update and notify
+

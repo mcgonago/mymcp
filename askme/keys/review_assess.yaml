@@ -1,0 +1,102 @@
+# Review Assessment Automation Key
+# 
+# Usage in Cursor chat:
+#   "execute key review-assess for review https://review.opendev.org/c/openstack/horizon/+/967773"
+#   "execute key review-assess for review <url>"
+#
+# What this does:
+#   1. Runs: ./scripts/fetch-review.sh --with-assessment <type> <url>
+#   2. Automatically completes the full assessment in workspace/iproject/results/
+#
+# The AI will:
+#   - Detect review type (opendev/github/gitlab) from URL
+#   - Run fetch-review.sh with appropriate parameters
+#   - Read the code changes
+#   - Query MCP agent for metadata
+#   - Complete the full assessment document
+#   - Report summary and location
+
+type: review_assessment_execute
+
+# Action definition
+action: execute_script_and_assess
+
+# Script to execute
+script_path: ./scripts/fetch-review.sh
+
+# Default options
+default_options:
+  - --with-assessment  # Always create assessment
+  # Optional: Add --with-master if you want master branch comparison by default
+  # - --with-master
+
+# Review type detection patterns
+review_types:
+  opendev:
+    pattern: "review.opendev.org"
+    type_arg: "opendev"
+    mcp_agent: "@opendev-reviewer-agent"
+  github:
+    pattern: "github.com"
+    type_arg: "github"
+    mcp_agent: "@github-reviewer-agent"
+  gitlab:
+    pattern: "gitlab.cee.redhat.com"
+    type_arg: "gitlab"
+    mcp_agent: "@gitlab-cee-agent"
+
+# Assessment completion
+assessment_config:
+  use_template: true
+  template_path: results/review_template.md
+  auto_complete: true  # AI completes the full assessment
+  workspace_project: true  # Uses configured workspace project (e.g., iproject/)
+
+# Output format
+output:
+  show_summary: true
+  show_key_findings: true
+  show_recommendation: true
+  report_location: true
+
+# Examples:
+examples:
+  - input: "execute key review-assess for review https://review.opendev.org/c/openstack/horizon/+/967773"
+    expands_to: "./scripts/fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/967773"
+    then: "AI reads code, queries @opendev-reviewer-agent, completes full assessment"
+    
+  - input: "execute key review-assess for review https://github.com/org/repo/pull/5192"
+    expands_to: "./scripts/fetch-review.sh --with-assessment github https://github.com/org/repo/pull/5192"
+    then: "AI reads code, queries @github-reviewer-agent, completes full assessment"
+
+  - input: "execute key review-assess with master for review https://review.opendev.org/+/967773"
+    expands_to: "./scripts/fetch-review.sh --with-master --with-assessment opendev https://review.opendev.org/+/967773"
+    then: "AI fetches master branch for comparison, completes full assessment"
+
+# Variations supported:
+variations:
+  - "execute key review-assess for review <url>"
+  - "execute key review-assess for <url>"
+  - "execute review-assess <url>"
+  - "assess review <url>"
+  - "analyze review <url>"  # Also triggers this key
+
+# Notes:
+notes: |
+  This key is designed for use when running Cursor from within the workspace.
+  
+  When you say "execute key review-assess for review <url>", the AI will:
+  1. Detect the review type from the URL
+  2. Run fetch-review.sh with --with-assessment flag
+  3. Wait for script to complete and create template
+  4. Automatically read the code changes
+  5. Query the appropriate MCP agent
+  6. Complete the full assessment document
+  7. Report summary with key findings and recommendation
+  
+  The assessment will be saved to:
+    workspace/<your-workspace-project>/results/review_<number>.md
+  
+  Where <your-workspace-project> is defined in workspace/.workspace-config
+  (default: iproject/)
+

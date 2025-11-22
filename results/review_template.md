@@ -32,6 +32,42 @@
 
 [2-3 sentences summarizing the change and your recommendation]
 
+## Decision
+
+**Recommendation:** ✅ +2 APPROVE / ⚠️ +1 LOOKS GOOD (minor comments) / 🔄 0 NEEDS WORK / ❌ -1 DO NOT MERGE
+
+**Reasoning:**
+[Explain your recommendation]
+
+**Conditions:**
+[Any conditions for approval, e.g., "Approve after addressing [X]"]
+
+## 📋 Assessment Summary
+
+**Review:** xxxxx
+**Recommendation:** ⚠️ xxxx
+**Assessment File:** `xxxxxx.md` (xxxx lines)
+
+---
+
+## 🔍 Key Findings
+
+### Why This Matters
+
+## 👥 Reviewer Comments Analysis
+
+**Ivan Anfimov:** "LGTM, trivial"  
+→ ⚠️ **Premature approval** - CSS error was missed
+
+**Owen McGonagle:** Recommended `border-top: 1px solid #ddd;`  
+→ ✅ **Correct catch!** - Identified the CSS syntax issue
+
+---
+
+## 📝 What Needs to Happen
+
+---
+
 ## Change Overview
 
 ### What Changed
@@ -248,16 +284,6 @@ cd [project]-[review]
 tox -e pep8
 tox -e py3
 ```
-
-## Decision
-
-**Recommendation:** ✅ +2 APPROVE / ⚠️ +1 LOOKS GOOD (minor comments) / 🔄 0 NEEDS WORK / ❌ -1 DO NOT MERGE
-
-**Reasoning:**
-[Explain your recommendation]
-
-**Conditions:**
-[Any conditions for approval, e.g., "Approve after addressing [X]"]
 
 ---
 

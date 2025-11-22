@@ -546,9 +546,9 @@ tox -e py3
 **Last Updated:** $(date +%Y-%m-%d)
 EOF
     
-    echo -e "${GREEN}✓ Review assessment created: results/review_${number}.md${NC}"
+    echo -e "${GREEN}✓ Review assessment created: $WORKSPACE_PROJECT_DIR/results/review_${number}.md${NC}"
     echo -e "${YELLOW}  Next: Ask Cursor to analyze and fill in the assessment${NC}"
-    echo -e "${YELLOW}  Try: 'Please analyze review ${number} and complete results/review_${number}.md'${NC}"
+    echo -e "${YELLOW}  Try: 'Please analyze review ${number}'${NC}"
 }
 
 case "$TYPE" in
@@ -576,35 +576,36 @@ case "$TYPE" in
         # Change to the working directory where user ran the script
         cd "$WORK_DIR"
         
-        # Clone the review
-        if ! prompt_overwrite "$DIR_NAME"; then
-            exit 1
-        fi
-        
-        echo -e "${GREEN}[1/3] Cloning review repository...${NC}"
-        git clone "$CLONE_URL" "$DIR_NAME"
-        cd "$DIR_NAME"
-        
-        echo -e "${GREEN}[2/3] Fetching review patchset...${NC}"
-        git fetch "$REVIEW_URL" "refs/changes/${LAST_TWO}/${CHANGE}/1"
-        
-        if [ "$DO_REBASE" = true ]; then
-            echo -e "${GREEN}[3/3] Rebasing on latest master...${NC}"
-            git checkout -b "ws-review-${CHANGE}" FETCH_HEAD
-            git fetch origin master
-            git rebase origin/master
-            if [ $? -ne 0 ]; then
-                echo -e "${RED}⚠ Rebase had conflicts. You are in the review directory.${NC}"
-                echo -e "${YELLOW}Fix conflicts, then run: git rebase --continue${NC}"
-            else
-                echo -e "${GREEN}✓ Successfully rebased on master${NC}"
-            fi
+        # Clone the review (or use existing)
+        if [ -d "$DIR_NAME" ]; then
+            echo -e "${BLUE}Using existing directory: ${DIR_NAME}${NC}"
+            echo -e "${YELLOW}  (Run with clean workspace to re-fetch, or manually delete ${DIR_NAME}/)${NC}"
         else
-            echo -e "${GREEN}[3/3] Checking out review and creating branch ws-review-${CHANGE}...${NC}"
-            git checkout -b "ws-review-${CHANGE}" FETCH_HEAD
+            echo -e "${GREEN}[1/3] Cloning review repository...${NC}"
+            git clone "$CLONE_URL" "$DIR_NAME"
+            cd "$DIR_NAME"
+            
+            echo -e "${GREEN}[2/3] Fetching review patchset...${NC}"
+            git fetch "$REVIEW_URL" "refs/changes/${LAST_TWO}/${CHANGE}/1"
+            
+            if [ "$DO_REBASE" = true ]; then
+                echo -e "${GREEN}[3/3] Rebasing on latest master...${NC}"
+                git checkout -b "ws-review-${CHANGE}" FETCH_HEAD
+                git fetch origin master
+                git rebase origin/master
+                if [ $? -ne 0 ]; then
+                    echo -e "${RED}⚠ Rebase had conflicts. You are in the review directory.${NC}"
+                    echo -e "${YELLOW}Fix conflicts, then run: git rebase --continue${NC}"
+                else
+                    echo -e "${GREEN}✓ Successfully rebased on master${NC}"
+                fi
+            else
+                echo -e "${GREEN}[3/3] Checking out review and creating branch ws-review-${CHANGE}...${NC}"
+                git checkout -b "ws-review-${CHANGE}" FETCH_HEAD
+            fi
+            
+            cd "$WORK_DIR"
         fi
-        
-        cd "$WORK_DIR"
         
         # Clone master branch if requested
         if [ "$WITH_MASTER" = true ]; then
@@ -645,7 +646,7 @@ case "$TYPE" in
         echo -e "  ${DIR_NAME}/           - The review patchset"
         [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/           - Clean master branch (for comparison)"
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  ${EXPERIMENT_DIR}/ - Experiment area (for testing changes)"
-        [ "$WITH_ASSESSMENT" = true ] && echo -e "  results/review_${CHANGE}.md  - Review assessment document"
+        [ "$WITH_ASSESSMENT" = true ] && echo -e "  $WORKSPACE_PROJECT_DIR/results/review_${CHANGE}.md  - Review assessment document"
         echo ""
         echo -e "${BLUE}Next steps:${NC}"
         echo -e "  cd ${DIR_NAME}                                     # Examine the review"
@@ -686,40 +687,41 @@ case "$TYPE" in
         # Change to the working directory where user ran the script
         cd "$WORK_DIR"
         
-        # Clone the PR
-        if ! prompt_overwrite "$DIR_NAME"; then
-            exit 1
-        fi
-        
-        echo -e "${GREEN}[1/3] Cloning repository...${NC}"
-        git clone "$CLONE_URL" "$DIR_NAME"
-        cd "$DIR_NAME"
-        
-        # Try 'main' first, fall back to 'master'
-        if ! git show-ref --verify --quiet refs/remotes/origin/main; then
-            BRANCH="master"
-        fi
-        
-        echo -e "${GREEN}[2/3] Fetching PR branch...${NC}"
-        git fetch origin "pull/${PR}/head:pr-${PR}"
-        
-        if [ "$DO_REBASE" = true ]; then
-            echo -e "${GREEN}[3/3] Rebasing on latest ${BRANCH}...${NC}"
-            git checkout -b "ws-pr-${PR}" "pr-${PR}"
-            git fetch origin "$BRANCH"
-            git rebase "origin/${BRANCH}"
-            if [ $? -ne 0 ]; then
-                echo -e "${RED}⚠ Rebase had conflicts. You are in the PR directory.${NC}"
-                echo -e "${YELLOW}Fix conflicts, then run: git rebase --continue${NC}"
-            else
-                echo -e "${GREEN}✓ Successfully rebased on ${BRANCH}${NC}"
-            fi
+        # Clone the PR (or use existing)
+        if [ -d "$DIR_NAME" ]; then
+            echo -e "${BLUE}Using existing directory: ${DIR_NAME}${NC}"
+            echo -e "${YELLOW}  (Run with clean workspace to re-fetch, or manually delete ${DIR_NAME}/)${NC}"
         else
-            echo -e "${GREEN}[3/3] Checking out PR and creating branch ws-pr-${PR}...${NC}"
-            git checkout -b "ws-pr-${PR}" "pr-${PR}"
+            echo -e "${GREEN}[1/3] Cloning repository...${NC}"
+            git clone "$CLONE_URL" "$DIR_NAME"
+            cd "$DIR_NAME"
+            
+            # Try 'main' first, fall back to 'master'
+            if ! git show-ref --verify --quiet refs/remotes/origin/main; then
+                BRANCH="master"
+            fi
+            
+            echo -e "${GREEN}[2/3] Fetching PR branch...${NC}"
+            git fetch origin "pull/${PR}/head:pr-${PR}"
+            
+            if [ "$DO_REBASE" = true ]; then
+                echo -e "${GREEN}[3/3] Rebasing on latest ${BRANCH}...${NC}"
+                git checkout -b "ws-pr-${PR}" "pr-${PR}"
+                git fetch origin "$BRANCH"
+                git rebase "origin/${BRANCH}"
+                if [ $? -ne 0 ]; then
+                    echo -e "${RED}⚠ Rebase had conflicts. You are in the PR directory.${NC}"
+                    echo -e "${YELLOW}Fix conflicts, then run: git rebase --continue${NC}"
+                else
+                    echo -e "${GREEN}✓ Successfully rebased on ${BRANCH}${NC}"
+                fi
+            else
+                echo -e "${GREEN}[3/3] Checking out PR and creating branch ws-pr-${PR}...${NC}"
+                git checkout -b "ws-pr-${PR}" "pr-${PR}"
+            fi
+            
+            cd "$WORK_DIR"
         fi
-        
-        cd "$WORK_DIR"
         
         # Clone master/main branch if requested
         if [ "$WITH_MASTER" = true ]; then
@@ -759,7 +761,7 @@ case "$TYPE" in
         echo -e "  ${DIR_NAME}/           - The PR"
         [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/           - Clean ${BRANCH} branch"
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  ${EXPERIMENT_DIR}/ - Experiment area"
-        [ "$WITH_ASSESSMENT" = true ] && echo -e "  results/review_pr_${PR}.md  - Review assessment document"
+        [ "$WITH_ASSESSMENT" = true ] && echo -e "  $WORKSPACE_PROJECT_DIR/results/review_pr_${PR}.md  - Review assessment document"
         echo ""
         echo -e "${BLUE}Next steps:${NC}"
         echo -e "  cd ${DIR_NAME}                                     # Examine the PR"
@@ -797,40 +799,41 @@ case "$TYPE" in
         # Change to the working directory where user ran the script
         cd "$WORK_DIR"
         
-        # Clone the MR
-        if ! prompt_overwrite "$DIR_NAME"; then
-            exit 1
-        fi
-        
-        echo -e "${GREEN}[1/3] Cloning repository...${NC}"
-        git clone "$CLONE_URL" "$DIR_NAME"
-        cd "$DIR_NAME"
-        
-        # Try 'main' first, fall back to 'master'
-        if ! git show-ref --verify --quiet refs/remotes/origin/main; then
-            BRANCH="master"
-        fi
-        
-        echo -e "${GREEN}[2/3] Fetching MR branch...${NC}"
-        git fetch origin "merge-requests/${MR}/head:mr-${MR}"
-        
-        if [ "$DO_REBASE" = true ]; then
-            echo -e "${GREEN}[3/3] Rebasing on latest ${BRANCH}...${NC}"
-            git checkout -b "ws-mr-${MR}" "mr-${MR}"
-            git fetch origin "$BRANCH"
-            git rebase "origin/${BRANCH}"
-            if [ $? -ne 0 ]; then
-                echo -e "${RED}⚠ Rebase had conflicts. You are in the MR directory.${NC}"
-                echo -e "${YELLOW}Fix conflicts, then run: git rebase --continue${NC}"
-            else
-                echo -e "${GREEN}✓ Successfully rebased on ${BRANCH}${NC}"
-            fi
+        # Clone the MR (or use existing)
+        if [ -d "$DIR_NAME" ]; then
+            echo -e "${BLUE}Using existing directory: ${DIR_NAME}${NC}"
+            echo -e "${YELLOW}  (Run with clean workspace to re-fetch, or manually delete ${DIR_NAME}/)${NC}"
         else
-            echo -e "${GREEN}[3/3] Checking out MR and creating branch ws-mr-${MR}...${NC}"
-            git checkout -b "ws-mr-${MR}" "mr-${MR}"
+            echo -e "${GREEN}[1/3] Cloning repository...${NC}"
+            git clone "$CLONE_URL" "$DIR_NAME"
+            cd "$DIR_NAME"
+            
+            # Try 'main' first, fall back to 'master'
+            if ! git show-ref --verify --quiet refs/remotes/origin/main; then
+                BRANCH="master"
+            fi
+            
+            echo -e "${GREEN}[2/3] Fetching MR branch...${NC}"
+            git fetch origin "merge-requests/${MR}/head:mr-${MR}"
+            
+            if [ "$DO_REBASE" = true ]; then
+                echo -e "${GREEN}[3/3] Rebasing on latest ${BRANCH}...${NC}"
+                git checkout -b "ws-mr-${MR}" "mr-${MR}"
+                git fetch origin "$BRANCH"
+                git rebase "origin/${BRANCH}"
+                if [ $? -ne 0 ]; then
+                    echo -e "${RED}⚠ Rebase had conflicts. You are in the MR directory.${NC}"
+                    echo -e "${YELLOW}Fix conflicts, then run: git rebase --continue${NC}"
+                else
+                    echo -e "${GREEN}✓ Successfully rebased on ${BRANCH}${NC}"
+                fi
+            else
+                echo -e "${GREEN}[3/3] Checking out MR and creating branch ws-mr-${MR}...${NC}"
+                git checkout -b "ws-mr-${MR}" "mr-${MR}"
+            fi
+            
+            cd "$WORK_DIR"
         fi
-        
-        cd "$WORK_DIR"
         
         # Clone master/main branch if requested
         if [ "$WITH_MASTER" = true ]; then
@@ -870,7 +873,7 @@ case "$TYPE" in
         echo -e "  ${DIR_NAME}/           - The MR"
         [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/           - Clean ${BRANCH} branch"
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  ${EXPERIMENT_DIR}/ - Experiment area"
-        [ "$WITH_ASSESSMENT" = true ] && echo -e "  results/review_mr_${MR}.md  - Review assessment document"
+        [ "$WITH_ASSESSMENT" = true ] && echo -e "  $WORKSPACE_PROJECT_DIR/results/review_mr_${MR}.md  - Review assessment document"
         echo ""
         echo -e "${BLUE}Next steps:${NC}"
         echo -e "  cd ${DIR_NAME}                                     # Examine the MR"
