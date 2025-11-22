@@ -1,29 +1,41 @@
-# Review Check (Followup Assessment)
+# Review Check (Basic Status Check)
 #
 # Usage in Cursor chat:
 #   "check review 967773"
 #   "execute key review-check for 967773"
 #
 # What this does:
-#   1. Finds existing assessment in workspace/iproject/results/review_<number>.md
-#   2. Queries MCP agent for latest review state
-#   3. Detects changes since last check:
-#      - New patchsets
-#      - New comments
-#      - Status changes (merged, abandoned, etc.)
-#   4. Updates assessment with check history
-#   5. Creates new patchset assessment if needed
+#   1. If NO assessment exists yet:
+#      - Creates initial assessment (same as "assess review 967773")
+#   2. If assessment exists:
+#      - Queries MCP agent for latest review state
+#      - Detects changes since last check:
+#        * New patchsets
+#        * New comments
+#        * Status changes (merged, abandoned, etc.)
+#      - If NO changes: Shows nice visual "no changes" box
+#      - If changes detected: Shows summary and asks what you want to do
+#   3. Updates assessment with check history entry
+#
+# This is the BASIC check - it tells you what changed but doesn't automatically
+# create new patchset assessments. Use the other check variants for that.
 
-type: review_check_followup
+type: review_check_basic
 
-action: check_and_update_assessment
+action: check_status_and_report
 
 # Check process
 check_config:
-  read_existing_assessment: true
+  check_if_assessment_exists: true
   assessment_location: "workspace/iproject/results/review_{number}.md"
   query_latest_state: true
   detect_changes: true
+  
+# First-time behavior (no assessment exists)
+first_time_behavior:
+  create_initial_assessment: true
+  treat_as_new_review: true
+  use_current_patchset: true  # Whatever patchset is current becomes "patchset 1" for our purposes
   
 # What to detect
 detect:
@@ -32,19 +44,45 @@ detect:
   - status_changes
   - merge_status
 
+# Behavior when NO changes detected
+no_changes_behavior:
+  show_visual_box: true
+  add_to_check_history: true
+  use_box_format: true
+  
+# Visual output when no changes
+no_changes_output: |
+  ╔════════════════════════════════════════════════════════════════╗
+  ║                                                                ║
+  ║   ✓ CHECKED review {number} - No changes since last check     ║
+  ║                                                                ║
+  ║   • Patchset: {current_patchset}                              ║
+  ║   • Status: {status}                                          ║
+  ║   • Last checked: {last_check_date}                           ║
+  ║   • No new patchsets, comments, or status changes             ║
+  ║                                                                ║
+  ╚════════════════════════════════════════════════════════════════╝
+
+# Behavior when changes detected
+changes_detected_behavior:
+  show_summary: true
+  list_what_changed: true
+  add_to_check_history: true
+  suggest_next_actions: true
+  dont_auto_create_patchsets: true  # Basic check doesn't auto-create, just reports
+
 # Update behavior
 update_behavior:
-  add_check_history: true  # Add to "Check History" section
-  create_new_patchset_assessment: true  # If new patchset detected
+  add_check_history: true  # Add to "Check History" section in assessment
   update_metadata: true  # Update review state tracking
   preserve_previous_analysis: true
 
-# Output
-output:
+# Output when changes detected
+changes_output:
   show_changes_summary: true
   show_new_comments: true
-  recommend_next_steps: true
-  link_to_new_patchset_assessment: true  # If created
+  show_new_patchsets_count: true
+  recommend_next_steps: true  # e.g., "Run 'check review 967773 create patchsets' to analyze all patchsets"
 
 # Examples:
 examples:

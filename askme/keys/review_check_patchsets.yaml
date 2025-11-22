@@ -1,0 +1,176 @@
+# Review Check - Create Individual Patchset Assessments
+#
+# Usage in Cursor chat:
+#   "check review 967773 create patchsets"
+#   "check review 967773 all patchsets"
+#   "execute key review-check-patchsets for 967773"
+#
+# What this does:
+#   1. Queries MCP agent for full review history
+#   2. Detects all patchsets (current and historical)
+#   3. Creates individual assessment files for EACH patchset:
+#      - review_967773_patchset_1.md
+#      - review_967773_patchset_2.md
+#      - review_967773_patchset_3.md
+#      - etc.
+#   4. Includes review comments between patchsets in each assessment
+#   5. Creates/updates dashboard file (review_967773.md) with:
+#      - Links to all patchset assessments
+#      - Check history
+#      - Current status
+#      - Summary of patchset evolution
+#
+# This helps understand the SEQUENCE of changes and what was done with each iteration.
+
+type: review_check_create_patchsets
+
+action: create_all_patchset_assessments
+
+# Check process
+check_config:
+  query_full_history: true
+  detect_all_patchsets: true
+  analyze_each_patchset: true  # KEY: Create assessment for every patchset
+  include_comments_timeline: true
+  
+# What to detect and include
+detect:
+  - all_patchsets  # Not just new ones, but all historical patchsets
+  - comments_per_patchset  # Comments submitted during each patchset's lifetime
+  - status_changes
+  - merge_status
+  - votes_per_patchset  # Track +1, +2, -1 votes on each patchset
+
+# Patchset assessment behavior
+patchset_behavior:
+  create_individual_files: true
+  sequential_analysis: true  # Analyze PS1, then PS2, then PS3...
+  compare_with_previous: true  # Show what changed from previous patchset
+  include_relevant_comments: true  # Include comments submitted between patchsets
+  align_comments_with_patchsets: true  # Try to associate comments with the patchset they reference
+  
+# Dashboard behavior
+dashboard_behavior:
+  create_or_update: true
+  location: "workspace/iproject/results/review_{number}.md"
+  include:
+    - patchset_links  # Links to all patchset assessment files
+    - check_history
+    - current_status
+    - evolution_summary  # High-level view of how review evolved across patchsets
+    - vote_tracking  # Track how votes changed across patchsets
+    
+# Patchset file structure
+patchset_file:
+  location: "workspace/iproject/results/review_{number}_patchset_{ps_number}.md"
+  sections:
+    - patchset_header  # PS number, date, author
+    - what_changed_from_previous  # Diff from previous patchset
+    - comments_during_this_patchset  # Comments submitted while this PS was current
+    - code_analysis  # Full technical analysis
+    - recommendations  # What should be done (for historical PSs, what WAS done)
+    
+# Comment alignment strategy
+comment_alignment:
+  method: "timestamp_based"  # Assign comments to patchset based on when submitted
+  fallback: "include_in_relevant_patchset"  # If unclear, include in most relevant PS
+  note_if_ambiguous: true  # Add note if comment-to-patchset alignment is uncertain
+  
+# First-time behavior (no existing assessment)
+first_time_behavior:
+  start_from_patchset_1: true
+  create_all_sequentially: true
+  fetch_code_for_each: true  # Fetch each patchset's code individually
+  create_dashboard_at_end: true
+  
+# Incremental behavior (assessment exists, new patchsets detected)
+incremental_behavior:
+  detect_existing_patchset_files: true
+  skip_already_assessed_patchsets: true
+  create_only_new_patchsets: true
+  update_dashboard: true
+
+# Visual output
+output:
+  show_patchset_summary: true
+  show_comment_timeline: true
+  link_to_each_assessment: true
+  recommend_review_order: true  # "Review patchsets in order: PS1 → PS2 → PS3"
+
+# Examples:
+examples:
+  - input: "check review 967773 create patchsets"
+    scenario: "First time, review has 3 patchsets"
+    does:
+      - "Query @opendev-reviewer-agent for all patchsets"
+      - "Fetch patchset 1 code → Create review_967773_patchset_1.md"
+      - "Fetch patchset 2 code → Create review_967773_patchset_2.md"
+      - "Fetch patchset 3 code → Create review_967773_patchset_3.md"
+      - "Create review_967773.md dashboard with links to all 3 patchsets"
+      - "Include comments in each patchset file based on submission time"
+    output: |
+      ✅ Created patchset-based assessment for review 967773
+      
+      📁 Files created:
+         • workspace/iproject/results/review_967773.md (dashboard)
+         • workspace/iproject/results/review_967773_patchset_1.md
+         • workspace/iproject/results/review_967773_patchset_2.md
+         • workspace/iproject/results/review_967773_patchset_3.md
+      
+      📊 Patchset Evolution:
+         PS1 (2025-11-19): Initial submission - Invalid CSS syntax
+         ├─ Comment (Owen): Suggested adding 'solid #ddd'
+         PS2 (2025-11-20): Fixed CSS, added color
+         ├─ Comment (Ivan): LGTM, trivial
+         PS3 (2025-11-21): Rebased on master, no functional changes
+      
+      📖 Recommended reading order:
+         1. review_967773_patchset_1.md (understand initial approach)
+         2. review_967773_patchset_2.md (see what was fixed)
+         3. review_967773_patchset_3.md (verify final state)
+      
+  - input: "check review 967773 create patchsets"
+    scenario: "Incremental check - PS1 & PS2 already assessed, new PS3 detected"
+    does:
+      - "Detect existing: review_967773_patchset_1.md, review_967773_patchset_2.md"
+      - "Skip PS1 and PS2 (already assessed)"
+      - "Fetch patchset 3 code → Create review_967773_patchset_3.md"
+      - "Update review_967773.md dashboard with PS3 link"
+      - "Show what changed from PS2 to PS3"
+    output: |
+      ✅ Updated assessment for review 967773 (new patchset detected)
+      
+      📁 New file:
+         • workspace/iproject/results/review_967773_patchset_3.md
+      
+      🔄 Changes from PS2 to PS3:
+         • Rebased on latest master (no functional changes)
+         • Resolved merge conflict in key_pairs/tables.py
+         • No new review comments
+      
+      📖 Assessment complete - review PS3 assessment for details.
+
+notes: |
+  Use "create patchsets" when:
+  - You want to understand the EVOLUTION of a review
+  - Multiple patchsets exist and you want to track changes
+  - You need to see how the author responded to feedback
+  - You want a complete historical record
+  
+  This creates more files but provides better context for complex reviews.
+  
+  Comment alignment:
+  - Comments are associated with patchsets based on submission time
+  - If a comment says "Patchset 2: LGTM" it goes in patchset_2.md
+  - If timing is ambiguous, comment is noted in the most relevant patchset
+  
+  Dashboard file (review_967773.md):
+  - Acts as the "table of contents" for the review
+  - Links to all individual patchset assessments
+  - Tracks check history and current status
+  - Provides high-level summary of review evolution
+  
+  Comparison with "latest only":
+  - "create patchsets" = Full historical record, understand evolution
+  - "latest only" = Quick check, only care about current state
+

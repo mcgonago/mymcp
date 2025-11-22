@@ -1,0 +1,113 @@
+# Review Check - Latest Patchset Only
+#
+# Usage in Cursor chat:
+#   "check review 967773 latest only"
+#   "check review 967773 latest"
+#   "execute key review-check-latest for 967773"
+#
+# What this does:
+#   1. Queries MCP agent for current review state
+#   2. Detects if new patchsets exist since last check
+#   3. If new patchset(s) exist:
+#      - Fetches ONLY the latest patchset code
+#      - Creates/updates assessment for latest patchset only
+#      - Updates dashboard with link to latest patchset assessment
+#   4. If no new patchsets:
+#      - Shows nice visual "no changes" message
+#      - Adds check entry to history
+#   5. Shows any new comments since last check
+
+type: review_check_latest_only
+
+action: check_latest_patchset
+
+# Check process
+check_config:
+  query_latest_state: true
+  detect_changes: true
+  analyze_latest_only: true  # KEY: Only analyze latest, skip intermediate patchsets
+  
+# What to detect
+detect:
+  - new_patchsets
+  - new_comments
+  - status_changes
+  - merge_status
+
+# Behavior when new patchset detected
+new_patchset_behavior:
+  skip_intermediate: true  # Don't create assessments for PS 2, 3, 4... only PS 5 (latest)
+  create_latest_assessment: true
+  fetch_latest_code: true
+  update_dashboard: true
+  
+# Behavior when no changes
+no_changes_behavior:
+  show_visual_box: true
+  add_to_check_history: true
+  
+# Visual output when no changes
+no_changes_output: |
+  ╔════════════════════════════════════════════════════════════════╗
+  ║                                                                ║
+  ║   ✓ CHECKED review {number} - No changes since last check     ║
+  ║                                                                ║
+  ║   • Patchset: {current_patchset}                              ║
+  ║   • Status: {status}                                          ║
+  ║   • Last checked: {last_check_date}                           ║
+  ║   • No new patchsets, comments, or status changes             ║
+  ║                                                                ║
+  ╚════════════════════════════════════════════════════════════════╝
+
+# Examples:
+examples:
+  - input: "check review 967773 latest only"
+    scenario: "No changes since last check"
+    output: |
+      ╔════════════════════════════════════════════════════════════════╗
+      ║                                                                ║
+      ║   ✓ CHECKED review 967773 - No changes since last check       ║
+      ║                                                                ║
+      ║   • Patchset: 1                                               ║
+      ║   • Status: NEW                                               ║
+      ║   • Last checked: 2025-11-22 10:30 AM                         ║
+      ║   • No new patchsets, comments, or status changes             ║
+      ║                                                                ║
+      ╚════════════════════════════════════════════════════════════════╝
+      
+  - input: "check review 967773 latest"
+    scenario: "New patchset 2 detected"
+    does:
+      - "Skip creating review_967773_patchset_1.md (already exists or not needed)"
+      - "Fetch patchset 2 code"
+      - "Create workspace/iproject/results/review_967773_patchset_2.md"
+      - "Complete full assessment for patchset 2"
+      - "Update review_967773.md dashboard"
+      - "Show summary of changes from PS1 to PS2"
+      
+  - input: "check review 967773 latest only"
+    scenario: "Jump from PS1 to PS5 (skipping 2, 3, 4)"
+    does:
+      - "Detect patchsets 2, 3, 4, 5 exist"
+      - "Skip patchsets 2, 3, 4"
+      - "Fetch patchset 5 code only"
+      - "Create workspace/iproject/results/review_967773_patchset_5.md"
+      - "Note in assessment: 'Patchsets 2-4 were not individually assessed (latest only mode)'"
+      - "Update dashboard with PS5 assessment"
+
+notes: |
+  Use "latest only" when:
+  - You only care about the current state of the review
+  - Author uploaded multiple patchsets in quick succession
+  - You don't need to track the evolution of changes
+  
+  This is faster and creates less documentation than "create patchsets" mode.
+  
+  First-time check behavior:
+  - If no assessment exists yet, creates initial assessment for current patchset
+  - Treats current patchset as "latest" and analyzes it
+  
+  Skip vs Create:
+  - "latest only" = Skip intermediate patchsets, only analyze most recent
+  - "create patchsets" = Create assessment for every patchset sequentially
+

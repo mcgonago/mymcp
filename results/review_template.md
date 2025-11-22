@@ -1,5 +1,10 @@
 # Review Assessment: [Review Number] - [Title]
 
+## Patchset Information
+
+**Patchset Number:** [X] (analyzing patchset [X] of this review)  
+**Previous Patchsets:** [Links to other patchset assessments, if any]
+
 ## Review Information
 
 **Review URL:** [URL]  
