@@ -70,9 +70,15 @@ workspace/*
 !workspace/README.md
 reviews/
 
-# iProject - personal work repository (separate git repo)
-# This is where your actual work lives (reviews, analysis, etc.)
-workspace/iproject/
+# Workspace config (user's project directory preference)
+workspace/.workspace-config
 
-# External work areas (not tracked) - DEPRECATED: Use iproject instead
+# Common workspace project directory names (user's actual work)
+workspace/myproject/
+workspace/iproject/
+workspace/*_work/
+workspace/*_project/
+workspace/*_workspace/
+
+# External work areas (not tracked) - DEPRECATED
 workspace/external/

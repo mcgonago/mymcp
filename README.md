@@ -171,10 +171,10 @@ Practical workflows and examples for using these MCP agents in your development 
 If you come up with different use cases using the MCP agents, please follow the model, add a section and detailed instructions for each new add.
 
 > [!IMPORTANT]
-> **New: iProject Integration**  
-> This repository now uses an **iproject** system to keep `mymcp` clean and focused on tools + examples, while storing your actual work in a separate repository.
+> **New: Workspace Project System**  
+> This repository now uses a flexible **workspace project** system to keep `mymcp` clean and focused on tools + examples, while storing your actual work in a separate directory (which can be a git repository, custom directory, or simple folder).
 > 
-> **See [IPROJECT.md](IPROJECT.md) for complete setup instructions.**
+> **See [WORKSPACE_PROJECT.md](WORKSPACE_PROJECT.md) for complete setup instructions.**
 
 ### #1: Review Automation
 
@@ -302,16 +302,18 @@ Once you have these agents set up, you can:
 
 ## Additional Resources
 
-### iProject Integration
+### Workspace Project System
 
-This repository uses an **iproject** system for separating tools from work:
+This repository uses a flexible **workspace project** system for separating tools from work:
 
-- **[IPROJECT.md](IPROJECT.md)** - Complete setup guide for iproject integration
-- **[MIGRATION_PLAN.md](MIGRATION_PLAN.md)** - Details on what was migrated and why
+- **[WORKSPACE_PROJECT.md](WORKSPACE_PROJECT.md)** - Complete setup guide for workspace projects
 
 **Quick Summary:**
 - `mymcp/` - Tools, scripts, documentation, examples (this repo)
-- `workspace/iproject/` - Your actual work: reviews, analysis, spikes (separate git repo)
+- `workspace/<your-project>/` - Your actual work: reviews, analysis, spikes
+  - Can be a simple directory (`myproject/`)
+  - Can be custom named (`my_horizon_work/`)
+  - Can be a git repository (`iproject/`, cloned into workspace)
 
 ### Verification Script
 

@@ -11,6 +11,7 @@
 #   --rebase           Rebase the review on top of latest master
 #   --experiment       Create an experiment directory for testing changes
 #   --with-assessment  Create a review assessment document (review_XXXXX.md)
+#   --myworkspace DIR  Use DIR as workspace project directory (default: myproject)
 #   --all              Equivalent to --with-master --experiment
 #
 # Types:
@@ -21,6 +22,7 @@
 # Examples:
 #   ./fetch-review.sh opendev https://review.opendev.org/c/openstack/horizon/+/964897
 #   ./fetch-review.sh --with-master opendev https://review.opendev.org/c/openstack/horizon/+/964897
+#   ./fetch-review.sh --myworkspace iproject --with-assessment opendev <url>
 #   ./fetch-review.sh --rebase --experiment github https://github.com/org/repo/pull/402
 #   ./fetch-review.sh --all opendev https://review.opendev.org/c/openstack/horizon/+/964897
 
@@ -32,14 +34,22 @@ WORK_DIR="$(pwd)"
 # Remember where the script is located (for finding results directory)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# iProject directory (for storing work artifacts)
-IPROJECT_DIR="$WORK_DIR/iproject"
+# Configuration file for workspace preference
+WORKSPACE_CONFIG="$WORK_DIR/.workspace-config"
+
+# Default workspace project directory name
+DEFAULT_WORKSPACE_PROJECT="myproject"
+
+# Workspace project directory (will be set based on config or flag)
+WORKSPACE_PROJECT_DIR=""
 
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
 NC='\033[0m' # No Color
 
 # Options
@@ -47,6 +57,7 @@ WITH_MASTER=false
 DO_REBASE=false
 WITH_EXPERIMENT=false
 WITH_ASSESSMENT=false
+CUSTOM_WORKSPACE=""
 
 # Parse options
 while [[ $# -gt 0 ]]; do
@@ -68,6 +79,10 @@ while [[ $# -gt 0 ]]; do
             WITH_ASSESSMENT=true
             shift
             ;;
+        --myworkspace)
+            CUSTOM_WORKSPACE="$2"
+            shift 2
+            ;;
         --all)
             WITH_MASTER=true
             WITH_EXPERIMENT=true
@@ -77,11 +92,12 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options] <type> <url>"
             echo ""
             echo "Options:"
-            echo "  --with-master      Also clone clean master branch for comparison"
-            echo "  --rebase           Rebase the review on latest master (implies --with-master)"
-            echo "  --experiment       Create an experiment directory for testing"
-            echo "  --with-assessment  Create review assessment document (review_XXXXX.md)"
-            echo "  --all              Equivalent to --with-master --experiment"
+            echo "  --with-master       Also clone clean master branch for comparison"
+            echo "  --rebase            Rebase the review on latest master (implies --with-master)"
+            echo "  --experiment        Create an experiment directory for testing"
+            echo "  --with-assessment   Create review assessment document (review_XXXXX.md)"
+            echo "  --myworkspace DIR   Use DIR as workspace project (default: myproject)"
+            echo "  --all               Equivalent to --with-master --experiment"
             echo ""
             echo "Types:"
             echo "  opendev - OpenDev/Gerrit review"
@@ -131,39 +147,141 @@ prompt_overwrite() {
     return 0
 }
 
-verify_iproject() {
-    # Check if iproject directory exists
-    if [ ! -d "$IPROJECT_DIR" ]; then
-        echo -e "${RED}Error: iproject not found at $IPROJECT_DIR${NC}"
-        echo ""
-        echo "Please clone your iproject repository:"
-        echo ""
-        echo "  cd $WORK_DIR"
-        if [ -n "$WORKSPACE_IPROJECT_REPO" ]; then
-            echo "  git clone $WORKSPACE_IPROJECT_REPO iproject"
-        else
-            echo "  git clone <your-iproject-repo-url> iproject"
+interactive_workspace_setup() {
+    echo -e "${CYAN}"
+    echo "╔════════════════════════════════════════════════════════════╗"
+    echo "║  ${BOLD}Workspace Project Setup${NC}${CYAN}                                    ║"
+    echo "╚════════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+    echo "No workspace project directory configured."
+    echo ""
+    echo "Where would you like to store your work?"
+    echo ""
+    echo "  ${BOLD}1)${NC} workspace/myproject/     ${GREEN}(default - simple directory)${NC}"
+    echo "  ${BOLD}2)${NC} Custom directory name    ${YELLOW}(you choose the name)${NC}"
+    echo "  ${BOLD}3)${NC} Git repository          ${BLUE}(for version control)${NC}"
+    echo ""
+    read -p "Choice [1]: " -r choice
+    choice=${choice:-1}
+    
+    case "$choice" in
+        1)
+            WORKSPACE_PROJECT_DIR="$DEFAULT_WORKSPACE_PROJECT"
+            echo -e "${GREEN}✓ Using default: workspace/$WORKSPACE_PROJECT_DIR/${NC}"
+            ;;
+        2)
             echo ""
-            echo "Or set WORKSPACE_IPROJECT_REPO environment variable:"
-            echo "  export WORKSPACE_IPROJECT_REPO=\"https://gitlab.cee.redhat.com/yourusername/iproject.git\""
+            read -p "Enter directory name: " -r custom_name
+            if [ -z "$custom_name" ]; then
+                echo -e "${RED}Error: Directory name cannot be empty${NC}"
+                return 1
+            fi
+            WORKSPACE_PROJECT_DIR="$custom_name"
+            echo -e "${GREEN}✓ Using custom directory: workspace/$WORKSPACE_PROJECT_DIR/${NC}"
+            ;;
+        3)
+            echo ""
+            echo "Please clone your git repository first:"
+            echo "  ${CYAN}cd workspace${NC}"
+            echo "  ${CYAN}git clone <your-repo-url> <repo-name>${NC}"
+            echo "  ${CYAN}cd ..${NC}"
+            echo ""
+            read -p "Enter repository directory name: " -r repo_name
+            if [ -z "$repo_name" ]; then
+                echo -e "${RED}Error: Repository name cannot be empty${NC}"
+                return 1
+            fi
+            if [ ! -d "$WORK_DIR/$repo_name" ]; then
+                echo -e "${RED}Error: Directory workspace/$repo_name/ not found${NC}"
+                echo "Please clone your repository first."
+                return 1
+            fi
+            WORKSPACE_PROJECT_DIR="$repo_name"
+            echo -e "${GREEN}✓ Using git repository: workspace/$WORKSPACE_PROJECT_DIR/${NC}"
+            ;;
+        *)
+            echo -e "${RED}Invalid choice${NC}"
+            return 1
+            ;;
+    esac
+    
+    # Save configuration
+    echo "# Workspace project configuration" > "$WORKSPACE_CONFIG"
+    echo "# Created: $(date)" >> "$WORKSPACE_CONFIG"
+    echo "WORKSPACE_PROJECT_DIR=$WORKSPACE_PROJECT_DIR" >> "$WORKSPACE_CONFIG"
+    
+    echo -e "${GREEN}✓ Configuration saved to .workspace-config${NC}"
+    echo ""
+    
+    return 0
+}
+
+load_workspace_config() {
+    # Priority 1: --myworkspace flag
+    if [ -n "$CUSTOM_WORKSPACE" ]; then
+        WORKSPACE_PROJECT_DIR="$CUSTOM_WORKSPACE"
+        # Save to config for future use
+        echo "# Workspace project configuration" > "$WORKSPACE_CONFIG"
+        echo "# Updated: $(date)" >> "$WORKSPACE_CONFIG"
+        echo "WORKSPACE_PROJECT_DIR=$WORKSPACE_PROJECT_DIR" >> "$WORKSPACE_CONFIG"
+        return 0
+    fi
+    
+    # Priority 2: Existing config file
+    if [ -f "$WORKSPACE_CONFIG" ]; then
+        source "$WORKSPACE_CONFIG"
+        if [ -n "$WORKSPACE_PROJECT_DIR" ]; then
+            return 0
         fi
-        echo ""
-        echo "See ../IPROJECT.md for complete setup instructions"
+    fi
+    
+    # Priority 3: Check for legacy iproject directory (backward compatibility)
+    if [ -d "$WORK_DIR/iproject" ]; then
+        WORKSPACE_PROJECT_DIR="iproject"
+        echo -e "${YELLOW}ℹ  Found existing iproject/ - using it as workspace${NC}"
+        # Save to config
+        echo "# Workspace project configuration" > "$WORKSPACE_CONFIG"
+        echo "# Migrated from iproject: $(date)" >> "$WORKSPACE_CONFIG"
+        echo "WORKSPACE_PROJECT_DIR=$WORKSPACE_PROJECT_DIR" >> "$WORKSPACE_CONFIG"
+        return 0
+    fi
+    
+    # Priority 4: Interactive setup
+    if ! interactive_workspace_setup; then
         return 1
     fi
     
-    # Check for required directories
-    if [ ! -d "$IPROJECT_DIR/results" ]; then
-        echo -e "${RED}Error: $IPROJECT_DIR/results/ directory not found${NC}"
-        echo "Creating it..."
-        mkdir -p "$IPROJECT_DIR/results"
+    return 0
+}
+
+verify_workspace_project() {
+    # Load workspace configuration
+    if ! load_workspace_config; then
+        echo -e "${RED}Error: Failed to configure workspace project${NC}"
+        return 1
     fi
     
-    if [ ! -d "$IPROJECT_DIR/analysis" ]; then
-        echo -e "${RED}Error: $IPROJECT_DIR/analysis/ directory not found${NC}"
-        echo "Creating it..."
-        mkdir -p "$IPROJECT_DIR/analysis"
+    local workspace_dir="$WORK_DIR/$WORKSPACE_PROJECT_DIR"
+    
+    # Create workspace directory if it doesn't exist
+    if [ ! -d "$workspace_dir" ]; then
+        echo -e "${BLUE}Creating workspace directory: $WORKSPACE_PROJECT_DIR/${NC}"
+        mkdir -p "$workspace_dir"
     fi
+    
+    # Create results and analysis subdirectories
+    if [ ! -d "$workspace_dir/results" ]; then
+        echo -e "${BLUE}Creating $WORKSPACE_PROJECT_DIR/results/${NC}"
+        mkdir -p "$workspace_dir/results"
+    fi
+    
+    if [ ! -d "$workspace_dir/analysis" ]; then
+        echo -e "${BLUE}Creating $WORKSPACE_PROJECT_DIR/analysis/${NC}"
+        mkdir -p "$workspace_dir/analysis"
+    fi
+    
+    echo -e "${GREEN}✓ Workspace ready: $WORKSPACE_PROJECT_DIR/${NC}"
+    echo ""
     
     return 0
 }
@@ -175,17 +293,17 @@ create_review_assessment() {
     local project="$4"
     local dir_name="$5"
     
-    # Verify iproject exists
-    if ! verify_iproject; then
+    # Verify workspace project exists
+    if ! verify_workspace_project; then
         exit 1
     fi
     
-    # Create assessment in iproject/results/
-    local results_dir="$IPROJECT_DIR/results"
+    # Create assessment in workspace project results/
+    local results_dir="$WORK_DIR/$WORKSPACE_PROJECT_DIR/results"
     local assessment_file="$results_dir/review_${number}.md"
     local template_file="$SCRIPT_DIR/../../results/review_template.md"
     
-    echo -e "${BLUE}Creating review assessment document: iproject/results/review_${number}.md${NC}"
+    echo -e "${BLUE}Creating review assessment document: $WORKSPACE_PROJECT_DIR/results/review_${number}.md${NC}"
     
     # Get basic info from the review (using WORK_DIR as base)
     cd "$WORK_DIR/$dir_name"
@@ -541,7 +659,7 @@ case "$TYPE" in
         
         if [ "$WITH_ASSESSMENT" = true ]; then
             echo ""
-            echo -e "${GREEN}📋 Assessment template ready: iproject/results/review_${CHANGE}.md${NC}"
+            echo -e "${GREEN}📋 Assessment template ready: $WORKSPACE_PROJECT_DIR/results/review_${CHANGE}.md${NC}"
             echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze review ${CHANGE}'${NC}"
         fi
         ;;
@@ -651,7 +769,7 @@ case "$TYPE" in
         
         if [ "$WITH_ASSESSMENT" = true ]; then
             echo ""
-            echo -e "${GREEN}📋 Assessment template ready: iproject/results/review_pr_${PR}.md${NC}"
+            echo -e "${GREEN}📋 Assessment template ready: $WORKSPACE_PROJECT_DIR/results/review_pr_${PR}.md${NC}"
             echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze PR ${PR}'${NC}"
         fi
         ;;
@@ -762,7 +880,7 @@ case "$TYPE" in
         
         if [ "$WITH_ASSESSMENT" = true ]; then
             echo ""
-            echo -e "${GREEN}📋 Assessment template ready: iproject/results/review_mr_${MR}.md${NC}"
+            echo -e "${GREEN}📋 Assessment template ready: $WORKSPACE_PROJECT_DIR/results/review_mr_${MR}.md${NC}"
             echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze MR ${MR}'${NC}"
         fi
         ;;
