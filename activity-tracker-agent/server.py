@@ -493,18 +493,18 @@ def generate_status_report(
                 'opendev': opendev_data
             }, indent=2)
         else:
-            # Generate markdown report
+            # Generate markdown report with activity tables
             report_lines = []
             report_lines.append(f"# Status Report: Week {week_number}")
             report_lines.append("")
-            report_lines.append(f"**Period**: {start_date} to {end_date}")
+            report_lines.append(f"**Period**: {start_date} to {end_date}  ")
             report_lines.append(f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             report_lines.append("")
             report_lines.append("---")
             report_lines.append("")
             
-            # Summary
-            report_lines.append("## Summary")
+            # Summary - Activity Tables format
+            report_lines.append("## 📊 Activity Summary")
             report_lines.append("")
             gh_prs_created = len(github_data.get('prs_created', []))
             gh_prs_reviewed = len(github_data.get('prs_reviewed', []))
@@ -515,48 +515,58 @@ def generate_status_report(
             od_comments = len(opendev_data.get('comments_posted', []))
             od_votes = len(opendev_data.get('votes_given', []))
             
-            report_lines.append(f"- **GitHub**: {gh_prs_created} PRs created, {gh_prs_reviewed} PRs reviewed, {gh_commits} commits, {gh_issues} issues")
-            report_lines.append(f"- **OpenDev**: {od_reviews} reviews posted, {od_comments} comments, {od_votes} votes")
+            report_lines.append("| Platform | PRs/Reviews | Comments | Commits | Issues | Votes |")
+            report_lines.append("|----------|-------------|----------|---------|--------|-------|")
+            report_lines.append(f"| **GitHub** | {gh_prs_created} | {gh_prs_reviewed} reviews | {gh_commits} | {gh_issues} | 0 |")
+            report_lines.append(f"| **OpenDev** | {od_reviews} new | {od_comments} | 0 | 0 | {od_votes} |")
+            report_lines.append(f"| **Total** | **{gh_prs_created + od_reviews}** | **{gh_prs_reviewed + od_comments}** | **{gh_commits}** | **{gh_issues}** | **{od_votes}** |")
             report_lines.append("")
             report_lines.append("---")
             report_lines.append("")
             
-            # GitHub Activity
-            report_lines.append("## GitHub Activity")
+            # GitHub Activity with tables
+            report_lines.append("## 🔵 GitHub Activity")
             report_lines.append("")
             
             if gh_prs_created > 0:
                 report_lines.append(f"### Pull Requests Created ({gh_prs_created})")
                 report_lines.append("")
+                report_lines.append("| Repository | PR | Title | Status | Created | Link |")
+                report_lines.append("|------------|-----|-------|--------|---------|------|")
                 for pr in github_data.get('prs_created', []):
-                    report_lines.append(f"- **{pr['repo']}#{pr['number']}**: {pr['title']} ({pr['state'].upper()})")
-                    report_lines.append(f"  - Created: {pr['created_at'][:10]}")
-                    report_lines.append(f"  - URL: {pr['url']}")
+                    status_icon = "🟢" if pr['state'] == 'open' else "🟣"
+                    report_lines.append(f"| {pr['repo']} | [#{pr['number']}]({pr['url']}) | {pr['title']} | {status_icon} {pr['state'].upper()} | {pr['created_at'][:10]} | [View]({pr['url']}) |")
                 report_lines.append("")
             
             if gh_prs_reviewed > 0:
                 report_lines.append(f"### Pull Requests Reviewed ({gh_prs_reviewed})")
                 report_lines.append("")
+                report_lines.append("| Repository | PR | Title | Comments | Link |")
+                report_lines.append("|------------|-----|-------|----------|------|")
                 for pr in github_data.get('prs_reviewed', []):
-                    report_lines.append(f"- **{pr['repo']}#{pr['number']}**: {pr['title']}")
-                    report_lines.append(f"  - Comments: {pr['comments']}")
-                    report_lines.append(f"  - URL: {pr['url']}")
+                    report_lines.append(f"| {pr['repo']} | [#{pr['number']}]({pr['url']}) | {pr['title']} | {pr['comments']} | [View]({pr['url']}) |")
                 report_lines.append("")
             
             if gh_commits > 0:
                 report_lines.append(f"### Commits ({gh_commits})")
                 report_lines.append("")
+                report_lines.append("| Repository | SHA | Message | Date | Link |")
+                report_lines.append("|------------|-----|---------|------|------|")
                 for commit in github_data.get('commits', [])[:20]:  # Limit to first 20
-                    report_lines.append(f"- **{commit['repo']}** `{commit['sha']}`: {commit['message']}")
+                    report_lines.append(f"| {commit['repo']} | `{commit['sha']}` | {commit['message']} | {commit['date'][:10]} | [View]({commit['url']}) |")
                 if gh_commits > 20:
-                    report_lines.append(f"- _(and {gh_commits - 20} more commits)_")
+                    report_lines.append("")
+                    report_lines.append(f"_... and {gh_commits - 20} more commits_")
                 report_lines.append("")
             
             if gh_issues > 0:
                 report_lines.append(f"### Issues Created ({gh_issues})")
                 report_lines.append("")
+                report_lines.append("| Repository | Issue | Title | Status | Created | Link |")
+                report_lines.append("|------------|-------|-------|--------|---------|------|")
                 for issue in github_data.get('issues_created', []):
-                    report_lines.append(f"- **{issue['repo']}#{issue['number']}**: {issue['title']} ({issue['state'].upper()})")
+                    status_icon = "🟢" if issue['state'] == 'open' else "🟣"
+                    report_lines.append(f"| {issue['repo']} | [#{issue['number']}]({issue['url']}) | {issue['title']} | {status_icon} {issue['state'].upper()} | {issue['created_at'][:10]} | [View]({issue['url']}) |")
                 report_lines.append("")
             
             if not any([gh_prs_created, gh_prs_reviewed, gh_commits, gh_issues]):
@@ -566,22 +576,22 @@ def generate_status_report(
             report_lines.append("---")
             report_lines.append("")
             
-            # OpenDev Activity
-            report_lines.append("## OpenDev Activity")
+            # OpenDev Activity with tables
+            report_lines.append("## 🟠 OpenDev Activity")
             report_lines.append("")
             
             if od_reviews > 0:
                 report_lines.append(f"### Reviews Posted ({od_reviews})")
                 report_lines.append("")
+                report_lines.append("| Review | Project | Subject | Status | Created | Link |")
+                report_lines.append("|--------|---------|---------|--------|---------|------|")
                 for review in opendev_data.get('reviews_posted', []):
-                    report_lines.append(f"- **Review {review['number']}**: {review['subject']}")
-                    report_lines.append(f"  - Project: {review['project']}")
-                    report_lines.append(f"  - Status: {review['status']}")
-                    report_lines.append(f"  - URL: {review['url']}")
+                    status_icon = "🟢" if review['status'] == 'NEW' else "🟣" if review['status'] == 'MERGED' else "🔴"
+                    report_lines.append(f"| [{review['number']}]({review['url']}) | {review['project']} | {review['subject']} | {status_icon} {review['status']} | {review['created'][:10]} | [View]({review['url']}) |")
                 report_lines.append("")
             
             if od_comments > 0 or od_votes > 0:
-                report_lines.append(f"### Comments & Votes ({od_comments} comments, {od_votes} votes)")
+                report_lines.append(f"### Activity Timeline ({od_comments} comments, {od_votes} votes)")
                 report_lines.append("")
                 
                 # Combine and sort by date
@@ -592,15 +602,21 @@ def generate_status_report(
                     combined.append(('vote', vote))
                 combined.sort(key=lambda x: x[1].get('date', ''), reverse=True)
                 
+                report_lines.append("| Date | Review | Project | Action | Details | Link |")
+                report_lines.append("|------|--------|---------|--------|---------|------|")
+                
                 for item_type, item in combined[:20]:  # Limit to first 20
+                    date_str = item.get('date', '')[:10] if item.get('date') else 'N/A'
                     if item_type == 'comment':
-                        report_lines.append(f"- **Review {item['review']}** ({item['project']}): 💬 {item['message'][:80]}...")
+                        message_preview = item['message'][:60].replace('\n', ' ').replace('|', '\\|')
+                        report_lines.append(f"| {date_str} | [{item['review']}]({item['url']}) | {item['project']} | 💬 Comment | {message_preview}... | [View]({item['url']}) |")
                     else:  # vote
                         vote_emoji = "✅" if item['value'] > 0 else "❌" if item['value'] < 0 else "💬"
-                        report_lines.append(f"- **Review {item['review']}** ({item['project']}): {vote_emoji} {item['label']} {item['value']:+d}")
+                        report_lines.append(f"| {date_str} | [{item['review']}]({item['url']}) | {item['project']} | {vote_emoji} Vote | {item['label']} {item['value']:+d} | [View]({item['url']}) |")
                 
                 if len(combined) > 20:
-                    report_lines.append(f"- _(and {len(combined) - 20} more comments/votes)_")
+                    report_lines.append("")
+                    report_lines.append(f"_... and {len(combined) - 20} more comments/votes_")
                 report_lines.append("")
             
             if not any([od_reviews, od_comments, od_votes]):
@@ -610,19 +626,19 @@ def generate_status_report(
             report_lines.append("---")
             report_lines.append("")
             
-            # Footer
-            report_lines.append("## Key Themes")
+            # Footer sections
+            report_lines.append("## 📝 Key Themes")
             report_lines.append("")
             report_lines.append("_To be filled by AI analysis based on activities above_")
             report_lines.append("")
-            report_lines.append("## Blockers")
+            report_lines.append("## 🚧 Blockers")
             report_lines.append("")
-            report_lines.append("_None_ or _User-provided blockers_")
+            report_lines.append("_None identified in this period_")
             report_lines.append("")
             report_lines.append("---")
             report_lines.append("")
-            report_lines.append(f"_Generated by mymcp activity-tracker on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}_")
-            report_lines.append(f"_Data cached at: `{ACTIVITY_DIR}/{week_number}.json`_")
+            report_lines.append(f"_Generated by mymcp activity-tracker on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}_  ")
+            report_lines.append(f"_Data cached at: `{week_number}.json` (this directory)_")
             
             report = "\n".join(report_lines)
             
