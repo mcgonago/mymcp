@@ -583,11 +583,14 @@ def generate_status_report(
             if od_reviews > 0:
                 report_lines.append(f"### Reviews Posted ({od_reviews})")
                 report_lines.append("")
-                report_lines.append("| Review | Project | Subject | Status | Created | Link |")
-                report_lines.append("|--------|---------|---------|--------|---------|------|")
+                report_lines.append("| Review | Project | Description | Status | Created | Latest |")
+                report_lines.append("|--------|---------|-------------|--------|---------|--------|")
                 for review in opendev_data.get('reviews_posted', []):
                     status_icon = "🟢" if review['status'] == 'NEW' else "🟣" if review['status'] == 'MERGED' else "🔴"
-                    report_lines.append(f"| [{review['number']}]({review['url']}) | {review['project']} | {review['subject']} | {status_icon} {review['status']} | {review['created'][:10]} | [View]({review['url']}) |")
+                    # Truncate subject to ~60 chars for description
+                    description = review['subject'][:60] + '...' if len(review['subject']) > 60 else review['subject']
+                    # Latest patchset link would need revision data - use review link for now
+                    report_lines.append(f"| [{review['number']}]({review['url']}) | {review['project']} | {description} | {status_icon} {review['status']} | {review['created'][:10]} | [View]({review['url']}) |")
                 report_lines.append("")
             
             if od_comments > 0 or od_votes > 0:
