@@ -62,15 +62,102 @@ cp .env.example .env
 nano .env
 ```
 
-**Required configuration**:
-- `WORKSPACE_PROJECT`: Path to your workspace project (default: `~/Work/mymcp/workspace/iproject`)
-- `GITHUB_USERNAME`: Your GitHub username
-- `OPENDEV_USERNAME`: Your OpenDev username
-- `GITHUB_TOKEN`: Your GitHub personal access token (reuse from `../github-agent/.env`)
+#### Required Configuration
 
-**Optional configuration**:
-- `CACHE_MAX_AGE_HOURS`: How long cache is valid (default: 24 hours)
-- `ACTIVITY_DIR`: Custom activity directory (default: `${WORKSPACE_PROJECT}/activity`)
+These environment variables must be set for the agent to function:
+
+**`WORKSPACE_PROJECT`**
+- **Purpose**: Root directory for storing activity reports and cached data
+- **Default**: `~/Work/mymcp/workspace/iproject`
+- **Usage**: The agent creates an `activity/` subdirectory here to store:
+  - Cached API responses (`YYYY-Www.json`)
+  - Generated reports (`YYYY-Www_report.md`)
+- **Example**: `/home/username/Work/mymcp/workspace/iproject`
+
+**`GITHUB_USERNAME`**
+- **Purpose**: Your GitHub username for filtering activity
+- **Usage**: Used in GitHub API queries to find:
+  - PRs you created (`author:username`)
+  - PRs you reviewed (`reviewed-by:username`)
+  - Commits you authored (`author:username`)
+  - Issues you created or commented on
+- **Example**: `omcgonag`
+- **Where to find**: Your GitHub profile URL: `https://github.com/USERNAME`
+
+**`OPENDEV_USERNAME`**
+- **Purpose**: Your OpenDev/Gerrit username for filtering activity
+- **Usage**: Used in Gerrit API queries to find:
+  - Reviews you posted (`owner:username`)
+  - Comments you made
+  - Votes you gave (Code-Review, Workflow)
+- **Example**: `omcgonag`
+- **Where to find**: Your OpenDev profile: `https://review.opendev.org/q/owner:USERNAME`
+
+**`GITHUB_TOKEN`**
+- **Purpose**: Authenticates GitHub API requests
+- **Usage**: 
+  - Enables access to private repositories
+  - Increases API rate limit from 60/hour (unauthenticated) to 5,000/hour
+  - Required for fetching PR reviews and detailed commit data
+- **Example**: `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+- **Where to get**: 
+  - GitHub Settings → Developer settings → Personal access tokens
+  - Or reuse from `../github-agent/.env`
+- **Required scopes**: `repo`, `read:org`, `read:user`
+
+#### Optional Configuration
+
+These variables have sensible defaults but can be customized:
+
+**`CACHE_MAX_AGE_HOURS`**
+- **Purpose**: Controls how long cached activity data remains valid
+- **Default**: `24` (hours)
+- **Usage**: 
+  - If cached data is older than this, the agent refetches from APIs
+  - Prevents hitting API rate limits on repeated queries
+  - Set to `0` to disable caching (always fetch fresh data)
+- **Example**: `48` (for 2-day cache), `168` (for 1-week cache)
+
+**`ACTIVITY_DIR`**
+- **Purpose**: Custom location for activity reports and cache
+- **Default**: `${WORKSPACE_PROJECT}/activity`
+- **Usage**: Override if you want to store reports elsewhere
+- **Example**: `/home/username/my_reports/activity`
+- **Note**: The directory will be created automatically if it doesn't exist
+
+#### Configuration Example
+
+Here's a complete `.env` file example:
+
+```bash
+# Required: Your workspace project root
+WORKSPACE_PROJECT=/home/omcgonag/Work/mymcp/workspace/iproject
+
+# Required: Your GitHub username (find at https://github.com/USERNAME)
+GITHUB_USERNAME=omcgonag
+
+# Required: Your OpenDev username (find at https://review.opendev.org/q/owner:USERNAME)
+OPENDEV_USERNAME=omcgonag
+
+# Required: GitHub personal access token (reuse from ../github-agent/.env)
+# Get from: https://github.com/settings/tokens
+# Scopes needed: repo, read:org, read:user
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Optional: Cache validity period (default: 24 hours)
+CACHE_MAX_AGE_HOURS=24
+
+# Optional: Custom activity directory (default: ${WORKSPACE_PROJECT}/activity)
+# ACTIVITY_DIR=/home/omcgonag/custom_activity_reports
+```
+
+**Quick Setup Tip:**
+
+If you already have `github-agent` configured, you can copy the token:
+
+```bash
+grep GITHUB_TOKEN ../github-agent/.env >> .env
+```
 
 ### 4. Configure MCP Client
 
@@ -91,6 +178,78 @@ Add to `~/.cursor/mcp.json`:
 ### 5. Restart Cursor
 
 Fully quit Cursor (Ctrl+Q) and restart to load the new MCP agent.
+
+### How Configuration Variables Are Used
+
+Here's the complete data flow showing where each configuration variable is used:
+
+```
+User Request: @activity-tracker generate_status_report("last week")
+       ↓
+┌──────────────────────────────────────────────────────────────┐
+│ 1. Parse Time Range                                          │
+│    "last week" → 2025-11-15 to 2025-11-22                   │
+└──────────────────────────────────────────────────────────────┘
+       ↓
+┌──────────────────────────────────────────────────────────────┐
+│ 2. Check Cache (uses WORKSPACE_PROJECT + ACTIVITY_DIR)      │
+│    Location: ${WORKSPACE_PROJECT}/activity/2025-W46.json    │
+│    Cache age check: CACHE_MAX_AGE_HOURS                     │
+│                                                              │
+│    If cache valid (< 24 hours old) → Skip API calls         │
+│    If cache stale (> 24 hours old) → Fetch from APIs        │
+└──────────────────────────────────────────────────────────────┘
+       ↓
+┌──────────────────────────────────────────────────────────────┐
+│ 3. Fetch GitHub Activity (if needed)                         │
+│    Uses: GITHUB_USERNAME, GITHUB_TOKEN                      │
+│                                                              │
+│    API Queries:                                              │
+│    - PRs created:  author:${GITHUB_USERNAME}                │
+│    - PRs reviewed: reviewed-by:${GITHUB_USERNAME}           │
+│    - Commits:      author:${GITHUB_USERNAME}                │
+│    - Issues:       author:${GITHUB_USERNAME}                │
+│                                                              │
+│    Authentication: GITHUB_TOKEN in request headers          │
+└──────────────────────────────────────────────────────────────┘
+       ↓
+┌──────────────────────────────────────────────────────────────┐
+│ 4. Fetch OpenDev Activity (if needed)                        │
+│    Uses: OPENDEV_USERNAME                                   │
+│                                                              │
+│    Gerrit API Queries:                                       │
+│    - Reviews posted: owner:${OPENDEV_USERNAME}              │
+│    - Comments made:  commenter:${OPENDEV_USERNAME}          │
+│    - Votes given:    reviewer:${OPENDEV_USERNAME}           │
+│                                                              │
+│    Note: No authentication needed (public API)              │
+└──────────────────────────────────────────────────────────────┘
+       ↓
+┌──────────────────────────────────────────────────────────────┐
+│ 5. Save Cache (uses WORKSPACE_PROJECT + ACTIVITY_DIR)       │
+│    Save to: ${WORKSPACE_PROJECT}/activity/2025-W46.json     │
+│    Contains: Raw GitHub + OpenDev activity data             │
+└──────────────────────────────────────────────────────────────┘
+       ↓
+┌──────────────────────────────────────────────────────────────┐
+│ 6. Generate Report (uses WORKSPACE_PROJECT + ACTIVITY_DIR)  │
+│    Save to: ${WORKSPACE_PROJECT}/activity/2025-W46_report.md│
+│    Format: Markdown with activity summaries                 │
+└──────────────────────────────────────────────────────────────┘
+       ↓
+   Return report to user in Cursor
+```
+
+**Example File Structure After Running:**
+
+```
+~/Work/mymcp/workspace/iproject/           ← WORKSPACE_PROJECT
+└── activity/                               ← ACTIVITY_DIR
+    ├── 2025-W45.json                       ← Cached data (week 45)
+    ├── 2025-W45_report.md                  ← Generated report (week 45)
+    ├── 2025-W46.json                       ← Cached data (week 46)
+    └── 2025-W46_report.md                  ← Generated report (week 46)
+```
 
 ## Usage
 
