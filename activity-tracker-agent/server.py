@@ -589,8 +589,18 @@ def generate_status_report(
                     status_icon = "🟢" if review['status'] == 'NEW' else "🟣" if review['status'] == 'MERGED' else "🔴"
                     # Truncate subject to ~60 chars for description
                     description = review['subject'][:60] + '...' if len(review['subject']) > 60 else review['subject']
+                    
+                    # Format status with merge date if merged
+                    if review['status'] == 'MERGED':
+                        merge_date = review.get('updated', '')[:10]  # Use updated date as merge date
+                        status_display = f"{status_icon} **MERGED** ({merge_date})"
+                    elif review['status'] == 'ABANDONED':
+                        status_display = f"{status_icon} ABANDONED"
+                    else:  # NEW or other
+                        status_display = f"{status_icon} {review['status']}"
+                    
                     # Latest patchset link would need revision data - use review link for now
-                    report_lines.append(f"| [{review['number']}]({review['url']}) | {review['project']} | {description} | {status_icon} {review['status']} | {review['created'][:10]} | [View]({review['url']}) |")
+                    report_lines.append(f"| [{review['number']}]({review['url']}) | {review['project']} | {description} | {status_display} | {review['created'][:10]} | [View]({review['url']}) |")
                 report_lines.append("")
             
             if od_comments > 0 or od_votes > 0:
