@@ -1101,14 +1101,14 @@ Result: User gets properly structured output even with vague request
 
 mymcp is designed for AI to **discover** patterns:
 
-| Discoverable Element | Location | AI Uses For |
-|---------------------|----------|-------------|
-| Templates | `analysis/*_template.md` | Structure guidance |
-| Examples | `analysis/analysis_new_feature_*/` | Pattern learning |
-| Policies | `docs/WORKSPACE_POLICY.md` | Where to create files |
-| Configuration | `.mymcp-config` | Path resolution |
-| askme Examples | `askme/keys/example_*.yaml` | Workflow patterns |
-| Agent README | `*-agent/README.md` | How to use agents |
+| Discoverable Element | Location | AI Uses For | Example |
+|---------------------|----------|-------------|---------|
+| Templates | `analysis/*_template.md` | Structure guidance | [`analysis/spike_template.md`](https://github.com/mcgonago/mymcp/blob/main/analysis/spike_template.md) |
+| Examples | `analysis/analysis_new_feature_*/` | Pattern learning | [`workspace/iproject/analysis/analysis_new_feature_966349/`](https://github.com/mcgonago/mymcp/tree/main/workspace/iproject/analysis/analysis_new_feature_966349) |
+| Policies | `docs/WORKSPACE_POLICY.md` | Where to create files | [`docs/WORKSPACE_POLICY.md`](https://github.com/mcgonago/mymcp/blob/main/docs/WORKSPACE_POLICY.md) |
+| Configuration | `.mymcp-config` | Path resolution | [`.mymcp-config`](https://github.com/mcgonago/mymcp/blob/main/.mymcp-config) |
+| askme Examples | `askme/keys/example_*.yaml` | Workflow patterns | [`askme/keys/example_implement_chevron_fix.yaml`](https://github.com/mcgonago/mymcp/blob/main/askme/keys/example_implement_chevron_fix.yaml) |
+| Agent README | `*-agent/README.md` | How to use agents | [`activity-tracker-agent/README.md`](https://github.com/mcgonago/mymcp/blob/main/activity-tracker-agent/README.md) |
 
 **AI Self-Sufficiency:**
 The repository is structured so AI can:
@@ -1206,16 +1206,17 @@ The repository is structured so AI can:
 ### mymcp-Specific Learning
 
 15. **This Repository's Documentation**
-    - `README.md` - Overview of all agents
-    - `docs/WORKSPACE_POLICY.md` - Where files go
-    - `docs/CENTRAL_CONFIGURATION.md` - Path system
-    - `design/Design_MCP_Standup.md` - Example design process
-    - `analysis/TEMPLATES_README.md` - How templates work
+    - [`README.md`](https://github.com/mcgonago/mymcp/blob/main/README.md) - Overview of all agents
+    - [`docs/WORKSPACE_POLICY.md`](https://github.com/mcgonago/mymcp/blob/main/docs/WORKSPACE_POLICY.md) - Where files go
+    - [`docs/CENTRAL_CONFIGURATION.md`](https://github.com/mcgonago/mymcp/blob/main/docs/CENTRAL_CONFIGURATION.md) - Path system
+    - [`design/Design_MCP_Standup.md`](https://github.com/mcgonago/mymcp/blob/main/design/Design_MCP_Standup.md) - Example design process
+    - [`analysis/TEMPLATES_README.md`](https://github.com/mcgonago/mymcp/blob/main/analysis/TEMPLATES_README.md) - How templates work
 
 16. **Example Workflows**
-    - `askme/keys/example_*.yaml` - askme examples
-    - `workspace/iproject/analysis/analysis_new_feature_966349/` - Full feature analysis
-    - `activity-tracker-agent/` - Complete MCP agent implementation
+    - [`askme/keys/example_implement_chevron_fix.yaml`](https://github.com/mcgonago/mymcp/blob/main/askme/keys/example_implement_chevron_fix.yaml) - askme example
+    - [`askme/keys/example_template_pattern.yaml`](https://github.com/mcgonago/mymcp/blob/main/askme/keys/example_template_pattern.yaml) - Another askme example
+    - [`workspace/iproject/analysis/analysis_new_feature_966349/`](https://github.com/mcgonago/mymcp/tree/main/workspace/iproject/analysis/analysis_new_feature_966349) - Full feature analysis
+    - [`activity-tracker-agent/`](https://github.com/mcgonago/mymcp/tree/main/activity-tracker-agent) - Complete MCP agent implementation
 
 ---
 
@@ -1405,10 +1406,10 @@ A: Run `./ask_me.sh example_implement_chevron_fix` - you should see a generated 
 ---
 
 **See Also:**
-- [README.md](../README.md) - Repository overview
-- [WORKSPACE_POLICY.md](../docs/WORKSPACE_POLICY.md) - Where to create files
-- [TEMPLATES_README.md](../analysis/TEMPLATES_README.md) - Template system explained
-- [Design_MCP_Standup.md](../design/Design_MCP_Standup.md) - Example of design process
+- [`README.md`](https://github.com/mcgonago/mymcp/blob/main/README.md) - Repository overview
+- [`docs/WORKSPACE_POLICY.md`](https://github.com/mcgonago/mymcp/blob/main/docs/WORKSPACE_POLICY.md) - Where to create files
+- [`analysis/TEMPLATES_README.md`](https://github.com/mcgonago/mymcp/blob/main/analysis/TEMPLATES_README.md) - Template system explained
+- [`design/Design_MCP_Standup.md`](https://github.com/mcgonago/mymcp/blob/main/design/Design_MCP_Standup.md) - Example of design process
 
 **Feedback:**  
 For questions or improvements to this KBA, create an issue or update this document directly.
