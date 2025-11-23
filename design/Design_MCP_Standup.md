@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This design document details the integration of automated activity tracking and status report generation into the mymcp framework, inspired by [`standup_mcp`](https://gitlab.cee.redhat.com/fpantano/standup_mcp). Unlike the original project which focuses on Slack integration using the `did` tool, our implementation will:
+This design document details the integration of automated activity tracking and status report generation into the mymcp framework, **inspired by the excellent work of Francesco Pantano** in [`standup_mcp`](https://gitlab.cee.redhat.com/fpantano/standup_mcp). Francesco's innovative approach to automating standup reports using MCP and the `did` tool served as the catalyst for this implementation. While his project focuses on Slack integration using the `did` tool, our implementation adapts his core concepts for OpenStack Horizon development workflows:
 
 - Track **GitHub activities** (commits, PRs, reviews, comments)
 - Track **OpenDev review activities** (comments, votes, review submissions)
@@ -16,6 +16,8 @@ This design document details the integration of automated activity tracking and 
 ---
 
 ## Analysis of standup_mcp
+
+> **Credit**: The `standup_mcp` project by **Francesco Pantano** is an outstanding example of practical MCP server implementation. His clean architecture, thoughtful caching design, and production-ready approach to solving real-world workflow automation challenges demonstrates deep understanding of both the MCP protocol and enterprise development needs. This analysis studies his work to understand what makes it successful and how we can adapt his patterns for our specific use case.
 
 ### Architecture Overview
 
@@ -98,11 +100,15 @@ This design document details the integration of automated activity tracking and 
 
 ### Strengths
 
-✅ **Comprehensive Data Collection**: Supports 20+ services via plugins  
-✅ **Rate Limit Mitigation**: Built-in caching prevents API exhaustion  
-✅ **Flexible Time Ranges**: "last week", "yesterday", custom dates  
-✅ **MCP Integration**: Seamlessly works with Claude/Cursor  
-✅ **Proven in Production**: Used by Red Hat teams
+Francesco's `standup_mcp` demonstrates several architectural strengths that make it a reference implementation:
+
+✅ **Comprehensive Data Collection**: Supports 20+ services via plugins - showing excellent understanding of enterprise development ecosystems  
+✅ **Rate Limit Mitigation**: Built-in caching prevents API exhaustion - a critical production concern handled elegantly  
+✅ **Flexible Time Ranges**: "last week", "yesterday", custom dates - intuitive UX that respects how developers think  
+✅ **MCP Integration**: Seamlessly works with Claude/Cursor - clean FastMCP implementation that "just works"  
+✅ **Proven in Production**: Used by Red Hat teams - real-world validation of the design  
+✅ **Minimal Dependencies**: Leverages existing `did` tool - smart reuse rather than reimplementation  
+✅ **Clear Separation of Concerns**: MCP server focuses on orchestration, `did` handles data collection - excellent architecture
 
 ### Limitations (for our use case)
 
@@ -1011,6 +1017,48 @@ if __name__ == "__main__":
 
 ---
 
+## Acknowledgments
+
+This implementation would not have been possible without the pioneering work of **Francesco Pantano** and his [`standup_mcp`](https://gitlab.cee.redhat.com/fpantano/standup_mcp) project.
+
+### What We Learned from Francesco's Work
+
+**1. Production-Ready MCP Server Design**
+   - Francesco's clean separation between MCP protocol handling and business logic
+   - Thoughtful caching strategy to handle API rate limits gracefully
+   - Robust error handling and fallback mechanisms
+
+**2. Practical Workflow Automation**
+   - Real-world understanding of what developers need in status reports
+   - Integration with existing tools (`did`) rather than reinventing the wheel
+   - Focus on copy-paste readiness for Slack (immediate team value)
+
+**3. FastMCP Best Practices**
+   - Clear tool definitions with comprehensive docstrings
+   - Proper type hints for MCP protocol compliance
+   - Minimal dependencies, maximum functionality
+
+**4. Developer Experience**
+   - Straightforward configuration (`~/.did/config`)
+   - Clear documentation and examples
+   - Time range parsing that "just works" (`"last week"`, etc.)
+
+### How This Design Honors His Approach
+
+While we adapted Francesco's design for our specific OpenStack Horizon workflow, we preserved his core architectural principles:
+
+✅ **Caching First** - Respect API rate limits with intelligent caching  
+✅ **User-Friendly Time Ranges** - Natural language like `"last week"`  
+✅ **Structured Data** - Clean JSON formats for downstream processing  
+✅ **MCP Protocol Compliance** - Following FastMCP best practices  
+✅ **Workspace Integration** - Persisted data for historical tracking (extending his append-only cache concept)
+
+Francesco's work proved that automating status reports via MCP is not only feasible but can be elegant, maintainable, and truly valuable for development teams. His `standup_mcp` serves as a reference implementation that demonstrates the power of MCP for workflow automation beyond code review.
+
+**Thank you, Francesco, for sharing your excellent work and inspiring this implementation!** 🙌
+
+---
+
 ## Appendices
 
 ### A. Example Weekly Report (Target Output)
@@ -1130,10 +1178,23 @@ _Data cached at: `workspace/iproject/activity/2025-W47.json`_
 
 ### B. References
 
-- **standup_mcp**: https://gitlab.cee.redhat.com/fpantano/standup_mcp
+#### Primary Inspiration
+- **standup_mcp by Francesco Pantano**: https://gitlab.cee.redhat.com/fpantano/standup_mcp
+  - The reference implementation that inspired this design
+  - Demonstrates production-ready MCP server architecture
+  - Excellent example of FastMCP best practices
+
+#### Tools & Technologies
 - **did tool**: https://github.com/psss/did
+  - Command-line tool used by `standup_mcp`
+  - Comprehensive plugin ecosystem for activity tracking
 - **FastMCP**: https://github.com/pydantic/fastmcp
+  - Python framework for building MCP servers
+  - Used by both `standup_mcp` and our implementation
 - **MCP Specification**: https://modelcontextprotocol.io/
+  - Official Model Context Protocol specification
+
+#### API Documentation
 - **GitHub REST API**: https://docs.github.com/en/rest
 - **Gerrit REST API**: https://gerrit-review.googlesource.com/Documentation/rest-api.html
 
@@ -1142,7 +1203,12 @@ _Data cached at: `workspace/iproject/activity/2025-W47.json`_
 **Document Version**: 1.0  
 **Created**: 2025-11-22  
 **Author**: Cursor AI (with @omcgonag requirements)  
+**Inspired By**: Francesco Pantano's [`standup_mcp`](https://gitlab.cee.redhat.com/fpantano/standup_mcp)  
 **Status**: Draft - Awaiting User Review
+
+---
+
+*Special thanks to Francesco Pantano for his pioneering work in MCP-based workflow automation. His `standup_mcp` project demonstrates that elegant solutions to complex problems are possible when architecture, UX, and developer empathy align.*
 
 
 
