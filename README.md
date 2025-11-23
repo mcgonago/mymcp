@@ -96,6 +96,10 @@ An agent that provides access to Jira from Cursor with containerized deployment.
 
 An agent for tracking GitHub and OpenDev development activities with automated status report generation.
 
+> [!NOTE]
+> **About the Activity Tracker Agent**  
+> This implementation was *inspired by the excellent work of Francesco Pantano* in [`standup_mcp`](https://gitlab.cee.redhat.com/fpantano/standup_mcp). Francesco's innovative approach to automating standup reports using MCP and the `did` tool served as the catalyst for this implementation. While his project focuses on Slack integration using the `did` tool, our implementation adapts his core concepts for OpenStack Horizon development workflows.
+
 ### Features
 
 - **GitHub Activity Tracking**: Monitors PRs created/reviewed, commits, issues, and comments
