@@ -381,6 +381,7 @@ def get_opendev_activity(
                 'status': change.get('status', ''),
                 'created': change.get('created', ''),
                 'updated': change.get('updated', ''),
+                'owner': username,  # This is from owner query, so owner is the user
                 'url': f"{base_url}/c/{change.get('project', '')}/+/{change.get('_number', 0)}"
             })
         
@@ -515,11 +516,40 @@ def generate_status_report(
             od_comments = len(opendev_data.get('comments_posted', []))
             od_votes = len(opendev_data.get('votes_given', []))
             
-            report_lines.append("| Platform | PRs/Reviews | Comments | Commits | Issues | Votes |")
-            report_lines.append("|----------|-------------|----------|---------|--------|-------|")
-            report_lines.append(f"| **GitHub** | {gh_prs_created} | {gh_prs_reviewed} reviews | {gh_commits} | {gh_issues} | 0 |")
-            report_lines.append(f"| **OpenDev** | {od_reviews} new | {od_comments} | 0 | 0 | {od_votes} |")
-            report_lines.append(f"| **Total** | **{gh_prs_created + od_reviews}** | **{gh_prs_reviewed + od_comments}** | **{gh_commits}** | **{gh_issues}** | **{od_votes}** |")
+            # Track merged reviews owned by user for "Other" column
+            merged_reviews = []
+            for review in opendev_data.get('reviews_posted', []):
+                if review.get('status') == 'MERGED':
+                    merged_reviews.append(review)
+            
+            # Build "Other" column content
+            gh_other = "-"
+            od_other = "-"
+            total_other = "-"
+            
+            if merged_reviews:
+                # Format: "X merged: [review](url) description"
+                merged_count = len(merged_reviews)
+                if merged_count == 1:
+                    review = merged_reviews[0]
+                    description = review['subject'][:50] + '...' if len(review['subject']) > 50 else review['subject']
+                    od_other = f"{merged_count} merged: [{review['number']}]({review['url']}) {description}"
+                else:
+                    # Multiple merged reviews
+                    merged_links = []
+                    for review in merged_reviews[:3]:  # Show first 3
+                        merged_links.append(f"[{review['number']}]({review['url']})")
+                    od_other = f"{merged_count} merged: " + ", ".join(merged_links)
+                    if merged_count > 3:
+                        od_other += f" (+{merged_count - 3} more)"
+                
+                total_other = f"**{merged_count} merged**"
+            
+            report_lines.append("| Platform | PRs/Reviews | Comments | Commits | Issues | Votes | Other |")
+            report_lines.append("|----------|-------------|----------|---------|--------|-------|-------|")
+            report_lines.append(f"| **GitHub** | {gh_prs_created} | {gh_prs_reviewed} reviews | {gh_commits} | {gh_issues} | 0 | {gh_other} |")
+            report_lines.append(f"| **OpenDev** | {od_reviews} new | {od_comments} | 0 | 0 | {od_votes} | {od_other} |")
+            report_lines.append(f"| **Total** | **{gh_prs_created + od_reviews}** | **{gh_prs_reviewed + od_comments}** | **{gh_commits}** | **{gh_issues}** | **{od_votes}** | {total_other} |")
             report_lines.append("")
             report_lines.append("---")
             report_lines.append("")
@@ -583,8 +613,8 @@ def generate_status_report(
             if od_reviews > 0:
                 report_lines.append(f"### Reviews Posted ({od_reviews})")
                 report_lines.append("")
-                report_lines.append("| Review | Project | Description | Status | Created | Latest |")
-                report_lines.append("|--------|---------|-------------|--------|---------|--------|")
+                report_lines.append("| Review | Owner | Project | Description | Status | Created | Latest |")
+                report_lines.append("|--------|-------|---------|-------------|--------|---------|--------|")
                 for review in opendev_data.get('reviews_posted', []):
                     status_icon = "🟢" if review['status'] == 'NEW' else "🟣" if review['status'] == 'MERGED' else "🔴"
                     # Truncate subject to ~60 chars for description
@@ -599,8 +629,10 @@ def generate_status_report(
                     else:  # NEW or other
                         status_display = f"{status_icon} {review['status']}"
                     
+                    owner = review.get('owner', opendev_data.get('username', ''))
+                    
                     # Latest patchset link would need revision data - use review link for now
-                    report_lines.append(f"| [{review['number']}]({review['url']}) | {review['project']} | {description} | {status_display} | {review['created'][:10]} | [View]({review['url']}) |")
+                    report_lines.append(f"| [{review['number']}]({review['url']}) | {owner} | {review['project']} | {description} | {status_display} | {review['created'][:10]} | [View]({review['url']}) |")
                 report_lines.append("")
             
             if od_comments > 0 or od_votes > 0:
