@@ -330,7 +330,7 @@ When someone clones your mymcp:
 
 ### For You (Current iproject User)
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 
 # Your iproject is already detected and configured!
 # Just keep using it as before:
@@ -344,7 +344,7 @@ rm workspace/.workspace-config  # Reset config
 
 ### For Committing Changes
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 
 # Add new files
 git add WORKSPACE_PROJECT.md

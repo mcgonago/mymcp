@@ -325,7 +325,7 @@ The feature was successfully merged upstream with a +2 approval:
 The analysis directory is organized at the top level:
 
 ```
-/home/omcgonag/Work/mymcp/
+<mymcp-repo-path>/
 ├── analysis/                           # Permanent research documents
 │   ├── README.md                       # Analysis directory guide
 │   ├── docs/                            # Individual analysis documents

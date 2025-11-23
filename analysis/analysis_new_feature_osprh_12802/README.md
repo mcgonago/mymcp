@@ -205,7 +205,7 @@ Each patchset document follows this comprehensive format:
 
 ```bash
 # Set up working directory
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 git clone https://review.opendev.org/openstack/horizon horizon-osprh-12802-working
 cd horizon-osprh-12802-working
 
@@ -377,7 +377,7 @@ See: [analysis/docs/BEST_PRACTICES_FEATURE_DEV.md](../docs/BEST_PRACTICES_FEATUR
 Generate formatted "asks" for AI assistance:
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 
 # Example: Create an ask for investigating a specific issue
 cat > askme/keys/osprh_12802_issue.yaml <<EOF

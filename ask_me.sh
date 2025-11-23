@@ -34,6 +34,27 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATES_DIR="${SCRIPT_DIR}/askme/templates"
 KEYS_DIR="${SCRIPT_DIR}/askme/keys"
 
+# Load mymcp configuration
+if [ -f "${SCRIPT_DIR}/.mymcp-config" ]; then
+    source "${SCRIPT_DIR}/.mymcp-config"
+else
+    # Fallback defaults if config file doesn't exist
+    export MYMCP_REPO_PATH="${SCRIPT_DIR}"
+    export MYMCP_WORKSPACE="${MYMCP_REPO_PATH}/workspace"
+    export MYMCP_WORKSPACE_PROJECT="${MYMCP_WORKSPACE}/iproject"
+fi
+
+# Function to expand path variables in generated output
+expand_path_vars() {
+    local text="$1"
+    # Replace common path placeholders with actual values
+    text="${text//<mymcp-repo-path>/${MYMCP_REPO_PATH}}"
+    text="${text//\{MYMCP_REPO_PATH\}/${MYMCP_REPO_PATH}}"
+    text="${text//\{WORKSPACE_PATH\}/${MYMCP_WORKSPACE}}"
+    text="${text//\{WORKSPACE_PROJECT\}/${MYMCP_WORKSPACE_PROJECT}}"
+    echo "$text"
+}
+
 # Function to print usage
 usage() {
     echo "Usage: $0 <template-type> <key-file>"
@@ -159,8 +180,10 @@ EOF
   - PyYAML: pip install pyyaml"
     fi
     
-    # Use Python parser
-    python3 -c "$PYTHON_PARSER" "$KEY_FILE_PATH" "$TEMPLATE_FILE"
+    # Use Python parser and expand path variables
+    RESULT=$(python3 -c "$PYTHON_PARSER" "$KEY_FILE_PATH" "$TEMPLATE_FILE")
+    RESULT=$(expand_path_vars "$RESULT")
+    echo "$RESULT"
     
 else
     # Use yq (faster and more robust)
@@ -196,6 +219,9 @@ else
             rm -f /tmp/ask_me_tmp_$$
         fi
     done <<< "$YAML_KEYS"
+    
+    # Expand path variables before output
+    RESULT=$(expand_path_vars "$RESULT")
     
     echo "$RESULT"
 fi

@@ -12,7 +12,7 @@
 ### After implementation, compare changes:
 ```bash
 # Set up your working directory
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 git clone https://review.opendev.org/openstack/horizon horizon-osprh-12802-working
 cd horizon-osprh-12802-working
 git checkout -b osprh-12802-generate-form
@@ -521,7 +521,7 @@ After Patchset 1 is reviewed and merged:
 
 ```bash
 # If not already done
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 git clone https://review.opendev.org/openstack/horizon horizon-osprh-12802-working
 cd horizon-osprh-12802-working
 

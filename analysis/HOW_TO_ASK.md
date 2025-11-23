@@ -258,7 +258,7 @@ TL;DR for PR 5192
 
 **Instead of:**
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace && \
+cd <mymcp-repo-path>/workspace && \
   ./scripts/fetch-review.sh --with-assessment opendev \
   https://review.opendev.org/c/openstack/horizon/+/967773 && \
   cd horizon-967773 && git show HEAD && cd .. && \

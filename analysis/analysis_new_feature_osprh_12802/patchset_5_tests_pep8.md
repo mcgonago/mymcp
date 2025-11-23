@@ -523,7 +523,7 @@ class DownloadViewTests(test.TestCase):
 **Commands to run**:
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace/horizon-osprh-12802-working
+cd <mymcp-repo-path>/workspace/horizon-osprh-12802-working
 
 # Run key pairs tests specifically
 tox -e py39 -- openstack_dashboard.dashboards.project.key_pairs.tests

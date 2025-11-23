@@ -13,7 +13,7 @@
 ### Continue from Patchset 1:
 ```bash
 # Ensure you're on your working branch
-cd /home/omcgonag/Work/mymcp/workspace/horizon-osprh-12802-working
+cd <mymcp-repo-path>/workspace/horizon-osprh-12802-working
 git checkout osprh-12802-generate-form
 
 # Create changes for Patchset 2

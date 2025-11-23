@@ -48,26 +48,26 @@
 **These are documentation files WE created that contain broken example links**
 
 #### File A: `BROKEN_LINKS_REPORT.md` (16 links)
-**Location**: `/home/omcgonag/Work/mymcp/BROKEN_LINKS_REPORT.md`
+**Location**: `<mymcp-repo-path>/BROKEN_LINKS_REPORT.md`
 
 This was our FIRST analysis report. It contains examples of broken links from our analysis. **This file is now obsolete.**
 
 **Action**: **DELETE**
 ```bash
-rm /home/omcgonag/Work/mymcp/BROKEN_LINKS_REPORT.md
+rm <mymcp-repo-path>/BROKEN_LINKS_REPORT.md
 ```
 **Result**: Eliminates 16 broken links
 
 ---
 
 #### File B: `PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md` (3 links + 1 reference)
-**Location**: `/home/omcgonag/Work/mymcp/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md`
+**Location**: `<mymcp-repo-path>/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md`
 
 This was our SECOND analysis report showing details of the 23 links we just fixed. Contains example links that were in the old version of PHASE_1_TO_4_COMPLETE_SUMMARY.md.
 
 **Action**: **DELETE** (superseded by new report)
 ```bash
-rm /home/omcgonag/Work/mymcp/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
+rm <mymcp-repo-path>/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
 ```
 **Result**: Eliminates 3-4 broken links
 
@@ -76,7 +76,7 @@ rm /home/omcgonag/Work/mymcp/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
 ## Recommended Action: One Command to Rule Them All
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 rm BROKEN_LINKS_REPORT.md PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
 ```
 
@@ -117,9 +117,9 @@ Found 17 broken links:
 
 ## Files to Keep (17 template placeholders)
 
-✅ `/home/omcgonag/Work/mymcp/analysis/analysis_template.md`  
-✅ `/home/omcgonag/Work/mymcp/analysis/analysis_template_random_topics.md`  
-✅ `/home/omcgonag/Work/mymcp/workspace/docs/review_template.md`  
+✅ `<mymcp-repo-path>/analysis/analysis_template.md`  
+✅ `<mymcp-repo-path>/analysis/analysis_template_random_topics.md`  
+✅ `<mymcp-repo-path>/workspace/docs/review_template.md`  
 
 **Why?** These are templates that users copy and fill in with real links.
 
@@ -127,8 +127,8 @@ Found 17 broken links:
 
 ## Files to Delete (20 report examples)
 
-❌ `/home/omcgonag/Work/mymcp/BROKEN_LINKS_REPORT.md`  
-❌ `/home/omcgonag/Work/mymcp/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md`  
+❌ `<mymcp-repo-path>/BROKEN_LINKS_REPORT.md`  
+❌ `<mymcp-repo-path>/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md`  
 
 **Why?** These were working documents for our link-fixing session. They're superseded by:
 - ✅ `REMAINING_BROKEN_LINKS_DETAIL.md` (the new comprehensive report)
@@ -188,7 +188,7 @@ Found 17 broken links:
 Ready to clean up? Run this:
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 
 # Delete the old report files
 rm BROKEN_LINKS_REPORT.md PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md

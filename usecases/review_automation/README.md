@@ -17,7 +17,7 @@ This use case demonstrates how to use `fetch_review.sh` to automate the review p
 ### Step 1: Fetch the Review Code
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965215
 ```
 
@@ -124,7 +124,7 @@ User wants to: "Analyze GitLab MR https://gitlab.cee.redhat.com/eng/openstack/py
 ## Directory Structure
 
 ```
-/home/omcgonag/Work/mymcp/
+<mymcp-repo-path>/
 ├── workspace/              # Run fetch-review.sh here (gitignored)
 ├── results/                # Assessment documents go here (can commit)
 ├── analysis/               # Permanent research (always commit)
@@ -149,7 +149,7 @@ User wants to: "Analyze GitLab MR https://gitlab.cee.redhat.com/eng/openstack/py
 
 ```bash
 # Fetch review with assessment
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./fetch-review.sh --with-assessment opendev [URL]
 
 # View changes
@@ -161,7 +161,7 @@ git log -1
 tox -e pep8
 
 # Complete assessment location
-/home/omcgonag/Work/mymcp/results/review_[number].md
+<mymcp-repo-path>/results/review_[number].md
 ```
 
 ## Additional Resources

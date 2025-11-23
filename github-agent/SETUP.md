@@ -18,7 +18,7 @@
 Copy the example environment file and add your token:
 
 ```bash
-cd /home/omcgonag/Work/mymcp/github-agent
+cd <mymcp-repo-path>/github-agent
 cp example.env .env
 ```
 

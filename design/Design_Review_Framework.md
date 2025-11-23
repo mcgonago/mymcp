@@ -871,7 +871,7 @@ total_insertions/deletions → Scope statistics
   
 [00:00.200] Script Invocation
   Tool: run_terminal_cmd
-  Command: cd /home/omcgonag/Work/mymcp/workspace && \
+  Command: cd <mymcp-repo-path>/workspace && \
            ./scripts/fetch-review.sh --with-assessment opendev \
            https://review.opendev.org/c/openstack/horizon/+/967773
   

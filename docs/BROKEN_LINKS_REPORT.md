@@ -24,7 +24,7 @@ Most broken links fall into three categories:
 ```markdown
 [analysis_cors_security.md](analysis_cors_security.md)
 ```
-- **Expected file**: `/home/omcgonag/Work/mymcp/analysis/analysis_cors_security.md`
+- **Expected file**: `<mymcp-repo-path>/analysis/analysis_cors_security.md`
 - **Status**: File doesn't exist
 - **Action**: Either create this analysis file or remove the link
 
@@ -32,7 +32,7 @@ Most broken links fall into three categories:
 ```markdown
 [analysis_large_file_uploads.md](analysis_large_file_uploads.md)
 ```
-- **Expected file**: `/home/omcgonag/Work/mymcp/analysis/analysis_large_file_uploads.md`
+- **Expected file**: `<mymcp-repo-path>/analysis/analysis_large_file_uploads.md`
 - **Status**: File doesn't exist
 - **Action**: Either create this analysis file or remove the link
 
@@ -88,7 +88,7 @@ This WIP document has many references to old workspace directories and files:
 ```markdown
 [OpenDev MCP Agent Setup Guide](opendev-mcp-agent-setup.org)
 ```
-- **Expected file**: `/home/omcgonag/Work/mymcp/opendev-review-agent/opendev-mcp-agent-setup.org`
+- **Expected file**: `<mymcp-repo-path>/opendev-review-agent/opendev-mcp-agent-setup.org`
 - **Status**: File doesn't exist
 - **Action**: Either create this setup guide or remove the link
 
@@ -144,7 +144,7 @@ These files are templates with placeholder links - **no action needed**:
 
 ```bash
 # Open file and manually remove or fix the two broken links
-vim /home/omcgonag/Work/mymcp/analysis/analysis_direct_mode.md
+vim <mymcp-repo-path>/analysis/analysis_direct_mode.md
 # Search for: analysis_cors_security.md
 # Search for: analysis_large_file_uploads.md
 ```
@@ -153,7 +153,7 @@ vim /home/omcgonag/Work/mymcp/analysis/analysis_direct_mode.md
 
 ```bash
 # Open file and manually remove or fix the broken link
-vim /home/omcgonag/Work/mymcp/opendev-review-agent/README.md
+vim <mymcp-repo-path>/opendev-review-agent/README.md
 # Search for: opendev-mcp-agent-setup.org
 ```
 
@@ -161,7 +161,7 @@ vim /home/omcgonag/Work/mymcp/opendev-review-agent/README.md
 
 ```bash
 # Add note at top of file explaining historical nature
-vim /home/omcgonag/Work/mymcp/analysis/analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md
+vim <mymcp-repo-path>/analysis/analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md
 ```
 
 Add this note at the top:
@@ -177,7 +177,7 @@ Add this note at the top:
 After making fixes, re-run the link checker:
 
 ```bash
-python3 /home/omcgonag/Work/mymcp/scripts/check-links.py
+python3 <mymcp-repo-path>/scripts/check-links.py
 ```
 
 ---

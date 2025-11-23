@@ -1,7 +1,16 @@
 #!/bin/bash
 # Script to check all markdown links in documentation files
 
-BASE_DIR="/home/omcgonag/Work/mymcp"
+# Get script directory and load configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Load mymcp configuration
+if [ -f "${BASE_DIR}/.mymcp-config" ]; then
+    source "${BASE_DIR}/.mymcp-config"
+    BASE_DIR="${MYMCP_REPO_PATH}"
+fi
+
 cd "$BASE_DIR"
 
 # Color codes

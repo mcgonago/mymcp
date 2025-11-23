@@ -19,7 +19,7 @@ This document explains how to use the `mymcp` workspace with your personal `ipro
 ### 1. Clone Your iProject Repository
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 git clone https://gitlab.cee.redhat.com/omcgonag/iproject.git
 ```
 
@@ -58,7 +58,7 @@ source ~/.bashrc
 ### When You Run fetch-review.sh
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./scripts/fetch-review.sh --with-assessment opendev <url>
 ```
 
@@ -97,7 +97,7 @@ You: "Full spike for OSPRH-12345"
 ## Directory Structure
 
 ```
-/home/omcgonag/Work/mymcp/
+<mymcp-repo-path>/
 ├── workspace/
 │   ├── iproject/                    # Your personal work (gitignored in mymcp)
 │   │   ├── .git/                    # Separate git repository
@@ -155,7 +155,7 @@ You: "Full spike for OSPRH-12345"
 ### iproject Workflow
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace/iproject
+cd <mymcp-repo-path>/workspace/iproject
 
 # After Cursor completes an assessment
 git add results/review_967773.md
@@ -171,7 +171,7 @@ git push
 ### mymcp Workflow
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 
 # Only commit when you've created/updated examples or tools
 git add workspace/scripts/fetch-review.sh
@@ -293,7 +293,7 @@ If someone else uses your `mymcp` repository, they should:
 
 **Solution:**
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 git clone https://gitlab.cee.redhat.com/omcgonag/iproject.git
 ```
 
@@ -303,7 +303,7 @@ git clone https://gitlab.cee.redhat.com/omcgonag/iproject.git
 
 **Solution:**
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace/iproject
+cd <mymcp-repo-path>/workspace/iproject
 mkdir -p results analysis
 git add results/.gitkeep analysis/.gitkeep
 git commit -m "Add required directories"
@@ -334,7 +334,7 @@ If you have existing work in `mymcp/results/` or `mymcp/analysis/`:
 
 ```bash
 # Move actual work to iproject
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 mv results/review_967773.md workspace/iproject/results/
 mv analysis/analysis_new_feature_osprh_XXXXX/ workspace/iproject/analysis/
 

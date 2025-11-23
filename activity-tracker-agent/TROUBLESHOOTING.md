@@ -17,7 +17,7 @@ The Python virtual environment hasn't been created yet.
 
 ### Solution
 ```bash
-cd /home/omcgonag/Work/mymcp/activity-tracker-agent
+cd <mymcp-repo-path>/activity-tracker-agent
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -52,7 +52,7 @@ The `GITHUB_TOKEN` environment variable is not set.
 **Option A**: Copy from existing github-agent configuration
 
 ```bash
-cd /home/omcgonag/Work/mymcp/activity-tracker-agent
+cd <mymcp-repo-path>/activity-tracker-agent
 
 # If you have github-agent configured:
 grep GITHUB_TOKEN ../github-agent/.env >> .env
@@ -99,7 +99,7 @@ cat ~/.cursor/mcp.json | jq '.mcpServers."activity-tracker"'
 Should show:
 ```json
 {
-  "command": "/home/omcgonag/Work/mymcp/activity-tracker-agent/server.sh",
+  "command": "<mymcp-repo-path>/activity-tracker-agent/server.sh",
   "args": ["stdio"],
   "env": {}
 }
@@ -141,7 +141,7 @@ The startup script is not executable.
 
 ### Solution
 ```bash
-cd /home/omcgonag/Work/mymcp/activity-tracker-agent
+cd <mymcp-repo-path>/activity-tracker-agent
 chmod +x server.sh
 ```
 
@@ -182,7 +182,7 @@ ls -lh ~/Work/mymcp/workspace/iproject/activity/
 **Long-term**: Verify authentication
 ```bash
 # Make sure GITHUB_TOKEN is set in .env
-grep GITHUB_TOKEN /home/omcgonag/Work/mymcp/activity-tracker-agent/.env
+grep GITHUB_TOKEN <mymcp-repo-path>/activity-tracker-agent/.env
 ```
 
 **Wait it out**: Rate limits reset after 1 hour.
@@ -204,7 +204,7 @@ The workspace project directory doesn't exist or `WORKSPACE_PROJECT` is misconfi
 
 **Step 1**: Check configuration
 ```bash
-grep WORKSPACE_PROJECT /home/omcgonag/Work/mymcp/activity-tracker-agent/.env
+grep WORKSPACE_PROJECT <mymcp-repo-path>/activity-tracker-agent/.env
 ```
 
 **Step 2**: Verify directory exists
@@ -219,8 +219,8 @@ mkdir -p ~/Work/mymcp/workspace/iproject/activity
 
 **Step 4**: Update .env if wrong path
 ```bash
-nano /home/omcgonag/Work/mymcp/activity-tracker-agent/.env
-# Set: WORKSPACE_PROJECT=/home/omcgonag/Work/mymcp/workspace/iproject
+nano <mymcp-repo-path>/activity-tracker-agent/.env
+# Set: WORKSPACE_PROJECT=<mymcp-repo-path>/workspace/iproject
 ```
 
 ---
@@ -272,7 +272,7 @@ This should be handled automatically by the code. If you see this error, it's li
 
 **Debug**:
 ```bash
-cd /home/omcgonag/Work/mymcp/activity-tracker-agent
+cd <mymcp-repo-path>/activity-tracker-agent
 python server.py  # Test standalone
 ```
 
@@ -308,7 +308,7 @@ rm ~/Work/mymcp/workspace/iproject/activity/*.json
 **Option C**: Adjust cache age threshold
 ```bash
 # Edit .env
-nano /home/omcgonag/Work/mymcp/activity-tracker-agent/.env
+nano <mymcp-repo-path>/activity-tracker-agent/.env
 
 # Change to 1 hour instead of 24
 CACHE_MAX_AGE_HOURS=1
@@ -327,13 +327,13 @@ Report generates successfully but shows 0 activity for all categories.
 
 **Check**:
 ```bash
-grep -E "GITHUB_USERNAME|OPENDEV_USERNAME" /home/omcgonag/Work/mymcp/activity-tracker-agent/.env
+grep -E "GITHUB_USERNAME|OPENDEV_USERNAME" <mymcp-repo-path>/activity-tracker-agent/.env
 ```
 
 **Fix**:
 ```bash
 # Edit .env
-nano /home/omcgonag/Work/mymcp/activity-tracker-agent/.env
+nano <mymcp-repo-path>/activity-tracker-agent/.env
 
 # Set correct usernames
 GITHUB_USERNAME=your_actual_github_username
@@ -372,7 +372,7 @@ Dependencies not installed in virtual environment.
 
 ### Solution
 ```bash
-cd /home/omcgonag/Work/mymcp/activity-tracker-agent
+cd <mymcp-repo-path>/activity-tracker-agent
 source venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -390,7 +390,7 @@ pip list | grep fastmcp
 For advanced troubleshooting, you can run the server in standalone mode to see detailed output:
 
 ```bash
-cd /home/omcgonag/Work/mymcp/activity-tracker-agent
+cd <mymcp-repo-path>/activity-tracker-agent
 source venv/bin/activate
 
 # Test mode (generates report for "last week")

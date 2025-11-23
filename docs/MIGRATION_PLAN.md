@@ -45,7 +45,7 @@
 ## Migration Commands
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 
 # Move results
 mv results/review_5192.md workspace/iproject/results/
@@ -111,7 +111,7 @@ iproject will contain:
 
 ```bash
 # Check what remains in mymcp
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 ls -la results/
 ls -la analysis/
 

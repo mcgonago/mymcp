@@ -107,7 +107,7 @@ See `workspace/scripts/README.md` for full `fetch-review.sh` documentation.
 ## Directory Structure
 
 ```
-/home/omcgonag/Work/mymcp/
+<mymcp-repo-path>/
 ├── .mymcp-config            # Your personal config (gitignored)
 ├── .mymcp-config.template   # Config structure (committed)
 ├── customer-work/ → /home/.../customer-confidential/  (gitignored)

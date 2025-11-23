@@ -41,7 +41,7 @@ For detailed architecture, see [`design/Design_MCP_Standup.md`](../design/Design
 ### 1. Create Virtual Environment
 
 ```bash
-cd /home/omcgonag/Work/mymcp/activity-tracker-agent
+cd <mymcp-repo-path>/activity-tracker-agent
 python3 -m venv venv
 source venv/bin/activate
 ```
@@ -131,7 +131,7 @@ Here's a complete `.env` file example:
 
 ```bash
 # Required: Your workspace project root
-WORKSPACE_PROJECT=/home/omcgonag/Work/mymcp/workspace/iproject
+WORKSPACE_PROJECT=<mymcp-repo-path>/workspace/iproject
 
 # Required: Your GitHub username (find at https://github.com/USERNAME)
 GITHUB_USERNAME=omcgonag
@@ -167,7 +167,7 @@ Add to `~/.cursor/mcp.json`:
 {
   "mcpServers": {
     "activity-tracker": {
-      "command": "/home/omcgonag/Work/mymcp/activity-tracker-agent/server.sh",
+      "command": "<mymcp-repo-path>/activity-tracker-agent/server.sh",
       "args": ["stdio"],
       "env": {}
     }
@@ -305,7 +305,7 @@ Supported formats:
 ### From Command Line (Testing)
 
 ```bash
-cd /home/omcgonag/Work/mymcp/activity-tracker-agent
+cd <mymcp-repo-path>/activity-tracker-agent
 source venv/bin/activate
 python server.py
 ```
@@ -409,7 +409,7 @@ cat ~/Work/mymcp/workspace/iproject/activity/2025-W47.json | jq
 ### 1. Verify Virtual Environment
 
 ```bash
-cd /home/omcgonag/Work/mymcp/activity-tracker-agent
+cd <mymcp-repo-path>/activity-tracker-agent
 source venv/bin/activate
 python --version  # Should be Python 3.x
 pip list | grep fastmcp  # Should show fastmcp installed

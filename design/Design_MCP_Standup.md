@@ -300,7 +300,7 @@ Francesco's `standup_mcp` demonstrates several architectural strengths that make
      "mcpServers": {
        ...
        "activity-tracker": {
-         "command": "/home/omcgonag/Work/mymcp/activity-tracker-agent/server.sh",
+         "command": "<mymcp-repo-path>/activity-tracker-agent/server.sh",
          "args": ["stdio"],
          "env": {}
        }
@@ -311,7 +311,7 @@ Francesco's `standup_mcp` demonstrates several architectural strengths that make
 #### Testing
 ```bash
 # Test the activity-tracker agent
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 ./test-mcp-setup.sh  # Should include activity-tracker checks
 
 # Test in Cursor
@@ -404,7 +404,7 @@ cd /home/omcgonag/Work/mymcp
 #### Testing
 ```bash
 # Test report generation
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 
 # In Cursor:
 @activity-tracker generate_status_report("last week")
@@ -584,7 +584,7 @@ status report 2025-11-01 to 2025-11-30
 #### Testing
 ```bash
 # Dry run the workshop session
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 ./workshop/check_authentication_tokens.sh
 # Follow Session #5 steps
 ```
@@ -617,7 +617,7 @@ mcp = FastMCP("Activity Tracker")
 # Configuration
 WORKSPACE_PROJECT = os.environ.get(
     'WORKSPACE_PROJECT',
-    '/home/omcgonag/Work/mymcp/workspace/iproject'
+    '<mymcp-repo-path>/workspace/iproject'
 )
 ACTIVITY_DIR = os.path.join(WORKSPACE_PROJECT, 'activity')
 
@@ -1373,7 +1373,7 @@ url = https://bugzilla.redhat.com/
 
 ```bash
 # Required: Your workspace project root
-WORKSPACE_PROJECT=/home/omcgonag/Work/mymcp/workspace/iproject
+WORKSPACE_PROJECT=<mymcp-repo-path>/workspace/iproject
 
 # Required: Your GitHub username
 GITHUB_USERNAME=omcgonag

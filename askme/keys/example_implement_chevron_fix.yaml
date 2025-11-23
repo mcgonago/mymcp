@@ -1,5 +1,5 @@
 type: code_implement_workspace
-workspace_path: /home/omcgonag/Work/mymcp/workspace
+workspace_path: "{WORKSPACE_PATH}"
 workspace_name: horizon-osprh-12803-working
 git_setup_commands: |
   git clone https://review.opendev.org/openstack/horizon horizon-osprh-12803-working

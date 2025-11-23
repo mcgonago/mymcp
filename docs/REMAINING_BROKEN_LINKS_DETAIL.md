@@ -88,7 +88,7 @@ These are in our own documentation/report files and should be cleaned up.
 
 **Purpose**: This is the report we generated earlier - it contains examples of broken links!
 
-**Location**: `/home/omcgonag/Work/mymcp/BROKEN_LINKS_REPORT.md`
+**Location**: `<mymcp-repo-path>/BROKEN_LINKS_REPORT.md`
 
 **Broken links** (these are EXAMPLES in the report, showing what was broken):
 
@@ -104,7 +104,7 @@ Lines throughout the document - Examples of broken links from our analysis:
 
 **Command to delete:**
 ```bash
-rm /home/omcgonag/Work/mymcp/BROKEN_LINKS_REPORT.md
+rm <mymcp-repo-path>/BROKEN_LINKS_REPORT.md
 ```
 
 ---
@@ -113,7 +113,7 @@ rm /home/omcgonag/Work/mymcp/BROKEN_LINKS_REPORT.md
 
 **Purpose**: Detailed breakdown report we created during link fixing
 
-**Location**: `/home/omcgonag/Work/mymcp/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md`
+**Location**: `<mymcp-repo-path>/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md`
 
 **Broken links** (these are EXAMPLES in the report):
 
@@ -139,7 +139,7 @@ rm /home/omcgonag/Work/mymcp/BROKEN_LINKS_REPORT.md
 **If keeping, convert links to code blocks:**
 ```bash
 # Edit the file and change markdown links to code blocks
-vim /home/omcgonag/Work/mymcp/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
+vim <mymcp-repo-path>/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
 ```
 
 ---
@@ -164,7 +164,7 @@ vim /home/omcgonag/Work/mymcp/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
 
 #### 1. Delete Old Report File
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 rm BROKEN_LINKS_REPORT.md
 ```
 This will eliminate 16 broken links immediately.
@@ -196,7 +196,7 @@ These 17 links should **NOT** be "fixed" - they're intentional placeholders:
 This file has 2 broken links but wasn't in the report above. Let me check it:
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 grep -n "analysis_cors_security\|analysis_large_file_uploads" analysis/analysis_direct_mode.md
 ```
 
@@ -212,7 +212,7 @@ These reference files that don't exist. Options:
 Here's a one-liner to clean up the report files:
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 rm BROKEN_LINKS_REPORT.md PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md
 ```
 
@@ -238,16 +238,16 @@ Should show: `Found 17 broken links:` (all in templates)
 ## File Locations Summary
 
 ### Template Files (Keep)
-- `/home/omcgonag/Work/mymcp/analysis/analysis_template.md`
-- `/home/omcgonag/Work/mymcp/analysis/analysis_template_random_topics.md`
-- `/home/omcgonag/Work/mymcp/workspace/docs/review_template.md`
+- `<mymcp-repo-path>/analysis/analysis_template.md`
+- `<mymcp-repo-path>/analysis/analysis_template_random_topics.md`
+- `<mymcp-repo-path>/workspace/docs/review_template.md`
 
 ### Report Files (Delete)
-- `/home/omcgonag/Work/mymcp/BROKEN_LINKS_REPORT.md` ← DELETE THIS
-- `/home/omcgonag/Work/mymcp/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md` ← DELETE THIS
+- `<mymcp-repo-path>/BROKEN_LINKS_REPORT.md` ← DELETE THIS
+- `<mymcp-repo-path>/PHASE_1_TO_4_BROKEN_LINKS_DETAIL.md` ← DELETE THIS
 
 ### Analysis File (Needs Manual Review)
-- `/home/omcgonag/Work/mymcp/analysis/analysis_direct_mode.md` (2 broken links to non-existent files)
+- `<mymcp-repo-path>/analysis/analysis_direct_mode.md` (2 broken links to non-existent files)
 
 ---
 
@@ -255,7 +255,7 @@ Should show: `Found 17 broken links:` (all in templates)
 
 Want exact line numbers? Run:
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 grep -n "\[.*\](link)" analysis/analysis_template.md
 grep -n "\[.*\](link)" analysis/analysis_template_random_topics.md
 grep -n "\[.*\](link)" workspace/docs/review_template.md

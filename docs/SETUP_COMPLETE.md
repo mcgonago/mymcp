@@ -72,7 +72,7 @@ workspace/iproject/
 ### 1. Commit Your Work to iproject
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace/iproject
+cd <mymcp-repo-path>/workspace/iproject
 
 # Add all migrated files
 git add results/ analysis/
@@ -100,7 +100,7 @@ git push origin main  # or your default branch
 #### Fetch a new review:
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 
 # Fetch and create assessment
 ./scripts/fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/XXXXX
@@ -148,7 +148,7 @@ source ~/.bashrc
 After you've verified everything works:
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 
 # These files were just for planning, you can remove them now:
 rm MIGRATION_PLAN.md
@@ -177,7 +177,7 @@ git push
 
 ```bash
 # 1. Fetch the review
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./scripts/fetch-review.sh --with-assessment opendev <url>
 
 # 2. Ask Cursor (in Cursor IDE)
@@ -246,7 +246,7 @@ git push
 
 **Problem:** Script can't find `workspace/iproject/`
 
-**Solution:** Already cloned at `/home/omcgonag/Work/mymcp/workspace/iproject/` ✅
+**Solution:** Already cloned at `<mymcp-repo-path>/workspace/iproject/` ✅
 
 ### Assessment not created
 

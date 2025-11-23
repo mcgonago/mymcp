@@ -23,7 +23,7 @@ You have **three options** for where to store your work:
 Let the script create `workspace/myproject/` automatically:
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./scripts/fetch-review.sh --with-assessment opendev <url>
 ```
 
@@ -68,7 +68,7 @@ cd ..
 No setup needed! Just run:
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./scripts/fetch-review.sh --with-assessment opendev <review-url>
 ```
 
@@ -119,7 +119,7 @@ cd ..
 ### When You Run fetch-review.sh
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./scripts/fetch-review.sh --with-assessment opendev <url>
 ```
 
@@ -159,7 +159,7 @@ You: "Full spike for OSPRH-12345"
 ## Directory Structure
 
 ```
-/home/omcgonag/Work/mymcp/
+<mymcp-repo-path>/
 ├── workspace/
 │   ├── .workspace-config            # Your workspace preference (gitignored)
 │   ├── myproject/                   # Your work (default name, gitignored)
@@ -216,7 +216,7 @@ You: "Full spike for OSPRH-12345"
 ### If Using Git Repository (Option 3)
 
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace/your-repo
+cd <mymcp-repo-path>/workspace/your-repo
 
 # After Cursor completes an assessment
 git add results/review_967773.md
@@ -247,7 +247,7 @@ git push -u origin main
 ### mymcp Workflow
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 
 # Only commit when you've created/updated examples or tools
 git add workspace/scripts/fetch-review.sh

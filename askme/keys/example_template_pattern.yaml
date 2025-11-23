@@ -3,7 +3,7 @@ output_document: analysis_osprh_12803_ExpandableKeyPairColumn_mark_safe.org
 phase_context: We are starting with changes for next Patchset 5
 current_state_info: |
   Patchset 4 changes can be seen as:
-  cd /home/omcgonag/Work/mymcp/workspace/horizon-osprh-12803-patch-set-4
+  cd {WORKSPACE_PATH}/horizon-osprh-12803-patch-set-4
   git diff --stat 6737fdbfb..365530300 && echo "---" && git diff 6737fdbfb..365530300
 target_element: <a role... </a>
 framework: Horizon

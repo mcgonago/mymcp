@@ -9,7 +9,7 @@ You're about to start working on OSPRH-16421 which adds chevrons to the Images t
 ### Step 1: Create Your First Ask Key File
 
 ```bash
-cd /home/omcgonag/Work/mymcp
+cd <mymcp-repo-path>
 
 cat > askme/keys/osprh_16421_initial_investigation.yaml <<'EOF'
 type: analysis_doc_create
@@ -103,7 +103,7 @@ Now you're ready to set up your working directory:
 ```bash
 cat > askme/keys/osprh_16421_setup_workspace.yaml <<'EOF'
 type: code_implement_workspace
-workspace_path: /home/omcgonag/Work/mymcp/workspace/horizon-osprh-16421-working
+workspace_path: <mymcp-repo-path>/workspace/horizon-osprh-16421-working
 workspace_name: horizon-osprh-16421-working
 git_setup_commands: |
   git clone https://review.opendev.org/openstack/horizon horizon-osprh-16421-working
@@ -193,7 +193,7 @@ Quick reminder of when to use each template:
 | `{OUTPUT_DOCUMENT}` | `output_document` | `analysis/analysis_new_feature_osprh_16421/spike.md` |
 | `{CONTEXT_DESCRIPTION}` | `context_description` | Background info (multiline) |
 | `{SPECIFIC_QUESTIONS}` | `specific_questions` | Your questions (multiline) |
-| `{WORKSPACE_PATH}` | `workspace_path` | `/home/omcgonag/Work/mymcp/workspace/horizon-...` |
+| `{WORKSPACE_PATH}` | `workspace_path` | `<mymcp-repo-path>/workspace/horizon-...` |
 | `{REVIEW_URL}` | `review_url` | `https://review.opendev.org/c/openstack/horizon/+/970000` |
 | `{REVIEWER_NAME}` | `reviewer_name` | `Radomir Dopieralski` |
 

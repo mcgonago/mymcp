@@ -273,7 +273,7 @@ diff -u [project]-master/[file] [project]-[review]/[file]
 
 ```bash
 # Fetch the review
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./fetch-review.sh --with-master opendev [review-url]
 
 # View changes

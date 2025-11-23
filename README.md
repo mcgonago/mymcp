@@ -215,7 +215,7 @@ Automate code review analysis across multiple platforms (OpenDev, GitHub, GitLab
 
 **Quick Example:**
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./fetch-review.sh --with-assessment opendev https://review.opendev.org/c/openstack/horizon/+/965215
 ```
 
@@ -350,6 +350,30 @@ This repository uses a flexible **workspace project** system for separating tool
   - Can be a simple directory (`myproject/`)
   - Can be custom named (`my_horizon_work/`)
   - Can be a git repository (`iproject/`, cloned into workspace)
+
+### Central Configuration System
+
+This repository uses a **central configuration system** for path management:
+
+- **[docs/CENTRAL_CONFIGURATION.md](docs/CENTRAL_CONFIGURATION.md)** - Complete configuration guide
+
+**Quick Summary:**
+- **.mymcp-config** - Auto-detects repository paths (source in scripts)
+- **askme/mymcp_config.py** - Python helper for tools
+- **Path variables** - `{WORKSPACE_PATH}`, `{MYMCP_REPO_PATH}` expand automatically
+- **Portable** - Works on any user's machine without configuration
+- **askme integration** - Keys use `"{WORKSPACE_PATH}"` (quoted!) for portability
+
+**Test configuration:**
+```bash
+# Bash
+source ./.mymcp-config  # Auto-prints all paths
+
+# Python
+python3 askme/mymcp_config.py
+```
+
+See also: **[askme/PATH_VARIABLES.md](askme/PATH_VARIABLES.md)** for askme key usage
 
 ### Verification Script
 

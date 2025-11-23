@@ -386,7 +386,7 @@ tox -e py3
 
 ```bash
 # Fetch this patchset
-cd /home/omcgonag/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 ./scripts/fetch-review.sh opendev [review-url]
 
 # View this specific patchset

@@ -12,7 +12,7 @@
 
 ### Continue from previous patchsets:
 ```bash
-cd /home/omcgonag/Work/mymcp/workspace/horizon-osprh-12802-working
+cd <mymcp-repo-path>/workspace/horizon-osprh-12802-working
 git checkout osprh-12802-generate-form
 
 # After making changes
