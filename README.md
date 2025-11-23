@@ -1,11 +1,12 @@
 # My MCP Agents Collection
 
-This repository demonstrates how to build custom MCP (Model Context Protocol) agents for Cursor. It contains four MCP agents that I built to analyze different types of code reviews and project management:
+This repository demonstrates how to build custom MCP (Model Context Protocol) agents for Cursor. It contains five MCP agents that I built to analyze different types of code reviews, project management, and development activity tracking:
 
 - **github-agent**: Analyzes GitHub Pull Requests
 - **opendev-review-agent**: Analyzes OpenDev Gerrit reviews
 - **gitlab-rh-agent**: Analyzes GitLab Issues, Merge Requests, and Commits from internal Red Hat GitLab
 - **jira-agent**: Provides access to Jira issues, projects, and sprints from Cursor
+- **activity-tracker-agent**: Tracks GitHub and OpenDev activities for automated status reporting
 
 ## Table of Contents
 
@@ -13,6 +14,7 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 - [OpenDev Review Agent](#opendev-review-agent)
 - [GitLab RH Agent](#gitlab-rh-agent)
 - [Jira Agent](#jira-agent)
+- [Activity Tracker Agent](#activity-tracker-agent)
 - [Complete MCP Configuration](#complete-mcp-configuration)
 - [Use Cases](#use-cases)
 - [What These Agents Can Do](#what-these-agents-can-do)
@@ -90,6 +92,25 @@ An agent that provides access to Jira from Cursor with containerized deployment.
 
 ---
 
+## Activity Tracker Agent
+
+An agent for tracking GitHub and OpenDev development activities with automated status report generation.
+
+### Features
+
+- **GitHub Activity Tracking**: Monitors PRs created/reviewed, commits, issues, and comments
+- **OpenDev Activity Tracking**: Tracks reviews posted, comments, and votes (Code-Review, Workflow)
+- **Automated Report Generation**: Generates weekly or custom date range status reports
+- **Smart Caching**: Intelligent caching system to avoid API rate limits (24-hour cache)
+- **Multiple Time Formats**: Supports "last week", "this week", "yesterday", or custom date ranges
+- **Workspace Integration**: Stores activity history in `workspace/iproject/activity/`
+- **Markdown & JSON Output**: Human-readable reports or raw JSON data
+- **Historical Tracking**: Maintains cache of past activities for trend analysis
+
+**For detailed setup instructions, see [activity-tracker-agent/README.md](activity-tracker-agent/README.md).**
+
+---
+
 ## Complete MCP Configuration
 Here is what your **MCP Servers** configuration looks like after you are done following the setup and configuration steps for each one.
 
@@ -124,6 +145,11 @@ To see this:
         "jira-agent:latest"
       ],
       "description": "Provides access to Jira issues, projects, boards, and sprints."
+    },
+    "activity-tracker": {
+      "command": "<your-mymcp-cloned-repo-path>/activity-tracker-agent/server.sh",
+      "args": ["stdio"],
+      "description": "Tracks GitHub and OpenDev activity, generates weekly status reports."
     }
   }
 }
@@ -160,6 +186,11 @@ Or for issues/MRs:
 **Jira Agent:**
 ```
 @jiraMcp Get details for issue OSPRH-13100
+```
+
+**Activity Tracker Agent:**
+```
+@activity-tracker generate_status_report("last week")
 ```
 
 ---
@@ -274,12 +305,15 @@ These MCP agents enable Cursor's AI to seamlessly interact with your development
 ✅ **Code Review Analysis**: Fetch and analyze pull requests, merge requests, and Gerrit reviews  
 ✅ **Commit Investigation**: Deep-dive into individual commits with diffs and change statistics  
 ✅ **Issue Tracking**: Query and search Jira issues, projects, boards, and sprints  
+✅ **Activity Tracking**: Monitor GitHub and OpenDev development activities automatically  
+✅ **Status Reporting**: Generate weekly/custom status reports with automated activity summaries  
 ✅ **Security Analysis**: Identify CVEs and security-related changes in commits  
 ✅ **Comprehensive Metadata**: Access authors, reviewers, assignees, labels, timestamps, and state  
 ✅ **Discussion Context**: Review comments, feedback, and technical discussions  
 ✅ **Multi-Platform Support**: Works with GitHub, GitLab, OpenDev Gerrit, and Jira  
 ✅ **API Integration**: Official API support with proper authentication and security  
-✅ **Private & Public Access**: Support for both public repositories and private/internal systems
+✅ **Private & Public Access**: Support for both public repositories and private/internal systems  
+✅ **Smart Caching**: Intelligent caching to avoid API rate limits and improve performance
 
 ## Next Steps
 
@@ -288,6 +322,8 @@ Once you have these agents set up, you can:
 - **Analyze Code Changes**: Review PRs, MRs, and commits to understand technical decisions and implementation details
 - **Understand Feedback**: Get AI insights on review comments and discussions across platforms
 - **Track Development**: Follow project history, feature development, and bug fixes
+- **Generate Status Reports**: Automatically track and report on your GitHub and OpenDev activities
+- **Monitor Productivity**: Review weekly/monthly activity summaries with smart caching
 - **Security Review**: Analyze commits for CVEs and security implications
 - **Project Management**: Query Jira for issue status, sprint progress, and project tracking
 - **Cross-Platform Analysis**: Combine multiple agents to correlate code changes with issues and reviews
@@ -380,6 +416,13 @@ mymcp/
 │   ├── example.env                     # Environment variables template
 │   ├── example.mcp.json                # MCP configuration template
 │   └── LICENSE                         # MIT License
+├── activity-tracker-agent/             # Activity tracking and status reporting agent
+│   ├── server.py                       # Main MCP server
+│   ├── server.sh                       # Launch script
+│   ├── README.md                       # Detailed setup guide
+│   ├── TROUBLESHOOTING.md              # Troubleshooting guide
+│   ├── .env.example                    # Environment variables template
+│   └── requirements.txt                # Python dependencies
 ├── usecases/                           # Practical use case examples and workflows
 │   ├── review_automation/              # Automated review analysis workflow
 │   │   └── README.md                   # Review automation guide
@@ -406,11 +449,17 @@ mymcp/
 
 ### Key Differences Between Agents
 
-**OpenDev, GitHub & GitLab Agents:**
+**OpenDev, GitHub, GitLab & Activity Tracker Agents:**
 - Simple shell script execution
 - Uses `venv` for Python dependencies
 - Direct server.py execution
 - Environment files for API tokens (.env)
+
+**Activity Tracker Specifics:**
+- Combines data from GitHub and OpenDev APIs
+- Implements intelligent caching (24-hour default)
+- Stores historical activity in workspace project
+- Supports flexible time range queries
 
 **Jira Agent:**
 - Containerized deployment with Podman
