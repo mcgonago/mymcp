@@ -120,6 +120,9 @@ An agent for tracking GitHub and OpenDev development activities with automated s
 
 Send beautifully formatted messages to Slack with automatic link detection and formatting.
 
+> **"I was spending 2-5 minutes manually formatting each Slack message. Now it takes 10 seconds!"**  
+> Stop fighting with Slack's link formatting - automate it! See [docs/SLACK_BOOST_PRODUCTIVITY.md](docs/SLACK_BOOST_PRODUCTIVITY.md) for the full story.
+
 ### Features
 
 - **Auto-Link Formatting**: Automatically detects URLs and converts them to Slack's `<url|text>` format
@@ -163,6 +166,32 @@ mymcp Activity Tracker
 ```
 
 **Slack renders as:** "mymcp Activity Tracker" (clickable text, not full URL) ✨
+
+### Real-World Use Case
+
+Here's an actual message sent using this tool to share project updates:
+
+**What was sent to Slack (with `<url|text>` format):**
+```
+Hi Francesco,
+
+I hope you don't mind me sharing a few FYIs...
+
+I took some liberty and integrated part of your standup_mcp project:
+<https://gitlab.cee.redhat.com/fpantano/standup_mcp|standup_mcp>
+
+Into my mymcp Activity Tracker Agent:
+<https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent|mymcp Activity Tracker Agent>
+
+I got my first activity tracker report working:
+
+📊 Status Report: Week 2025-W46
+<https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
+
+Thanks for sharing your `standup_mcp` with me a few weeks ago!
+```
+
+**Result:** Francesco sees clean clickable text (not long URLs) - achieved with one command, no manual formatting!
 
 **For detailed setup and advanced usage, see [docs/SLACK_INTEGRATION.md](docs/SLACK_INTEGRATION.md).**
 

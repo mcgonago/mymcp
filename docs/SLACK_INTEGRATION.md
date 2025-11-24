@@ -137,6 +137,99 @@ Check out the `README.md` for more details!
 Thanks for the *excellent* work! 🚀
 ```
 
+---
+
+## Real-World Example: Sharing Project Updates
+
+This is an actual message sent by Owen to Francesco to share activity tracking results.
+
+### What Was Sent to Slack
+
+**The formatted message with proper Slack link syntax:**
+
+```
+Hi Francesco,
+
+I hope you don't mind me sharing a few FYIs...
+
+I took some liberty and integrated part of your standup_mcp project:
+<https://gitlab.cee.redhat.com/fpantano/standup_mcp|standup_mcp>
+
+Into my mymcp Activity Tracker Agent:
+<https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent|mymcp Activity Tracker Agent>
+
+I hope you don't mind me giving you kudos for the baseline `standup_mcp` project...
+
+I was experimenting and didn't need the `did` integration (no pun intended), but I got my first activity tracker report working:
+
+📊 Status Report: Week 2025-W46
+<https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
+
+I need to get better statistics over time, but it's a great start!
+
+Thanks for sharing your `standup_mcp` with me a few weeks ago. Really appreciate it!
+```
+
+**Notice the `<url|text>` format** - that's Slack's special syntax that makes the text clickable while hiding the long URL.
+
+### How Francesco Sees It
+
+In Slack, Francesco sees:
+- **"standup_mcp"** as a clickable link (not the long GitLab URL)
+- **"mymcp Activity Tracker Agent"** as a clickable link (not the long GitHub URL)
+- **"Status Report: Week 2025-W46"** with 📊 emoji as a clickable link
+- All code terms like `standup_mcp` and `did` properly formatted with gray background
+- Clean, professional message with no ugly URLs
+
+### The Input File That Generated This
+
+**File: `francesco_message.txt`**
+
+```
+Hi Francesco,
+
+I hope you don't mind me sharing a few FYIs...
+
+I took some liberty and integrated part of your standup_mcp project:
+https://gitlab.cee.redhat.com/fpantano/standup_mcp
+standup_mcp
+
+Into my mymcp Activity Tracker Agent:
+https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent
+mymcp Activity Tracker Agent
+
+I hope you don't mind me giving you kudos for the baseline `standup_mcp` project...
+
+I was experimenting and didn't need the `did` integration (no pun intended), but I got my first activity tracker report working:
+
+📊 Status Report: Week 2025-W46
+https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md
+Status Report: Week 2025-W46
+
+I need to get better statistics over time, but it's a great start!
+
+Thanks for sharing your `standup_mcp` with me a few weeks ago. Really appreciate it!
+```
+
+**Notice:** URLs and titles are on consecutive lines. The script auto-detects this pattern and converts to Slack's `<url|text>` format.
+
+### The Commands Used
+
+```bash
+# 1. Preview what will be sent
+./scripts/send_to_slack.py francesco_message.txt --preview
+
+# 2. Send to Francesco via DM
+./scripts/send_to_slack.py francesco_message.txt --channel "@francesco"
+
+# Or send to a team channel
+./scripts/send_to_slack.py francesco_message.txt --channel "#team-updates"
+```
+
+**The Power:** Write your message naturally (URL, then title), run one command, and the script automatically converts to Slack's special `<url|text>` format. No manual formatting needed!
+
+---
+
 ## Usage Examples
 
 ### Send File to Default Channel

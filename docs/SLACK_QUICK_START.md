@@ -1,5 +1,9 @@
 # Slack Integration - Quick Start
 
+> **New to this?** See [SLACK_BOOST_PRODUCTIVITY.md](SLACK_BOOST_PRODUCTIVITY.md) for the full story of how this saves time!
+
+---
+
 ## 🚀 30-Second Setup
 
 ### 1. Get Your Webhook URL
@@ -24,6 +28,10 @@ echo 'SLACK_WEBHOOK_URL="https://hooks.slack.com/services/T.../B.../XXX"' >> .my
 
 ## 📝 Create Your Message
 
+**Format:** Put URL on one line, title on next line.
+
+### Simple Example
+
 **File: `my_message.txt`**
 
 ```
@@ -36,7 +44,62 @@ mymcp Activity Tracker
 Thanks! 🚀
 ```
 
-**Format:** Put URL on one line, title on next line.
+### Real-World Example (Owen → Francesco)
+
+**What was sent to Slack (with proper `<url|text>` format):**
+
+```
+Hi Francesco,
+
+I hope you don't mind me sharing a few FYIs...
+
+I took some liberty and integrated part of your standup_mcp project:
+<https://gitlab.cee.redhat.com/fpantano/standup_mcp|standup_mcp>
+
+Into my mymcp Activity Tracker Agent:
+<https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent|mymcp Activity Tracker Agent>
+
+I hope you don't mind me giving you kudos for the baseline `standup_mcp` project...
+
+I was experimenting and didn't need the `did` integration (no pun intended), but I got my first activity tracker report working:
+
+📊 Status Report: Week 2025-W46
+<https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
+
+I need to get better statistics over time, but it's a great start!
+
+Thanks for sharing your `standup_mcp` with me a few weeks ago. Really appreciate it!
+```
+
+**The `<url|text>` syntax** is Slack's special format that displays "text" as a clickable link.
+
+**How Francesco sees it in Slack:**
+- **standup_mcp** ← clickable, hides the long GitLab URL
+- **mymcp Activity Tracker Agent** ← clickable, hides the long GitHub URL  
+- **Status Report: Week 2025-W46** ← clickable with 📊 emoji
+
+**The input file that generated this:**
+
+Put URL on one line, title on the next:
+```
+Hi Francesco,
+
+I took some liberty and integrated part of your standup_mcp project:
+https://gitlab.cee.redhat.com/fpantano/standup_mcp
+standup_mcp
+
+Into my mymcp Activity Tracker Agent:
+https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent
+mymcp Activity Tracker Agent
+
+📊 Status Report: Week 2025-W46
+https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md
+Status Report: Week 2025-W46
+
+Thanks for sharing your `standup_mcp` with me!
+```
+
+Script auto-converts to `<url|text>` format!
 
 ---
 
