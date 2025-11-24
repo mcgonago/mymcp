@@ -95,16 +95,19 @@ An agent that provides access to Jira from Cursor with containerized deployment.
 
 ## Activity Tracker Agent
 
-An agent for tracking GitHub and OpenDev development activities with automated status report generation.
+An agent for tracking GitHub, OpenDev, GitLab, and Jira development activities with automated status report generation.
 
 > [!NOTE]
 > **About the Activity Tracker Agent**  
-> This implementation was *inspired by the excellent work of Francesco Pantano* in [`standup_mcp`](https://gitlab.cee.redhat.com/fpantano/standup_mcp). Francesco's innovative approach to automating standup reports using MCP and the `did` tool served as the catalyst for this implementation. While his project focuses on Slack integration using the `did` tool, our implementation adapts his core concepts for OpenStack Horizon development workflows.
+> This implementation was *inspired by the excellent work of Francesco Pantano* in [`standup_mcp`](https://gitlab.cee.redhat.com/fpantano/standup_mcp). Francesco's innovative approach to automating standup reports using MCP and the `did` tool served as the catalyst for this implementation. While his project focuses on Slack integration using the `did` tool, our implementation adapts his core concepts for OpenStack Horizon development workflows and extends it to multiple platforms.
 
 ### Features
 
+- **Multi-Platform Tracking**: Aggregates activity from GitHub, OpenDev, GitLab, and Jira
 - **GitHub Activity Tracking**: Monitors PRs created/reviewed, commits, issues, and comments
 - **OpenDev Activity Tracking**: Tracks reviews posted, comments, and votes (Code-Review, Workflow)
+- **GitLab Activity Tracking**: Monitors merge requests, issues, and comments
+- **Jira Activity Tracking**: Tracks issues created, resolved, and assigned
 - **Automated Report Generation**: Generates weekly or custom date range status reports
 - **Smart Caching**: Intelligent caching system to avoid API rate limits (24-hour cache)
 - **Multiple Time Formats**: Supports "last week", "this week", "yesterday", or custom date ranges
@@ -235,7 +238,7 @@ To see this:
     "activity-tracker": {
       "command": "<your-mymcp-cloned-repo-path>/activity-tracker-agent/server.sh",
       "args": ["stdio"],
-      "description": "Tracks GitHub and OpenDev activity, generates weekly status reports."
+      "description": "Tracks GitHub, OpenDev, GitLab, and Jira activity; generates weekly status reports."
     }
   }
 }
@@ -272,6 +275,15 @@ Or for issues/MRs:
 **Jira Agent:**
 ```
 @jiraMcp Get details for issue OSPRH-13100
+```
+
+**Activity Tracker Agent:**
+```
+@activity-tracker generate_status_report("last week")
+```
+Or for current week:
+```
+@activity-tracker generate_status_report("this week")
 ```
 
 **Activity Tracker Agent:**

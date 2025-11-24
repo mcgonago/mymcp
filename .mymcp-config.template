@@ -46,18 +46,37 @@ fi
 # Get webhook from: https://api.slack.com/messaging/webhooks
 # SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 
-# GitHub API (for activity-tracker-agent)
-# Get token from: https://github.com/settings/tokens
+# GitHub API (for activity-tracker-agent, github-agent)
+# Source from existing github-agent configuration if it exists
+if [[ -f "${MYMCP_REPO_PATH}/github-agent/.env" ]]; then
+    source "${MYMCP_REPO_PATH}/github-agent/.env"
+fi
+# Or set manually:
 # GITHUB_TOKEN="ghp_YOUR_TOKEN_HERE"
+# GITHUB_USERNAME="your_github_username"
 
-# OpenDev Credentials (for activity-tracker-agent)
+# OpenDev Credentials (for activity-tracker-agent, opendev-review-agent)
+# OpenDev/Gerrit API is read-only and doesn't require authentication tokens
+# Only username is needed for filtering your activity
 # OPENDEV_USERNAME="your_username"
 
-# GitLab API (for gitlab-cee-agent)
+# GitLab API (for activity-tracker-agent, gitlab-rh-agent)
+# Source from existing gitlab-rh-agent configuration if it exists
+if [[ -f "${MYMCP_REPO_PATH}/gitlab-rh-agent/.env" ]]; then
+    source "${MYMCP_REPO_PATH}/gitlab-rh-agent/.env"
+    export GITLAB_URL="${GITLAB_URL:-https://gitlab.cee.redhat.com}"
+fi
+# Or set manually:
 # GITLAB_TOKEN="your_gitlab_token"
 # GITLAB_URL="https://gitlab.cee.redhat.com"
+# GITLAB_USERNAME="your_gitlab_username"
 
-# Jira API (for jira-agent)
+# Jira API (for activity-tracker-agent, jira-agent)
+# Source from existing jira-agent configuration if it exists
+if [[ -f "${MYMCP_REPO_PATH}/jira-agent/.env" ]]; then
+    source "${MYMCP_REPO_PATH}/jira-agent/.env"
+fi
+# Or set manually:
 # JIRA_URL="https://your-company.atlassian.net"
 # JIRA_EMAIL="your.email@company.com"
 # JIRA_API_TOKEN="your_api_token"

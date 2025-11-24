@@ -1,13 +1,15 @@
 # Activity Tracker MCP Agent
 
-An MCP (Model Context Protocol) server that tracks GitHub and OpenDev activities for automated status report generation.
+An MCP (Model Context Protocol) server that tracks GitHub, OpenDev, GitLab, and Jira activities for automated status report generation.
 
 ## Purpose
 
-This agent enables automated collection and reporting of development activities:
+This agent enables automated collection and reporting of development activities across multiple platforms:
 
 - **GitHub Activity Tracking**: PRs created/reviewed, commits, issues
 - **OpenDev Activity Tracking**: Reviews posted, comments, votes
+- **GitLab Activity Tracking**: Merge requests, issues, comments
+- **Jira Activity Tracking**: Issues created/resolved/assigned
 - **Automated Report Generation**: Weekly/custom status reports
 - **Smart Caching**: Avoids API rate limits with intelligent caching
 - **Workspace Integration**: Stores activity history in `workspace/iproject/activity/`
@@ -24,14 +26,16 @@ This agent enables automated collection and reporting of development activities:
 │  activity-tracker MCP Agent        │
 │  ├─ get_github_activity()          │
 │  ├─ get_opendev_activity()         │
+│  ├─ get_gitlab_activity()          │
+│  ├─ get_jira_activity()            │
 │  └─ generate_status_report()       │
-└────────┬──────────────┬────────────┘
-         │              │
-         ▼              ▼
-  ┌─────────────┐  ┌──────────────┐
-  │ GitHub API  │  │ Gerrit API   │
-  │ github.com  │  │ opendev.org  │
-  └─────────────┘  └──────────────┘
+└──────┬────┬────┬────┬──────────────┘
+       │    │    │    │
+       ▼    ▼    ▼    ▼
+  ┌────────┬─────┬────────┬──────────┐
+  │GitHub  │Gerrit│GitLab  │Jira API  │
+  │API     │API   │API     │          │
+  └────────┴─────┴────────┴──────────┘
 ```
 
 For detailed architecture, see [`design/Design_MCP_Standup.md`](../design/Design_MCP_Standup.md).
@@ -102,8 +106,57 @@ These environment variables must be set for the agent to function:
 - **Example**: `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 - **Where to get**: 
   - GitHub Settings → Developer settings → Personal access tokens
-  - Or reuse from `../github-agent/.env`
+  - https://github.com/settings/tokens
 - **Required scopes**: `repo`, `read:org`, `read:user`
+- **Reuse existing**: If you have `../github-agent/.env` configured, this will be automatically sourced from `.mymcp-config`
+
+**`GITLAB_USERNAME`** (Optional)
+- **Purpose**: Your GitLab username for filtering activity
+- **Usage**: Used in GitLab API queries to find:
+  - Merge requests you created
+  - Merge requests you reviewed/commented on
+  - Issues you created or commented on
+- **Example**: `omcgonag`
+- **Where to find**: Your GitLab profile URL: `https://gitlab.cee.redhat.com/USERNAME`
+- **Reuse existing**: If you have `gitlab-rh-agent` configured, this will be automatically sourced from `.mymcp-config`
+
+**`GITLAB_TOKEN`** (Optional)
+- **Purpose**: Authenticates GitLab API requests
+- **Usage**: Required for accessing GitLab activity data
+- **Example**: `glpat-xxxxxxxxxxxxxxxxxxxx`
+- **Where to get**: 
+  - GitLab → User Settings → Access Tokens
+  - https://gitlab.cee.redhat.com/-/profile/personal_access_tokens
+- **Required scopes**: `read_api`, `read_repository`
+- **Reuse existing**: If you have `../gitlab-rh-agent/.env` configured, this will be automatically sourced from `.mymcp-config`
+
+**`GITLAB_URL`** (Optional)
+- **Purpose**: GitLab instance URL
+- **Default**: `https://gitlab.cee.redhat.com`
+- **Usage**: Set if using a different GitLab instance
+- **Example**: `https://gitlab.com` or `https://gitlab.yourcompany.com`
+
+**`JIRA_EMAIL`** (Optional)
+- **Purpose**: Your Jira account email for filtering activity
+- **Usage**: Used in Jira JQL queries to find issues you created/resolved
+- **Example**: `your.email@company.com`
+- **Where to find**: Your Jira profile settings
+- **Reuse existing**: If you have `../jira-agent/.env` configured, this will be automatically sourced from `.mymcp-config`
+
+**`JIRA_API_TOKEN`** (Optional)
+- **Purpose**: Authenticates Jira API requests
+- **Usage**: Required for accessing Jira activity data
+- **Example**: `YOUR_JIRA_API_TOKEN_HERE`
+- **Where to get**:
+  - Jira → Account settings → Security → API tokens
+  - https://id.atlassian.com/manage-profile/security/api-tokens
+- **Reuse existing**: If you have `../jira-agent/.env` configured, this will be automatically sourced from `.mymcp-config`
+
+**`JIRA_URL`** (Optional)
+- **Purpose**: Your Jira instance URL
+- **Usage**: Base URL for your Jira instance
+- **Example**: `https://your-company.atlassian.net` or `https://jira.yourcompany.com`
+- **Reuse existing**: If you have `../jira-agent/.env` configured, this will be automatically sourced from `.mymcp-config`
 
 #### Optional Configuration
 
@@ -139,10 +192,26 @@ GITHUB_USERNAME=omcgonag
 # Required: Your OpenDev username (find at https://review.opendev.org/q/owner:USERNAME)
 OPENDEV_USERNAME=omcgonag
 
-# Required: GitHub personal access token (reuse from ../github-agent/.env)
+# Optional: GitLab tracking
+# If you have gitlab-rh-agent configured, these will be auto-sourced from ../gitlab-rh-agent/.env
+# Otherwise, set them here:
+# GITLAB_USERNAME=omcgonag
+# GITLAB_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
+# GITLAB_URL=https://gitlab.cee.redhat.com
+
+# Optional: Jira tracking
+# If you have jira-agent configured, these will be auto-sourced from ../jira-agent/.env
+# Otherwise, set them here:
+# JIRA_EMAIL=your.email@company.com
+# JIRA_API_TOKEN=YOUR_JIRA_API_TOKEN_HERE
+# JIRA_URL=https://your-company.atlassian.net
+
+# Required: GitHub personal access token
+# If you have github-agent configured, this will be auto-sourced from ../github-agent/.env
+# Otherwise, set it here:
 # Get from: https://github.com/settings/tokens
 # Scopes needed: repo, read:org, read:user
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # Optional: Cache validity period (default: 24 hours)
 CACHE_MAX_AGE_HOURS=24
