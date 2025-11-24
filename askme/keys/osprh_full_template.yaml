@@ -1,0 +1,134 @@
+# Full Analysis Package Template for OSPRH tickets
+# 
+# This template creates a COMPLETE analysis package:
+#   - spike.md
+#   - README.md
+#   - patchset_1_*.md, patchset_2_*.md, etc.
+#   - design.md
+#
+# Usage:
+#   ./ask_me.sh analysis_full_package askme/keys/osprh_full_template.yaml \
+#       TICKET_NUMBER=16421 \
+#       FEATURE_NAME="Add expandable rows to Images table" \
+#       [REFERENCE_TICKET=12803] \
+#       [REFERENCE_REVIEW=966349]
+#
+# Template variables:
+#   {TICKET_NUMBER}    - The OSPRH ticket number (e.g., 16421)
+#   {FEATURE_NAME}     - Brief description of the feature
+#   {REFERENCE_TICKET} - (Optional) Related ticket number
+#   {REFERENCE_REVIEW} - (Optional) Related review number
+#
+# Note: This will create 5-7 documents depending on complexity.
+# Expect 100K+ of comprehensive analysis documentation.
+
+type: analysis_full_package
+output_directory: "{WORKSPACE_PROJECT}/analysis/analysis_new_feature_osprh_{TICKET_NUMBER}"
+context_description: |
+  OSPRH-{TICKET_NUMBER}: {FEATURE_NAME}
+  
+  This is a comprehensive feature analysis request. The goal is to produce
+  a complete, production-ready analysis package that includes:
+  
+  1. Initial investigation (spike.md)
+  2. Implementation roadmap (patchset documents)
+  3. Architectural design rationale (design.md)
+  4. Project overview and navigation (README.md)
+  
+  The feature requires:
+  - Technical feasibility assessment
+  - Implementation complexity analysis
+  - Breakdown into reviewable patchsets
+  - Risk identification and mitigation strategies
+  - Comprehensive testing approach
+  - Timeline estimation
+  
+  {% if REFERENCE_TICKET %}
+  Reference Implementation:
+  - Ticket: OSPRH-{REFERENCE_TICKET}
+  {% endif %}
+  {% if REFERENCE_REVIEW %}
+  - Review: https://review.opendev.org/c/openstack/horizon/+/{REFERENCE_REVIEW}
+  {% endif %}
+  
+  Use the reference implementation (if provided) as a structural and 
+  quality guide. Learn from its evolution and apply those lessons to 
+  this analysis.
+
+specific_questions: |
+  ## Technical Analysis
+  
+  1. What is the technical approach for implementing: {FEATURE_NAME}?
+     - What framework/libraries will be used?
+     - What existing patterns can be followed?
+     - What is the minimal viable implementation?
+  
+  2. What are the main architectural components that need to be changed?
+     - Python files (tables.py, views.py, etc.)
+     - Templates (Django/Jinja2)
+     - Stylesheets (CSS)
+     - JavaScript (if any)
+     - Configuration files
+  
+  3. Are there similar implementations we can reference or learn from?
+     {% if REFERENCE_REVIEW %}
+     - Analyze Review {REFERENCE_REVIEW} in depth
+     - What patterns worked well?
+     - What challenges were encountered?
+     - How did the implementation evolve through patchsets?
+     {% endif %}
+  
+  ## Risk and Planning
+  
+  4. What are the key technical risks for this feature?
+     - Complexity risks (is this harder than it appears?)
+     - Integration risks (will this conflict with other features?)
+     - Performance risks (will this slow down the UI?)
+     - Security risks (any XSS, CSRF, or other vulnerabilities?)
+     - Accessibility risks (keyboard nav, screen readers, ARIA?)
+  
+  5. How should we break this work into reviewable patchsets?
+     - What is the MVP (Patchset 1)?
+     - What are the incremental enhancements (PS 2, 3, 4)?
+     - What is the final polish phase?
+     - How many total patchsets expected?
+  
+  ## Quality and Testing
+  
+  6. What testing strategy should we employ?
+     - Unit tests (which components?)
+     - Integration tests (Selenium scenarios?)
+     - Manual test cases (step-by-step procedures)
+     - Browser compatibility testing
+     - Accessibility testing (WCAG compliance)
+     - Performance testing (load times, animation smoothness)
+  
+  7. Are there any backward compatibility concerns?
+     - API changes required?
+     - Template changes affect other panels?
+     - Configuration changes needed?
+     - Migration path for existing deployments?
+  
+  ## User Experience
+  
+  8. What is the expected user workflow?
+     - How will users discover this feature?
+     - What are the interaction patterns (click, hover, keyboard)?
+     - What visual feedback is provided?
+     - How does this integrate with existing workflows?
+  
+  9. What edge cases need to be handled?
+     - Missing data (null/empty fields)
+     - Large data sets (100+ items, long text values)
+     - Special characters (HTML, quotes, unicode)
+     - Different screen sizes (responsive design)
+  
+  ## Timeline and Effort
+  
+  10. What is the realistic timeline for this feature?
+      - Implementation time (coding)
+      - Review time (iterations with maintainers)
+      - Testing time (comprehensive QA)
+      - Total time from start to merge
+      - Confidence level (High/Medium/Low)
+

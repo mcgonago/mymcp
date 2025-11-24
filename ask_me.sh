@@ -55,9 +55,47 @@ expand_path_vars() {
     echo "$text"
 }
 
+# Function to substitute template variables in YAML file
+substitute_template_vars() {
+    local yaml_file="$1"
+    local temp_file="/tmp/ask_me_yaml_$$"
+    
+    # If no template variables, just copy the file
+    if [ ${#TEMPLATE_VARS[@]} -eq 0 ]; then
+        echo "$yaml_file"
+        return
+    fi
+    
+    # Read the YAML file
+    local yaml_content=$(cat "$yaml_file")
+    
+    # Substitute each template variable
+    # We support three formats: {{VAR}}, ${VAR}, and {VAR} (but only for template vars)
+    for var_name in "${!TEMPLATE_VARS[@]}"; do
+        local var_value="${TEMPLATE_VARS[$var_name]}"
+        # Escape special characters in var_value for sed
+        local escaped_value=$(printf '%s\n' "$var_value" | sed 's/[&/\]/\\&/g')
+        
+        # Replace {{VAR_NAME}}, ${VAR_NAME}, and {VAR_NAME} (case-insensitive for flexibility)
+        yaml_content=$(echo "$yaml_content" | sed "s/{{${var_name}}}/${escaped_value}/g")
+        yaml_content=$(echo "$yaml_content" | sed "s/\${${var_name}}/${escaped_value}/g")
+        yaml_content=$(echo "$yaml_content" | sed "s/{${var_name}}/${escaped_value}/g")
+        
+        # Also try lowercase version
+        local var_name_lower=$(echo "$var_name" | tr '[:upper:]' '[:lower:]')
+        yaml_content=$(echo "$yaml_content" | sed "s/{{${var_name_lower}}}/${escaped_value}/g")
+        yaml_content=$(echo "$yaml_content" | sed "s/\${${var_name_lower}}/${escaped_value}/g")
+        yaml_content=$(echo "$yaml_content" | sed "s/{${var_name_lower}}/${escaped_value}/g")
+    done
+    
+    # Write to temporary file
+    echo "$yaml_content" > "$temp_file"
+    echo "$temp_file"
+}
+
 # Function to print usage
 usage() {
-    echo "Usage: $0 <template-type> <key-file>"
+    echo "Usage: $0 <template-type> <key-file> [VAR=value ...]"
     echo ""
     echo "Template types:"
     echo "  analysis_doc_create        - Create analysis document with investigation"
@@ -66,10 +104,16 @@ usage() {
     echo "  investigate_patterns       - Investigate framework patterns/best practices"
     echo "  phase_done                 - Wrap-up questions and phase transition"
     echo ""
+    echo "Template Variables (optional):"
+    echo "  You can override variables in the YAML file by passing VAR=value on command line"
+    echo ""
     echo "Examples:"
+    echo "  # Basic usage"
     echo "  $0 analysis_doc_create askme/keys/example_fix_chevron_id.yaml"
-    echo "  $0 code_review_response askme/keys/example_review_comment_css_gap.yaml"
-    echo "  $0 phase_done askme/keys/example_phase_done_gerrit_topic.yaml"
+    echo ""
+    echo "  # With template variables"
+    echo "  $0 analysis_doc_create askme/keys/osprh_template.yaml TICKET_NUMBER=16421"
+    echo "  $0 analysis_doc_create askme/keys/osprh_template.yaml TICKET_NUMBER=99999 FEATURE_NAME=\"My Feature\""
     echo ""
     echo "Available templates:"
     ls -1 "${TEMPLATES_DIR}"/*.template 2>/dev/null | sed 's/.*\//  - /' | sed 's/.template$//' || echo "  (none found)"
@@ -100,13 +144,28 @@ warn() {
     echo -e "${YELLOW}$1${NC}"
 }
 
-# Check arguments
-if [ $# -ne 2 ]; then
+# Check arguments (minimum 2, but can have more for variable assignments)
+if [ $# -lt 2 ]; then
     usage
 fi
 
 TEMPLATE_TYPE="$1"
 KEY_FILE="$2"
+
+# Parse variable assignments from remaining arguments
+shift 2  # Remove first two arguments
+declare -A TEMPLATE_VARS
+for arg in "$@"; do
+    if [[ "$arg" =~ ^([A-Z_][A-Z0-9_]*)=(.*)$ ]]; then
+        var_name="${BASH_REMATCH[1]}"
+        var_value="${BASH_REMATCH[2]}"
+        TEMPLATE_VARS["$var_name"]="$var_value"
+        info "   Variable: ${var_name}=${var_value}"
+    else
+        warn "⚠️  Ignoring invalid variable assignment: $arg"
+        warn "    (Must be in format: VAR_NAME=value)"
+    fi
+done
 
 # Resolve key file path (support both relative and absolute)
 if [[ "$KEY_FILE" = /* ]]; then
@@ -129,6 +188,14 @@ fi
 info "📝 Generating ask from:"
 echo "   Template: ${TEMPLATE_TYPE}.template"
 echo "   Key file: ${KEY_FILE}"
+
+# Substitute template variables in YAML file if any were provided
+PROCESSED_KEY_FILE=$(substitute_template_vars "$KEY_FILE_PATH")
+if [ "$PROCESSED_KEY_FILE" != "$KEY_FILE_PATH" ]; then
+    info "   Applied ${#TEMPLATE_VARS[@]} template variable(s)"
+    # Update KEY_FILE_PATH to point to processed file
+    KEY_FILE_PATH="$PROCESSED_KEY_FILE"
+fi
 echo ""
 
 # Check if yq is installed (YAML parser)
@@ -229,4 +296,9 @@ fi
 echo ""
 success "✅ Ask generated successfully!"
 info "💡 Copy the output above and paste it to your AI assistant."
+
+# Cleanup temporary files
+if [ -f "/tmp/ask_me_yaml_$$" ]; then
+    rm -f "/tmp/ask_me_yaml_$$"
+fi
 

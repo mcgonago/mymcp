@@ -1,0 +1,54 @@
+# Spike-Only Template for OSPRH tickets
+# 
+# This template creates ONLY the spike.md (initial investigation).
+# For a COMPLETE analysis package, use osprh_full_template.yaml instead.
+#
+# Usage:
+#   ./ask_me.sh analysis_doc_create askme/keys/osprh_template.yaml \
+#       TICKET_NUMBER=16421 \
+#       FEATURE_NAME="Add expandable rows to Images table" \
+#       [REFERENCE_TICKET=12803] \
+#       [REFERENCE_REVIEW=966349]
+#
+# Output: Only spike.md (~20-30K)
+#
+# For full package (spike + patchsets + design + README):
+#   Use: osprh_full_template.yaml with analysis_full_package
+#
+# Template variables:
+#   {TICKET_NUMBER}    - The OSPRH ticket number (e.g., 16421)
+#   {FEATURE_NAME}     - Brief description of the feature
+#   {REFERENCE_TICKET} - (Optional) Related ticket number
+#   {REFERENCE_REVIEW} - (Optional) Related review number
+#
+
+type: analysis_doc_create
+output_document: "{WORKSPACE_PROJECT}/analysis/analysis_new_feature_osprh_{TICKET_NUMBER}/spike.md"
+context_description: |
+  Working on OSPRH-{TICKET_NUMBER}: {FEATURE_NAME}
+  
+  This feature request requires investigation to determine:
+  - Technical approach
+  - Implementation complexity
+  - Potential risks
+  - Breakdown into reviewable patchsets
+  
+  Similar work (if applicable):
+  - Reference Ticket: OSPRH-{REFERENCE_TICKET}
+  - Reference Review: https://review.opendev.org/c/openstack/horizon/+/{REFERENCE_REVIEW}
+  
+specific_questions: |
+  1. What is the technical approach for implementing: {FEATURE_NAME}?
+  
+  2. What are the main architectural components that need to be changed?
+  
+  3. Are there similar implementations we can reference or learn from?
+  
+  4. What are the key technical risks for this feature?
+  
+  5. How should we break this work into reviewable patchsets?
+  
+  6. What testing strategy should we employ?
+  
+  7. Are there any backward compatibility concerns?
+

@@ -11,16 +11,29 @@ This system allows you to generate consistent, well-formatted "ask" prompts by u
 ### 1. Generate an ask from a template
 
 ```bash
-./ask_me.sh <template-type> <key-file>
+./ask_me.sh <template-type> <key-file> [VAR=value ...]
 ```
 
-### 2. Example
+### 2. Basic Example
 
 ```bash
 ./ask_me.sh analysis_doc_create askme/keys/example_fix_chevron_id.yaml
 ```
 
+### 3. With Template Variables (NEW!)
+
+```bash
+# Reuse one template for multiple tickets
+./ask_me.sh analysis_doc_create askme/keys/osprh_template.yaml \
+    TICKET_NUMBER=16421 \
+    FEATURE_NAME="Add expandable rows to Images table"
+```
+
 This will output a formatted ask that you can copy and paste to your AI assistant.
+
+> [!TIP]
+> **New Feature**: Use template variables to avoid creating a new YAML file for each similar task!  
+> See [TEMPLATE_VARIABLES.md](TEMPLATE_VARIABLES.md) for complete documentation.
 
 ## Available Templates
 

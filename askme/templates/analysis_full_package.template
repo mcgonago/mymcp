@@ -1,0 +1,108 @@
+ask:
+
+Create a COMPLETE feature analysis package for {context_description}
+
+Output location: {output_directory}
+
+This is a comprehensive analysis request. Create ALL of the following documents:
+
+## Required Documents
+
+### 1. spike.md
+Initial investigation document that answers:
+{specific_questions}
+
+Include:
+- Context and background
+- Technical approach overview
+- Complexity assessment (Low/Medium/High)
+- Key risks identified
+- Breakdown into patchsets
+- Timeline estimate
+- Decision: proceed or not
+
+### 2. README.md
+Project overview and navigation hub that includes:
+- Feature description and JIRA link
+- Quick navigation to all documents
+- Timeline estimate and current status
+- Key technical decisions summary
+- Reference to similar implementations
+- Testing strategy overview
+- Success criteria
+- How this analysis was created (for learning)
+
+### 3. Patchset Documents (patchset_1_*.md, patchset_2_*.md, etc.)
+Create separate patchset documents for each implementation phase:
+- Patchset 1: MVP/Core functionality
+- Patchset 2: Extended features
+- Patchset 3: Polish/optimization
+- Patchset 4 (if needed): Final refinements
+
+Each patchset document should include:
+- Objectives (what this patchset accomplishes)
+- Files to modify (with specific line numbers/sections)
+- Code examples (actual implementation)
+- Testing approach (unit tests, manual tests)
+- Commit message template
+- Expected reviewer feedback
+- Success criteria
+
+### 4. design.md
+Architectural design document that covers:
+- Problem statement (current state vs. desired state)
+- Goals and non-goals
+- Architecture overview (diagrams if helpful)
+- Key design decisions (with rationale for each)
+- Data model / API contracts
+- User experience flow
+- Accessibility considerations
+- Performance considerations
+- Security considerations
+- Testing strategy
+- Risks and mitigation
+- Alternative designs considered (and why rejected)
+- References to related work
+
+## Analysis Standards
+
+Follow the structure and quality standards from:
+- {MYMCP_REPO_PATH}/analysis/analysis_new_feature_966349/
+
+This reference implementation demonstrates:
+- Document organization
+- Level of detail expected
+- Code examples format
+- Testing documentation
+- Design rationale depth
+
+## Key Requirements
+
+1. **Comprehensive**: Cover all aspects (technical, UX, testing, risks)
+2. **Actionable**: Developer can implement directly from patchset docs
+3. **Referenced**: Link to similar implementations and prior art
+4. **Realistic**: Honest assessment of complexity and timeline
+5. **Complete**: All documents in the package, not just a subset
+
+## Output Structure
+
+Create files in this structure:
+```
+{output_directory}/
+├── README.md              (start here - navigation hub)
+├── spike.md               (initial investigation)
+├── patchset_1_*.md        (MVP implementation)
+├── patchset_2_*.md        (extended features)
+├── patchset_3_*.md        (polish/optimization)
+├── patchset_4_*.md        (final refinements, if needed)
+└── design.md              (architectural decisions)
+```
+
+## Specific Analysis Questions
+
+{specific_questions}
+
+---
+
+**Remember**: This is a FULL PACKAGE request. Create ALL documents listed above, not just the spike.
+
