@@ -63,36 +63,25 @@ Check Slack - it worked! 🎉
 
 ---
 
-## Real Example (Owen → Francesco)
+## Real Example
 
 **What Slack received (with `<url|text>` format):**
 ```
 Hi Francesco,
 
-I hope you don't mind me sharing a few FYIs...
-
-I took some liberty and integrated part of your standup_mcp project:
+I integrated your standup_mcp project:
 <https://gitlab.cee.redhat.com/fpantano/standup_mcp|standup_mcp>
 
-Into my mymcp Activity Tracker Agent:
-<https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent|mymcp Activity Tracker Agent>
+Into my Activity Tracker:
+<https://github.com/mcgonago/mymcp#activity-tracker-agent|mymcp Activity Tracker>
 
-I got my first activity tracker report working:
+My first report:
+📊 <https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
 
-📊 Status Report: Week 2025-W46
-<https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
-
-Thanks for sharing your `standup_mcp` with me a few weeks ago!
+Thanks!
 ```
 
-**The `<url|text>` format** makes "text" clickable while hiding the ugly long URL.
-
-**Command used:**
-```bash
-./scripts/send_to_slack.py francesco_message.txt --channel "@francesco"
-```
-
-**Result:** Three perfectly formatted clickable links. Zero manual work. Francesco sees clean text, not ugly URLs.
+**Result:** Three clickable links. Zero manual work. Clean text, no ugly URLs.
 
 ---
 

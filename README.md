@@ -175,23 +175,19 @@ Here's an actual message sent using this tool to share project updates:
 ```
 Hi Francesco,
 
-I hope you don't mind me sharing a few FYIs...
-
-I took some liberty and integrated part of your standup_mcp project:
+I integrated your standup_mcp project:
 <https://gitlab.cee.redhat.com/fpantano/standup_mcp|standup_mcp>
 
-Into my mymcp Activity Tracker Agent:
-<https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent|mymcp Activity Tracker Agent>
+Into my Activity Tracker:
+<https://github.com/mcgonago/mymcp#activity-tracker-agent|mymcp Activity Tracker>
 
-I got my first activity tracker report working:
+My first report:
+📊 <https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
 
-📊 Status Report: Week 2025-W46
-<https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
-
-Thanks for sharing your `standup_mcp` with me a few weeks ago!
+Thanks!
 ```
 
-**Result:** Francesco sees clean clickable text (not long URLs) - achieved with one command, no manual formatting!
+**Result:** Three clickable links, no manual formatting. One command, done!
 
 **For detailed setup and advanced usage, see [docs/SLACK_INTEGRATION.md](docs/SLACK_INTEGRATION.md).**
 

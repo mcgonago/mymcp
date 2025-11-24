@@ -44,62 +44,28 @@ mymcp Activity Tracker
 Thanks! 🚀
 ```
 
-### Real-World Example (Owen → Francesco)
+### Real-World Example
 
-**What was sent to Slack (with proper `<url|text>` format):**
+**What Slack received (with `<url|text>` format):**
 
 ```
 Hi Francesco,
 
-I hope you don't mind me sharing a few FYIs...
-
-I took some liberty and integrated part of your standup_mcp project:
+I integrated your standup_mcp project:
 <https://gitlab.cee.redhat.com/fpantano/standup_mcp|standup_mcp>
 
-Into my mymcp Activity Tracker Agent:
-<https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent|mymcp Activity Tracker Agent>
+Into my Activity Tracker:
+<https://github.com/mcgonago/mymcp#activity-tracker-agent|mymcp Activity Tracker>
 
-I hope you don't mind me giving you kudos for the baseline `standup_mcp` project...
+My first report:
+📊 <https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
 
-I was experimenting and didn't need the `did` integration (no pun intended), but I got my first activity tracker report working:
-
-📊 Status Report: Week 2025-W46
-<https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
-
-I need to get better statistics over time, but it's a great start!
-
-Thanks for sharing your `standup_mcp` with me a few weeks ago. Really appreciate it!
+Thanks!
 ```
 
-**The `<url|text>` syntax** is Slack's special format that displays "text" as a clickable link.
+**Input was simple** - URL on one line, title on next. Script auto-converts to `<url|text>` format!
 
-**How Francesco sees it in Slack:**
-- **standup_mcp** ← clickable, hides the long GitLab URL
-- **mymcp Activity Tracker Agent** ← clickable, hides the long GitHub URL  
-- **Status Report: Week 2025-W46** ← clickable with 📊 emoji
-
-**The input file that generated this:**
-
-Put URL on one line, title on the next:
-```
-Hi Francesco,
-
-I took some liberty and integrated part of your standup_mcp project:
-https://gitlab.cee.redhat.com/fpantano/standup_mcp
-standup_mcp
-
-Into my mymcp Activity Tracker Agent:
-https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent
-mymcp Activity Tracker Agent
-
-📊 Status Report: Week 2025-W46
-https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md
-Status Report: Week 2025-W46
-
-Thanks for sharing your `standup_mcp` with me!
-```
-
-Script auto-converts to `<url|text>` format!
+**Result:** Three clickable links, no manual formatting needed.
 
 ---
 
@@ -221,41 +187,33 @@ See [SLACK_INTEGRATION.md](./SLACK_INTEGRATION.md) for:
 
 ## 🎯 Real-World Example
 
-**Your current use case:**
+**Example workflow:**
 
 ```bash
 # 1. Create message file
-cat > francesco_message.txt << 'EOF'
+cat > message.txt << 'EOF'
 Hi Francesco,
 
-I hope you don't mind me sharing a few FYIs...
-
-I took some liberty and integrated part of your standup_mcp project:
+I integrated your standup_mcp project:
 https://gitlab.cee.redhat.com/fpantano/standup_mcp
 standup_mcp
 
-Into my mymcp Activity Tracker Agent:
-https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent
-mymcp Activity Tracker Agent
+Into my Activity Tracker:
+https://github.com/mcgonago/mymcp#activity-tracker-agent
+mymcp Activity Tracker
 
-I hope you don't mind me giving you kudos for the baseline `standup_mcp` project...
-
-I was experimenting and didn't need the `did` integration (no pun intended), but I got my first activity tracker report working:
-
-📊 Status Report: Week 2025-W46
-https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md
+My first report:
+📊 https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md
 Status Report: Week 2025-W46
 
-I need to get better statistics over time, but it's a great start!
-
-Thanks for sharing your `standup_mcp` with me a few weeks ago. Really appreciate it!
+Thanks!
 EOF
 
 # 2. Preview
-./scripts/send_to_slack.py francesco_message.txt --preview
+./scripts/send_to_slack.py message.txt --preview
 
-# 3. Send (DM to Francesco)
-./scripts/send_to_slack.py francesco_message.txt --channel "@francesco"
+# 3. Send to a channel
+./scripts/send_to_slack.py message.txt --channel "#team-updates"
 ```
 
 ---

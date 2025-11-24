@@ -1,24 +1,16 @@
 Hi Francesco,
 
-I hope you don't mind me sharing a few FYIs...
-
-I took some liberty and integrated part of your standup_mcp project:
+I integrated your standup_mcp project:
 https://gitlab.cee.redhat.com/fpantano/standup_mcp
 standup_mcp
 
-Into my mymcp Activity Tracker Agent:
+Into my Activity Tracker:
 https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent
 mymcp Activity Tracker Agent
 
-I hope you don't mind me giving you kudos for the baseline `standup_mcp` project...
-
-I was experimenting and didn't need the `did` integration (no pun intended), but I got my first activity tracker report working:
-
-📊 Status Report: Week 2025-W46
-https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md
+My first report:
+📊 https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md
 Status Report: Week 2025-W46
 
-I need to get better statistics over time, but it's a great start!
-
-Thanks for sharing your `standup_mcp` with me a few weeks ago. Really appreciate it!
+Thanks for sharing!
 

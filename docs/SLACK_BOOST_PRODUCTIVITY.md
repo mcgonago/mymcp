@@ -93,63 +93,25 @@ Check your Slack - you should see a beautifully formatted message with "mymcp - 
 
 ## 💡 Real-World Example
 
-### Owen's Use Case: Sharing Project Updates
-
-Owen wanted to message Francesco about integrating his standup_mcp project. Here's the result:
-
-**What Slack received (with proper `<url|text>` formatting):**
+**What Slack received (with `<url|text>` formatting):**
 ```
 Hi Francesco,
 
-I hope you don't mind me sharing a few FYIs...
-
-I took some liberty and integrated part of your standup_mcp project:
+I integrated part of your standup_mcp project:
 <https://gitlab.cee.redhat.com/fpantano/standup_mcp|standup_mcp>
 
-Into my mymcp Activity Tracker Agent:
-<https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent|mymcp Activity Tracker Agent>
+Into my Activity Tracker:
+<https://github.com/mcgonago/mymcp#activity-tracker-agent|mymcp Activity Tracker>
 
-I hope you don't mind me giving you kudos for the baseline `standup_mcp` project...
+My first report:
+📊 <https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
 
-I was experimenting and didn't need the `did` integration (no pun intended), but I got my first activity tracker report working:
-
-📊 Status Report: Week 2025-W46
-<https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md|Status Report: Week 2025-W46>
-
-I need to get better statistics over time, but it's a great start!
-
-Thanks for sharing your `standup_mcp` with me a few weeks ago. Really appreciate it!
+Thanks for sharing!
 ```
 
-**The `<url|text>` syntax** is Slack's special format - it displays clickable text while hiding long URLs.
+**Input was simple:** URL on one line, title on next line. Script auto-converts to `<url|text>` format.
 
-**Owen's input file: `francesco_message.txt`**
-```
-Hi Francesco,
-
-I took some liberty and integrated part of your standup_mcp project:
-https://gitlab.cee.redhat.com/fpantano/standup_mcp
-standup_mcp
-
-Into my mymcp Activity Tracker Agent:
-https://github.com/mcgonago/mymcp?tab=readme-ov-file#activity-tracker-agent
-mymcp Activity Tracker Agent
-
-📊 Status Report: Week 2025-W46
-https://gitlab.cee.redhat.com/omcgonag/iproject/-/blob/master/activity/2025-W46_report.md
-Status Report: Week 2025-W46
-
-Thanks for sharing your `standup_mcp` with me a few weeks ago!
-```
-
-**One command:**
-```bash
-./scripts/send_to_slack.py francesco_message.txt --channel "@francesco"
-```
-
-**Result:** Three perfectly formatted clickable links, proper code formatting, emojis. Zero manual work!
-
-**Time saved:** ~3 minutes (compared to manually highlighting and formatting each link)
+**Result:** Three perfectly formatted clickable links. Zero manual work. ~3 minutes saved.
 
 ---
 
