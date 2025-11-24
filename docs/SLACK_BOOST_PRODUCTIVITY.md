@@ -208,7 +208,25 @@ vim current_pr.txt  # Edit PR number and title
 ./scripts/send_to_slack.py current_pr.txt --channel "#team-dev"
 ```
 
-### Tip 4: Combine with Other Tools
+### Tip 4: Create Private Channels for Demos
+Want to show the automation to a colleague? Create a private channel!
+
+```bash
+# 1. In Slack: Create private channel #demos-with-colleague
+# 2. Add colleague as member
+# 3. Create webhook for that channel
+# 4. Demonstrate away!
+
+./scripts/send_to_slack.py demo.txt --channel "#demos-with-colleague"
+```
+
+**Why this is brilliant:**
+- Webhooks work with private channels (unlike DMs to other users)
+- Dedicated space for testing and demos
+- Colleague sees automation in action
+- No clutter in public channels
+
+### Tip 5: Combine with Other Tools
 ```bash
 # Generate a report and send it
 ./generate_report.sh > report.txt

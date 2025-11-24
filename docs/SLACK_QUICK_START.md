@@ -95,6 +95,25 @@ Thanks!
 ./scripts/send_to_slack.py my_message.txt --channel "@francesco"
 ```
 
+### Send to Private Channel (Best for Demos!)
+
+**Pro Tip:** Want to demonstrate the automation to a colleague? Create a private channel!
+
+```bash
+# 1. In Slack: Create private channel (e.g., #demos-with-colleague)
+# 2. Add your colleague as member
+# 3. Create webhook for that channel
+# 4. Send your demo!
+
+./scripts/send_to_slack.py demo_message.txt --channel "#your-private-channel"
+```
+
+**Why this works:**
+- ✅ Webhooks can post to private channels (unlike DMs to other users)
+- ✅ Private space for demos and testing
+- ✅ Colleague sees automation in action
+- ✅ No spam in public channels
+
 ---
 
 ## 🎨 What You'll See in Slack
@@ -155,6 +174,12 @@ echo "Quick update! 🚀" | ./scripts/send_to_slack.py --stdin
 ### Error: "HTTP Error 403"
 
 ➡️ **Solution:** Webhook URL is wrong or expired. Create new webhook.
+
+### Can't Send to Another User's DM
+
+➡️ **Limitation:** Slack webhooks can't DM other users (security feature)
+
+➡️ **Solution:** Create a **private channel** with both members! See "Send to Private Channel" above.
 
 ### Links Not Formatting
 

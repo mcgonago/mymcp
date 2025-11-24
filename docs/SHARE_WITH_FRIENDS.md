@@ -97,6 +97,26 @@ Thanks!
 
 ---
 
+## 💡 Pro Tip: Demonstrate to Colleagues
+
+Want to show this to a friend/colleague? **Create a private channel!**
+
+**Why:** Slack webhooks can't DM other users, but they CAN post to private channels.
+
+**How:**
+1. Create private channel in Slack (e.g., `#demos-with-colleague`)
+2. Add your friend as member
+3. Create webhook for that channel
+4. Send beautifully formatted demo messages!
+
+```bash
+./scripts/send_to_slack.py demo.txt --channel "#demos-with-colleague"
+```
+
+**Result:** Your colleague sees the automation in action. Private space. No spam. Perfect for demos! 🎯
+
+---
+
 ## Get Started
 
 **Full guide:** [SLACK_BOOST_PRODUCTIVITY.md](SLACK_BOOST_PRODUCTIVITY.md)  

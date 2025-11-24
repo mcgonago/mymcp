@@ -222,6 +222,29 @@ The script auto-detects this pattern and converts to Slack's `<url|text>` format
 ./scripts/send_to_slack.py message.txt --channel "@username"
 ```
 
+### Send to Private Channel (Demo Best Practice)
+
+**Pro Tip:** Want to demonstrate the automation to a colleague? Create a private channel!
+
+**Steps:**
+1. In Slack: Create private channel (e.g., `#demos-with-colleague`)
+2. Add your colleague as member
+3. Create webhook for that channel in Slack API dashboard
+4. Send your demo messages!
+
+```bash
+./scripts/send_to_slack.py demo.txt --channel "#demos-with-colleague"
+```
+
+**Advantages:**
+- ✅ Works with webhooks (unlike DMs to other users)
+- ✅ Private space for testing and demonstrations
+- ✅ Colleague sees automation in action
+- ✅ No spam in public channels
+- ✅ Perfect for onboarding team members
+
+**Common use case:** You want to show a colleague how the automation works. Instead of struggling with DM limitations, create a private channel with both of you, and demonstrate live!
+
 ### Preview Without Sending
 
 ```bash
@@ -295,6 +318,25 @@ Add to your crontab:
 **Cause:** Malformed webhook URL.
 
 **Solution:** Double-check the URL starts with `https://hooks.slack.com/services/`
+
+### Can't Send to Another User's DM
+
+**Problem:** You want to send a message to a colleague's DM, but it keeps coming back to you.
+
+**Cause:** Slack security limitation - webhooks cannot send DMs to other users.
+
+**Solution:** Create a **private channel** with your colleague!
+
+1. In Slack: Create private channel (e.g., `#demos-with-colleague`)
+2. Add colleague as member
+3. Create webhook for that channel
+4. Send messages: `./scripts/send_to_slack.py msg.txt --channel "#demos-with-colleague"`
+
+**Why this is better:**
+- ✅ Works perfectly with webhooks
+- ✅ Private space for you both
+- ✅ Great for demonstrating the automation
+- ✅ No spam in public channels
 
 ### Links Not Formatting as Expected
 

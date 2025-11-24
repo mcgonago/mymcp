@@ -154,6 +154,10 @@ echo 'SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"' >> 
 
 # Send to specific channel
 ./scripts/send_to_slack.py message.txt --channel "#team"
+
+# Demo to colleague? Create private channel!
+# (Webhooks can't DM other users, but work great with private channels)
+./scripts/send_to_slack.py message.txt --channel "#demos-with-colleague"
 ```
 
 ### Message Format Example
