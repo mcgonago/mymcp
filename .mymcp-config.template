@@ -38,7 +38,27 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     echo "  MYMCP_ASKME_KEYS       = ${MYMCP_ASKME_KEYS}"
 fi
 
-# Slack Integration (Optional)
-# Uncomment and add your webhook URL for Slack message sending
+# ============================================================================
+# Optional Integrations - Add your credentials below
+# ============================================================================
+
+# Slack Integration (for scripts/send_to_slack.py)
 # Get webhook from: https://api.slack.com/messaging/webhooks
 # SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+
+# GitHub API (for activity-tracker-agent)
+# Get token from: https://github.com/settings/tokens
+# GITHUB_TOKEN="ghp_YOUR_TOKEN_HERE"
+
+# OpenDev Credentials (for activity-tracker-agent)
+# OPENDEV_USERNAME="your_username"
+
+# GitLab API (for gitlab-cee-agent)
+# GITLAB_TOKEN="your_gitlab_token"
+# GITLAB_URL="https://gitlab.cee.redhat.com"
+
+# Jira API (for jira-agent)
+# JIRA_URL="https://your-company.atlassian.net"
+# JIRA_EMAIL="your.email@company.com"
+# JIRA_API_TOKEN="your_api_token"
+

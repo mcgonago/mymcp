@@ -15,6 +15,7 @@ This repository demonstrates how to build custom MCP (Model Context Protocol) ag
 - [GitLab RH Agent](#gitlab-rh-agent)
 - [Jira Agent](#jira-agent)
 - [Activity Tracker Agent](#activity-tracker-agent)
+- [Slack Integration](#slack-integration)
 - [Complete MCP Configuration](#complete-mcp-configuration)
 - [Use Cases](#use-cases)
 - [What These Agents Can Do](#what-these-agents-can-do)
@@ -112,6 +113,58 @@ An agent for tracking GitHub and OpenDev development activities with automated s
 - **Historical Tracking**: Maintains cache of past activities for trend analysis
 
 **For detailed setup instructions, see [activity-tracker-agent/README.md](activity-tracker-agent/README.md).**
+
+---
+
+## Slack Integration
+
+Send beautifully formatted messages to Slack with automatic link detection and formatting.
+
+### Features
+
+- **Auto-Link Formatting**: Automatically detects URLs and converts them to Slack's `<url|text>` format
+- **Markdown Support**: Preserves Slack formatting (bold, italic, code, emojis)
+- **Webhook Integration**: Simple webhook-based posting (no OAuth complexity)
+- **Preview Mode**: See formatted output before sending
+- **Channel Targeting**: Send to specific channels or direct messages
+- **Stdin Support**: Pipe messages directly from other commands
+
+### Quick Start
+
+**1. Create a Slack Webhook:**
+   - Go to https://api.slack.com/messaging/webhooks
+   - Create an app and enable Incoming Webhooks
+   - Copy your webhook URL
+
+**2. Configure:**
+```bash
+echo 'SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"' >> .mymcp-config
+```
+
+**3. Use:**
+```bash
+# Preview formatting
+./scripts/send_to_slack.py message.txt --preview
+
+# Send to Slack
+./scripts/send_to_slack.py message.txt
+
+# Send to specific channel
+./scripts/send_to_slack.py message.txt --channel "#team"
+```
+
+### Message Format Example
+
+**Your text file:**
+```
+Check out my project:
+https://github.com/mcgonago/mymcp
+mymcp Activity Tracker
+```
+
+**Slack renders as:** "mymcp Activity Tracker" (clickable text, not full URL) ✨
+
+**For detailed setup and advanced usage, see [docs/SLACK_INTEGRATION.md](docs/SLACK_INTEGRATION.md).**
 
 ---
 

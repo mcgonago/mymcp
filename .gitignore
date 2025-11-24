@@ -43,6 +43,7 @@ Thumbs.db
 # Environment files
 .env
 .rh-jira-mcp.env
+.mymcp-config
 
 # Backup files
 *~
