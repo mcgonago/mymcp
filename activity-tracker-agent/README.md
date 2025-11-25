@@ -371,7 +371,22 @@ Supported formats:
 @activity-tracker generate_status_report("2025-11-01 to 2025-11-30")
 ```
 
-### From Command Line (Testing)
+### From Command Line
+
+#### Quick Method (Recommended)
+
+Use the convenience wrapper script:
+
+```bash
+cd <mymcp-repo-path>/activity-tracker-agent
+./generate_report.sh "this week"
+./generate_report.sh "last week"
+./generate_report.sh  # defaults to "last week"
+```
+
+This generates the report and saves it to `workspace/iproject/activity/`.
+
+#### Direct Python Invocation
 
 ```bash
 cd <mymcp-repo-path>/activity-tracker-agent
