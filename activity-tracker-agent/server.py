@@ -1151,187 +1151,6 @@ def generate_status_report(
             report_lines.append("---")
             report_lines.append("")
             
-            # Ownership sections - show all open/active items owned by user
-            report_lines.append("---")
-            report_lines.append("")
-            report_lines.append("## 👤 Ownership Status")
-            report_lines.append("")
-            report_lines.append("_Items currently owned by you across all platforms_")
-            report_lines.append("")
-            
-            # OpenDev Reviews Ownership
-            report_lines.append("### 🟠 OpenDev: My Active Reviews")
-            report_lines.append("")
-            
-            active_opendev_reviews = [
-                r for r in opendev_data.get('reviews_posted', [])
-                if r.get('status') not in ['MERGED', 'ABANDONED']
-            ]
-            
-            if active_opendev_reviews:
-                report_lines.append(f"**{len(active_opendev_reviews)} active review(s)**")
-                report_lines.append("")
-                report_lines.append("| Review | Project | Subject | Status | Created | Last Updated | Days Idle | Link |")
-                report_lines.append("|--------|---------|---------|--------|---------|--------------|-----------|------|")
-                for review in active_opendev_reviews:
-                    review_num = review.get('number', 'N/A')
-                    project = review.get('project', 'N/A').split('/')[-1] if review.get('project') else 'N/A'
-                    subject = review.get('subject', 'N/A')
-                    if len(subject) > 50:
-                        subject = subject[:47] + '...'
-                    status = review.get('status', 'N/A')
-                    created = review.get('created', 'N/A')[:10] if review.get('created') else 'N/A'
-                    updated = review.get('updated', 'N/A')[:10] if review.get('updated') else 'N/A'
-                    days_idle = days_since_update(review.get('updated'))
-                    url = review.get('url', '#')
-                    
-                    status_icon = "🟢" if status == "NEW" else "🟡"
-                    report_lines.append(f"| [{review_num}]({url}) | {project} | {subject} | {status_icon} {status} | {created} | {updated} | {days_idle} | [View]({url}) |")
-                report_lines.append("")
-            else:
-                report_lines.append("_No active reviews_")
-                report_lines.append("")
-            
-            # GitHub PRs Ownership
-            report_lines.append("### 🔵 GitHub: My Open PRs")
-            report_lines.append("")
-            
-            open_github_prs = [
-                pr for pr in github_data.get('prs_created', [])
-                if pr.get('state') == 'open'
-            ]
-            
-            if open_github_prs:
-                report_lines.append(f"**{len(open_github_prs)} open PR(s)**")
-                report_lines.append("")
-                report_lines.append("| PR | Repository | Title | Status | Created | Last Updated | Days Idle | Link |")
-                report_lines.append("|----|------------|-------|--------|---------|--------------|-----------|------|")
-                for pr in open_github_prs:
-                    pr_num = pr.get('number', 'N/A')
-                    repo = pr.get('repo', 'N/A')
-                    title = pr.get('title', 'N/A')
-                    if len(title) > 50:
-                        title = title[:47] + '...'
-                    state = pr.get('state', 'N/A')
-                    created = pr.get('created_at', 'N/A')[:10] if pr.get('created_at') else 'N/A'
-                    updated = pr.get('updated_at', 'N/A')[:10] if pr.get('updated_at') else 'N/A'
-                    days_idle = days_since_update(pr.get('updated_at'))
-                    url = pr.get('html_url', '#')
-                    
-                    report_lines.append(f"| [#{pr_num}]({url}) | {repo} | {title} | 🟢 {state.upper()} | {created} | {updated} | {days_idle} | [View]({url}) |")
-                report_lines.append("")
-            else:
-                report_lines.append("_No open PRs_")
-                report_lines.append("")
-            
-            # GitLab MRs Ownership
-            report_lines.append("### 🦊 GitLab: My Open MRs")
-            report_lines.append("")
-            
-            open_gitlab_mrs = [
-                mr for mr in gitlab_data.get('mrs_created', [])
-                if mr.get('state') == 'opened'
-            ]
-            
-            if open_gitlab_mrs:
-                report_lines.append(f"**{len(open_gitlab_mrs)} open MR(s)**")
-                report_lines.append("")
-                report_lines.append("| MR | Project | Title | Status | Created | Last Updated | Days Idle | Link |")
-                report_lines.append("|----|---------|-------|--------|---------|--------------|-----------|------|")
-                for mr in open_gitlab_mrs:
-                    mr_id = mr.get('id', 'N/A')
-                    project = mr.get('project_name', 'N/A')
-                    title = mr.get('title', 'N/A')
-                    if len(title) > 50:
-                        title = title[:47] + '...'
-                    state = mr.get('state', 'N/A')
-                    created = mr.get('created_at', 'N/A')[:10] if mr.get('created_at') else 'N/A'
-                    updated = mr.get('updated_at', 'N/A')[:10] if mr.get('updated_at') else 'N/A'
-                    days_idle = days_since_update(mr.get('updated_at'))
-                    url = mr.get('url', '#')
-                    
-                    report_lines.append(f"| [!{mr_id}]({url}) | {project} | {title} | 🟢 {state.upper()} | {created} | {updated} | {days_idle} | [View]({url}) |")
-                report_lines.append("")
-            else:
-                report_lines.append("_No open MRs_")
-                report_lines.append("")
-            
-            # Jira Tickets Ownership - Open tickets
-            report_lines.append("### 📋 Jira: My Open Tickets")
-            report_lines.append("")
-            
-            open_jira_issues = [
-                issue for issue in jira_data.get('issues_assigned', [])
-                if issue.get('status') not in ['Done', 'Closed', 'Resolved']
-            ]
-            
-            if open_jira_issues:
-                report_lines.append(f"**{len(open_jira_issues)} open ticket(s)**")
-                report_lines.append("")
-                report_lines.append("| Ticket | Summary | Type | Status | Priority | Created | Last Updated | Days Idle | Link |")
-                report_lines.append("|--------|---------|------|--------|----------|---------|--------------|-----------|------|")
-                for issue in open_jira_issues:
-                    key = issue.get('key', 'N/A')
-                    summary = issue.get('summary', 'N/A')
-                    if len(summary) > 40:
-                        summary = summary[:37] + '...'
-                    issue_type = issue.get('type', 'N/A')
-                    status = issue.get('status', 'N/A')
-                    priority = issue.get('priority', 'N/A')
-                    created = issue.get('created_at', 'N/A')[:10] if issue.get('created_at') else 'N/A'
-                    updated = issue.get('updated_at', 'N/A')[:10] if issue.get('updated_at') else 'N/A'
-                    days_idle = days_since_update(issue.get('updated_at'))
-                    url = issue.get('url', '#')
-                    
-                    status_icon = get_status_icon(status)
-                    report_lines.append(f"| [{key}]({url}) | {summary} | {issue_type} | {status_icon} {status} | {priority} | {created} | {updated} | {days_idle} | [View]({url}) |")
-                report_lines.append("")
-            else:
-                report_lines.append("_No open tickets_")
-                report_lines.append("")
-            
-            # Jira Tickets Requiring Update - issues idle > 7 days
-            report_lines.append("### 📋 Jira: Tickets Requiring Update")
-            report_lines.append("")
-            report_lines.append("_Tickets idle for more than 7 days_")
-            report_lines.append("")
-            
-            stale_jira_issues = [
-                issue for issue in jira_data.get('issues_assigned', [])
-                if issue.get('status') not in ['Done', 'Closed', 'Resolved']
-                and days_since_update(issue.get('updated_at')).isdigit()
-                and int(days_since_update(issue.get('updated_at'))) > 7
-            ]
-            
-            if stale_jira_issues:
-                report_lines.append(f"**{len(stale_jira_issues)} ticket(s) need attention**")
-                report_lines.append("")
-                report_lines.append("| Ticket | Summary | Type | Status | Priority | Created | Last Updated | Days Idle | Link |")
-                report_lines.append("|--------|---------|------|--------|----------|---------|--------------|-----------|------|")
-                for issue in stale_jira_issues:
-                    key = issue.get('key', 'N/A')
-                    summary = issue.get('summary', 'N/A')
-                    if len(summary) > 40:
-                        summary = summary[:37] + '...'
-                    issue_type = issue.get('type', 'N/A')
-                    status = issue.get('status', 'N/A')
-                    priority = issue.get('priority', 'N/A')
-                    created = issue.get('created_at', 'N/A')[:10] if issue.get('created_at') else 'N/A'
-                    updated = issue.get('updated_at', 'N/A')[:10] if issue.get('updated_at') else 'N/A'
-                    days_idle = days_since_update(issue.get('updated_at'))
-                    url = issue.get('url', '#')
-                    
-                    # Red icon for stale items
-                    status_icon = "🔴"
-                    report_lines.append(f"| [{key}]({url}) | {summary} | {issue_type} | {status_icon} {status} | {priority} | {created} | {updated} | **{days_idle}** | [View]({url}) |")
-                report_lines.append("")
-            else:
-                report_lines.append("_No tickets requiring immediate attention_")
-                report_lines.append("")
-            
-            report_lines.append("---")
-            report_lines.append("")
-            
             # Footer sections
             report_lines.append("## 📝 Key Themes")
             report_lines.append("")
@@ -1361,6 +1180,266 @@ def generate_status_report(
             
     except ValueError as e:
         return f"Error: {str(e)}"
+    except Exception as e:
+        return f"Unexpected error: {str(e)}"
+
+
+@mcp.tool()
+def generate_in_progress_report() -> str:
+    """
+    Generate an "In Progress" report showing current ownership status.
+    
+    This report shows all open/active items owned by you across platforms:
+    - OpenDev: Active reviews (not merged/abandoned)
+    - GitHub: Open PRs
+    - GitLab: Open MRs
+    - Jira: Open tickets (and tickets requiring update)
+    
+    Always fetches fresh data (no caching) since this is current status.
+    
+    Returns:
+        Markdown formatted in-progress report
+    """
+    try:
+        print("Fetching fresh ownership data...", file=sys.stderr)
+        
+        # Fetch data for "all time" to get all open items
+        # Use a very old start date to capture everything
+        start_date = "2020-01-01"
+        end_date = datetime.now().strftime("%Y-%m-%d")
+        
+        # Fetch fresh data from all platforms
+        github_data = get_github_activity(start_date, end_date)
+        opendev_data = get_opendev_activity(start_date, end_date)
+        gitlab_data = get_gitlab_activity(start_date, end_date)
+        jira_data = get_jira_activity(start_date, end_date)
+        
+        # Helper functions
+        def days_since_update(date_str):
+            """Calculate days since last update"""
+            try:
+                if not date_str:
+                    return "N/A"
+                update_date = date_parser.parse(date_str)
+                now = datetime.now(update_date.tzinfo) if update_date.tzinfo else datetime.now()
+                delta = now - update_date
+                return str(delta.days)
+            except:
+                return "N/A"
+        
+        def get_status_icon(status):
+            """Get appropriate status icon based on status text"""
+            status_lower = status.lower()
+            if 'in progress' in status_lower or 'progress' in status_lower:
+                return "🟡"
+            elif 'review' in status_lower:
+                return "🟢"
+            elif 'backlog' in status_lower or 'planning' in status_lower or 'new' in status_lower:
+                return "🟢"
+            elif 'done' in status_lower or 'closed' in status_lower or 'resolved' in status_lower or 'merged' in status_lower:
+                return "🟣"
+            else:
+                return "🟢"  # Default to green
+        
+        # Generate markdown report
+        report_lines = []
+        report_lines.append("# In Progress")
+        report_lines.append("")
+        report_lines.append(f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report_lines.append("")
+        report_lines.append("_Current ownership status across all platforms_")
+        report_lines.append("")
+        report_lines.append("---")
+        report_lines.append("")
+        
+        # OpenDev Reviews Ownership
+        report_lines.append("## 🟠 OpenDev: My Active Reviews")
+        report_lines.append("")
+        
+        active_opendev_reviews = [
+            r for r in opendev_data.get('reviews_posted', [])
+            if r.get('status') not in ['MERGED', 'ABANDONED']
+        ]
+        
+        if active_opendev_reviews:
+            report_lines.append(f"**{len(active_opendev_reviews)} active review(s)**")
+            report_lines.append("")
+            report_lines.append("| Review | Project | Subject | Status | Created | Last Updated | Days Idle | Link |")
+            report_lines.append("|--------|---------|---------|--------|---------|--------------|-----------|------|")
+            for review in active_opendev_reviews:
+                review_num = review.get('number', 'N/A')
+                project = review.get('project', 'N/A').split('/')[-1] if review.get('project') else 'N/A'
+                subject = review.get('subject', 'N/A')
+                if len(subject) > 50:
+                    subject = subject[:47] + '...'
+                status = review.get('status', 'N/A')
+                created = review.get('created', 'N/A')[:10] if review.get('created') else 'N/A'
+                updated = review.get('updated', 'N/A')[:10] if review.get('updated') else 'N/A'
+                days_idle = days_since_update(review.get('updated'))
+                url = review.get('url', '#')
+                
+                status_icon = "🟢" if status == "NEW" else "🟡"
+                report_lines.append(f"| [{review_num}]({url}) | {project} | {subject} | {status_icon} {status} | {created} | {updated} | {days_idle} | [View]({url}) |")
+            report_lines.append("")
+        else:
+            report_lines.append("_No active reviews_")
+            report_lines.append("")
+        
+        # GitHub PRs Ownership
+        report_lines.append("## 🔵 GitHub: My Open PRs")
+        report_lines.append("")
+        
+        open_github_prs = [
+            pr for pr in github_data.get('prs_created', [])
+            if pr.get('state') == 'open'
+        ]
+        
+        if open_github_prs:
+            report_lines.append(f"**{len(open_github_prs)} open PR(s)**")
+            report_lines.append("")
+            report_lines.append("| PR | Repository | Title | Status | Created | Last Updated | Days Idle | Link |")
+            report_lines.append("|----|------------|-------|--------|---------|--------------|-----------|------|")
+            for pr in open_github_prs:
+                pr_num = pr.get('number', 'N/A')
+                repo = pr.get('repo', 'N/A')
+                title = pr.get('title', 'N/A')
+                if len(title) > 50:
+                    title = title[:47] + '...'
+                state = pr.get('state', 'N/A')
+                created = pr.get('created_at', 'N/A')[:10] if pr.get('created_at') else 'N/A'
+                updated = pr.get('updated_at', 'N/A')[:10] if pr.get('updated_at') else 'N/A'
+                days_idle = days_since_update(pr.get('updated_at'))
+                url = pr.get('html_url', '#')
+                
+                report_lines.append(f"| [#{pr_num}]({url}) | {repo} | {title} | 🟢 {state.upper()} | {created} | {updated} | {days_idle} | [View]({url}) |")
+            report_lines.append("")
+        else:
+            report_lines.append("_No open PRs_")
+            report_lines.append("")
+        
+        # GitLab MRs Ownership
+        report_lines.append("## 🦊 GitLab: My Open MRs")
+        report_lines.append("")
+        
+        open_gitlab_mrs = [
+            mr for mr in gitlab_data.get('mrs_created', [])
+            if mr.get('state') == 'opened'
+        ]
+        
+        if open_gitlab_mrs:
+            report_lines.append(f"**{len(open_gitlab_mrs)} open MR(s)**")
+            report_lines.append("")
+            report_lines.append("| MR | Project | Title | Status | Created | Last Updated | Days Idle | Link |")
+            report_lines.append("|----|---------|-------|--------|---------|--------------|-----------|------|")
+            for mr in open_gitlab_mrs:
+                mr_id = mr.get('id', 'N/A')
+                project = mr.get('project_name', 'N/A')
+                title = mr.get('title', 'N/A')
+                if len(title) > 50:
+                    title = title[:47] + '...'
+                state = mr.get('state', 'N/A')
+                created = mr.get('created_at', 'N/A')[:10] if mr.get('created_at') else 'N/A'
+                updated = mr.get('updated_at', 'N/A')[:10] if mr.get('updated_at') else 'N/A'
+                days_idle = days_since_update(mr.get('updated_at'))
+                url = mr.get('url', '#')
+                
+                report_lines.append(f"| [!{mr_id}]({url}) | {project} | {title} | 🟢 {state.upper()} | {created} | {updated} | {days_idle} | [View]({url}) |")
+            report_lines.append("")
+        else:
+            report_lines.append("_No open MRs_")
+            report_lines.append("")
+        
+        # Jira Tickets Ownership - Open tickets
+        report_lines.append("## 📋 Jira: My Open Tickets")
+        report_lines.append("")
+        
+        open_jira_issues = [
+            issue for issue in jira_data.get('issues_assigned', [])
+            if issue.get('status') not in ['Done', 'Closed', 'Resolved']
+        ]
+        
+        if open_jira_issues:
+            report_lines.append(f"**{len(open_jira_issues)} open ticket(s)**")
+            report_lines.append("")
+            report_lines.append("| Ticket | Summary | Type | Status | Priority | Created | Last Updated | Days Idle | Link |")
+            report_lines.append("|--------|---------|------|--------|----------|---------|--------------|-----------|------|")
+            for issue in open_jira_issues:
+                key = issue.get('key', 'N/A')
+                summary = issue.get('summary', 'N/A')
+                if len(summary) > 40:
+                    summary = summary[:37] + '...'
+                issue_type = issue.get('type', 'N/A')
+                status = issue.get('status', 'N/A')
+                priority = issue.get('priority', 'N/A')
+                created = issue.get('created_at', 'N/A')[:10] if issue.get('created_at') else 'N/A'
+                updated = issue.get('updated_at', 'N/A')[:10] if issue.get('updated_at') else 'N/A'
+                days_idle = days_since_update(issue.get('updated_at'))
+                url = issue.get('url', '#')
+                
+                status_icon = get_status_icon(status)
+                report_lines.append(f"| [{key}]({url}) | {summary} | {issue_type} | {status_icon} {status} | {priority} | {created} | {updated} | {days_idle} | [View]({url}) |")
+            report_lines.append("")
+        else:
+            report_lines.append("_No open tickets_")
+            report_lines.append("")
+        
+        # Jira Tickets Requiring Update - issues idle > 7 days
+        report_lines.append("## 📋 Jira: Tickets Requiring Update")
+        report_lines.append("")
+        report_lines.append("_Tickets idle for more than 7 days_")
+        report_lines.append("")
+        
+        stale_jira_issues = [
+            issue for issue in jira_data.get('issues_assigned', [])
+            if issue.get('status') not in ['Done', 'Closed', 'Resolved']
+            and days_since_update(issue.get('updated_at')).isdigit()
+            and int(days_since_update(issue.get('updated_at'))) > 7
+        ]
+        
+        if stale_jira_issues:
+            report_lines.append(f"**{len(stale_jira_issues)} ticket(s) need attention**")
+            report_lines.append("")
+            report_lines.append("| Ticket | Summary | Type | Status | Priority | Created | Last Updated | Days Idle | Link |")
+            report_lines.append("|--------|---------|------|--------|----------|---------|--------------|-----------|------|")
+            for issue in stale_jira_issues:
+                key = issue.get('key', 'N/A')
+                summary = issue.get('summary', 'N/A')
+                if len(summary) > 40:
+                    summary = summary[:37] + '...'
+                issue_type = issue.get('type', 'N/A')
+                status = issue.get('status', 'N/A')
+                priority = issue.get('priority', 'N/A')
+                created = issue.get('created_at', 'N/A')[:10] if issue.get('created_at') else 'N/A'
+                updated = issue.get('updated_at', 'N/A')[:10] if issue.get('updated_at') else 'N/A'
+                days_idle = days_since_update(issue.get('updated_at'))
+                url = issue.get('url', '#')
+                
+                # Red icon for stale items
+                status_icon = "🔴"
+                report_lines.append(f"| [{key}]({url}) | {summary} | {issue_type} | {status_icon} {status} | {priority} | {created} | {updated} | **{days_idle}** | [View]({url}) |")
+            report_lines.append("")
+        else:
+            report_lines.append("_No tickets requiring immediate attention_")
+            report_lines.append("")
+        
+        report_lines.append("---")
+        report_lines.append("")
+        report_lines.append(f"_Generated by mymcp activity-tracker on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}_  ")
+        report_lines.append(f"_Always shows fresh data (not cached)_")
+        
+        report = "\n".join(report_lines)
+        
+        # Save report to workspace
+        report_file = os.path.join(ACTIVITY_DIR, "in_progress.md")
+        try:
+            with open(report_file, 'w') as f:
+                f.write(report)
+            print(f"In-progress report saved to {report_file}", file=sys.stderr)
+        except IOError as e:
+            print(f"Warning: Could not save report to {report_file}: {e}", file=sys.stderr)
+        
+        return report
+        
     except Exception as e:
         return f"Unexpected error: {str(e)}"
 

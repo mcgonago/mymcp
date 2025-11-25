@@ -371,12 +371,33 @@ Supported formats:
 @activity-tracker generate_status_report("2025-11-01 to 2025-11-30")
 ```
 
+#### Generate In Progress Report
+
+**New in v2.3**: Generate a current "In Progress" ownership report showing all open items across platforms:
+
+```
+@activity-tracker generate_in_progress_report()
+```
+
+This report shows:
+- 🟠 **OpenDev**: Active reviews (not merged/abandoned)
+- 🔵 **GitHub**: Open PRs
+- 🦊 **GitLab**: Open MRs  
+- 📋 **Jira**: Open tickets + tickets requiring update (idle > 7 days)
+
+**Key differences from weekly reports**:
+- ✅ Always fetches fresh data (no caching)
+- ✅ Shows ALL open items (not limited to a date range)
+- ✅ Saves to `in_progress.md` (not week-specific)
+- ✅ Focused on current work status, not historical activity
+
 ### From Command Line
 
 #### Quick Method (Recommended)
 
-Use the convenience wrapper script:
+Use the convenience wrapper scripts:
 
+**Weekly Activity Reports**:
 ```bash
 cd <mymcp-repo-path>/activity-tracker-agent
 ./generate_report.sh "this week"
@@ -384,7 +405,13 @@ cd <mymcp-repo-path>/activity-tracker-agent
 ./generate_report.sh  # defaults to "last week"
 ```
 
-This generates the report and saves it to `workspace/iproject/activity/`.
+**In Progress Report** (current ownership status):
+```bash
+cd <mymcp-repo-path>/activity-tracker-agent
+./generate_in_progress.sh
+```
+
+This generates reports and saves them to `workspace/iproject/activity/`.
 
 #### Direct Python Invocation
 
@@ -403,10 +430,11 @@ This will generate a test report for "last week" and print to stdout.
 Generated reports are saved to:
 ```
 workspace/iproject/activity/
-├── 2025-W46.json          # Cached activity data
-├── 2025-W46_report.md     # Generated markdown report
+├── 2025-W46.json          # Cached activity data (weekly)
+├── 2025-W46_report.md     # Generated markdown report (weekly)
 ├── 2025-W47.json
 ├── 2025-W47_report.md
+├── in_progress.md         # Current ownership status (always fresh)
 └── ...
 ```
 
