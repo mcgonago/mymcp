@@ -103,7 +103,8 @@ def parse_date_range(time_range: str) -> Tuple[str, str]:
     if time_range == "this week":
         # Start of week (Monday)
         start = today - timedelta(days=today.weekday())
-        end = today
+        # End = today + 1 day to capture today's UTC timestamps (for users in negative UTC offsets)
+        end = today + timedelta(days=1)
     elif time_range == "last week":
         # Start of last week (Monday)
         start = today - timedelta(days=today.weekday() + 7)
@@ -429,7 +430,7 @@ def get_opendev_activity(
         reviewer_query = f"reviewer:{username} after:{start_date}"
         reviewer_response = requests.get(
             f'{base_url}/changes/',
-            params={'q': reviewer_query, 'o': ['DETAILED_ACCOUNTS', 'MESSAGES', 'ALL_REVISIONS']}
+            params={'q': reviewer_query, 'o': ['DETAILED_ACCOUNTS', 'MESSAGES', 'ALL_REVISIONS', 'LABELS']}
         )
         reviewer_response.raise_for_status()
         
