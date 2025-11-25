@@ -83,3 +83,4 @@ workspace/*_workspace/
 
 # External work areas (not tracked) - DEPRECATED
 workspace/external/
+.current_context
