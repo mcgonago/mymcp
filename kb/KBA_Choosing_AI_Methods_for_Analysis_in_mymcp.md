@@ -37,18 +37,18 @@ Different tasks require different levels of:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    AI Method Spectrum                        │
+│                    AI Method Spectrum                       │
 ├─────────────────────────────────────────────────────────────┤
-│                                                              │
+│                                                             │
 │  Low Structure ◄──────────────────────────► High Structure  │
 │  High AI Freedom                         Strict Format      │
-│                                                              │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │ Method 1 │  │ Method 3 │  │ Method 4 │  │ Method 2 │   │
-│  │ Natural  │  │Reference │  │  askme   │  │ Manual   │   │
-│  │ Language │  │ Examples │  │ Templates│  │Templates │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-│                                                              │
+│                                                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐     │ 
+│  │ Method 1 │  │ Method 3 │  │ Method 4 │  │ Method 2 │     │
+│  │ Natural  │  │Reference │  │  askme   │  │ Manual   │     │
+│  │ Language │  │ Examples │  │ Templates│  │Templates │     │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘     │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -88,12 +88,12 @@ Full spike for OSPRH-16421
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  AI Pattern Recognition (Zero-Shot Learning)                 │
+│  AI Pattern Recognition (Zero-Shot Learning)                │
 ├─────────────────────────────────────────────────────────────┤
 │  1. Identifies "spike" as a Scrum/Agile artifact            │
-│  2. Recognizes "OSPRH-XXXXX" as a JIRA ticket pattern      │
+│  2. Recognizes "OSPRH-XXXXX" as a JIRA ticket pattern       │
 │  3. Retrieves internalized spike structure from training    │
-│  4. Infers need for: spike.md, patchsets, design docs      │
+│  4. Infers need for: spike.md, patchsets, design docs       │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -101,24 +101,24 @@ Full spike for OSPRH-16421
 │  Codebase Context Gathering (In-Context Learning)           │
 ├─────────────────────────────────────────────────────────────┤
 │  1. Searches for existing spikes in analysis/ directory     │
-│  2. Reads similar feature analysis (e.g., OSPRH-12803)     │
-│  3. Identifies templates in analysis/ if available         │
-│  4. Reviews README.md for repository conventions           │
+│  2. Reads similar feature analysis (e.g., OSPRH-12803)      │
+│  3. Identifies templates in analysis/ if available          │
+│  4. Reviews README.md for repository conventions            │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Structure Synthesis (Few-Shot Learning)                     │
+│  Structure Synthesis (Few-Shot Learning)                    │
 ├─────────────────────────────────────────────────────────────┤
 │  - Combines: LLM training + codebase examples + templates   │
-│  - Adapts structure to match repository patterns           │
-│  - Generates: spike.md, patchset_X.md, design.md, README.md│
+│  - Adapts structure to match repository patterns            │
+│  - Generates: spike.md, patchset_X.md, design.md, README.md │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
-┌─────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────┐
 │  Output: Generated artifacts in workspace/iproject/analysis/ │
-└─────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### AI Internals
@@ -274,14 +274,14 @@ analysis/analysis_new_feature_966349/spike.md
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Few-Shot Learning Pipeline                                  │
+│  Few-Shot Learning Pipeline                                 │
 ├─────────────────────────────────────────────────────────────┤
 │  1. Read reference: analysis/.../966349/spike.md            │
-│  2. Extract structure:                                       │
-│     - Section headings                                       │
-│     - Subsection hierarchy                                   │
+│  2. Extract structure:                                      │
+│     - Section headings                                      │
+│     - Subsection hierarchy                                  │
 │     - Content patterns (tables, lists, code blocks)         │
-│     - Markdown formatting conventions                        │
+│     - Markdown formatting conventions                       │
 │  3. Identify "template patterns" from reference             │
 │  4. Create "mental template" for new document               │
 └────────────────────┬────────────────────────────────────────┘
@@ -292,7 +292,7 @@ analysis/analysis_new_feature_966349/spike.md
 ├─────────────────────────────────────────────────────────────┤
 │  - Apply structure from 966349/spike.md                     │
 │  - Fill with content relevant to OSPRH-16421                │
-│  - Maintain same section depth, ordering, style            │
+│  - Maintain same section depth, ordering, style             │
 │  - Preserve table/list formats                              │
 └────────────────────┬────────────────────────────────────────┘
                      │
@@ -384,7 +384,7 @@ Then generate prompts with `./ask_me.sh <key>`.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    askme System Architecture                 │
+│                    askme System Architecture                │
 └─────────────────────────────────────────────────────────────┘
 
 ┌───────────────────┐
@@ -521,9 +521,9 @@ Review the following for structural guidance:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  AI Receives: Fully-formed prompt from askme                 │
+│  AI Receives: Fully-formed prompt from askme                │
 ├─────────────────────────────────────────────────────────────┤
-│  Prompt contains:                                            │
+│  Prompt contains:                                           │
 │  1. Exact file paths (workspace, references)                │
 │  2. Specific instructions (from YAML)                       │
 │  3. Template structure (from .template file)                │
@@ -532,7 +532,7 @@ Review the following for structural guidance:
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  AI Processing (Instruction-Following Mode)                  │
+│  AI Processing (Instruction-Following Mode)                 │
 ├─────────────────────────────────────────────────────────────┤
 │  - No guessing required (paths provided)                    │
 │  - Structure pre-defined (template)                         │
@@ -543,7 +543,7 @@ Review the following for structural guidance:
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Execution: High-precision, low-variance                     │
+│  Execution: High-precision, low-variance                    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -668,14 +668,14 @@ When you give the AI a request, here's what happens under the hood:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Stage 1: Intent Classification                              │
+│  Stage 1: Intent Classification                             │
 ├─────────────────────────────────────────────────────────────┤
 │  Input: "Full spike for OSPRH-16421"                        │
-│  ↓                                                           │
+│  ↓                                                          │
 │  Tokenization: ["Full", "spike", "for", "OSPRH", "-", ...]  │
-│  ↓                                                           │
-│  Intent: CREATE_DOCUMENTATION                                │
-│  Sub-intent: SPIKE_ANALYSIS                                  │
+│  ↓                                                          │
+│  Intent: CREATE_DOCUMENTATION                               │
+│  Sub-intent: SPIKE_ANALYSIS                                 │
 │  Entity: OSPRH-16421 (JIRA ticket)                          │
 └─────────────────────────────────────────────────────────────┘
          │
@@ -685,12 +685,12 @@ When you give the AI a request, here's what happens under the hood:
 ├─────────────────────────────────────────────────────────────┤
 │  Semantic Search in Codebase:                               │
 │  - Query: "spike analysis feature documentation"            │
-│  - Results:                                                  │
-│    1. analysis/spike_template.md (relevance: 0.95)         │
+│  - Results:                                                 │
+│    1. analysis/spike_template.md (relevance: 0.95)          │
 │    2. analysis/analysis_new_feature_966349/ (relevance: 0.87│
 │    3. README.md sections (relevance: 0.72)                  │
-│  ↓                                                           │
-│  Read relevant files into context window                     │
+│  ↓                                                          │
+│  Read relevant files into context window                    │
 └─────────────────────────────────────────────────────────────┘
          │
          ▼
@@ -703,28 +703,28 @@ When you give the AI a request, here's what happens under the hood:
 │  3. "Found template → use as base structure"                │
 │  4. "Found 966349 example → learn patterns from it"         │
 │  5. "Workspace policy → create in iproject/"                │
-│  ↓                                                           │
-│  Plan:                                                       │
+│  ↓                                                          │
+│  Plan:                                                      │
 │  [ ] Create workspace/iproject/analysis/...16421/           │
-│  [ ] Generate spike.md                                       │
-│  [ ] Generate patchset_1.md                                  │
-│  [ ] Generate design.md                                      │
-│  [ ] Generate README.md                                      │
+│  [ ] Generate spike.md                                      │
+│  [ ] Generate patchset_1.md                                 │
+│  [ ] Generate design.md                                     │
+│  [ ] Generate README.md                                     │
 └─────────────────────────────────────────────────────────────┘
          │
          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Stage 4: Tool Selection & Execution                         │
+│  Stage 4: Tool Selection & Execution                        │
 ├─────────────────────────────────────────────────────────────┤
-│  Available tools:                                            │
+│  Available tools:                                           │
 │  - read_file, write, search_replace, codebase_search, ...   │
-│  ↓                                                           │
-│  Selected tool sequence:                                     │
-│  1. codebase_search("spike template structure")            │
+│  ↓                                                          │
+│  Selected tool sequence:                                    │
+│  1. codebase_search("spike template structure")             │
 │  2. read_file("analysis/spike_template.md")                 │
 │  3. read_file("analysis/.../966349/spike.md")               │
 │  4. write("workspace/iproject/analysis/.../spike.md")       │
-│  5. write(...patchset_1.md)                                  │
+│  5. write(...patchset_1.md)                                 │
 │  6. ... (continue for all files)                            │
 └─────────────────────────────────────────────────────────────┘
          │
@@ -732,13 +732,13 @@ When you give the AI a request, here's what happens under the hood:
 ┌─────────────────────────────────────────────────────────────┐
 │  Stage 5: Self-Correction & Validation                      │
 ├─────────────────────────────────────────────────────────────┤
-│  AI checks:                                                  │
+│  AI checks:                                                 │
 │  ✓ Files created in correct location?                       │
 │  ✓ Structure matches template?                              │
 │  ✓ All sections present?                                    │
 │  ✓ Markdown syntax valid?                                   │
 │  ✓ Cross-references correct?                                │
-│  ↓                                                           │
+│  ↓                                                          │
 │  If errors detected → fix them                              │
 │  If missing content → fill it in                            │
 └─────────────────────────────────────────────────────────────┘
@@ -808,36 +808,36 @@ A neural network trained on massive text datasets (books, code, web) to:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Transformer Model (Simplified)                              │
+│  Transformer Model (Simplified)                             │
 ├─────────────────────────────────────────────────────────────┤
-│                                                              │
+│                                                             │
 │  Input: "Full spike for OSPRH-16421"                        │
-│    ↓                                                         │
+│    ↓                                                        │
 │  ┌────────────────────────────────────────┐                 │
 │  │  Tokenization                          │                 │
 │  │  ["Full", "spike", "for", "OSPRH",...] │                 │
 │  └────────────┬───────────────────────────┘                 │
-│               ↓                                              │
+│               ↓                                             │
 │  ┌────────────────────────────────────────┐                 │
 │  │  Embedding Layer                       │                 │
 │  │  (Convert tokens to vectors)           │                 │
 │  │  [0.23, -0.45, ...], [0.89, 0.12, ...] │                 │
 │  └────────────┬───────────────────────────┘                 │
-│               ↓                                              │
+│               ↓                                             │
 │  ┌────────────────────────────────────────┐                 │
 │  │  Self-Attention Mechanism              │                 │
-│  │  (Relate "spike" ↔ "OSPRH-16421")     │                 │
-│  │  Weight: "spike" + "for" + JIRA       │                 │
+│  │  (Relate "spike" ↔ "OSPRH-16421")     │                  │
+│  │  Weight: "spike" + "for" + JIRA       │                  │
 │  └────────────┬───────────────────────────┘                 │
-│               ↓                                              │
+│               ↓                                             │
 │  ┌────────────────────────────────────────┐                 │
 │  │  Feed-Forward Network                  │                 │
 │  │  (Deep reasoning layers)               │                 │
 │  └────────────┬───────────────────────────┘                 │
-│               ↓                                              │
+│               ↓                                             │
 │  Output: Intent="CREATE_SPIKE"                              │
 │          Entity="OSPRH-16421"                               │
-│          Action="generate_documentation"                     │
+│          Action="generate_documentation"                    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -850,34 +850,34 @@ User: "Create spike for OSPRH-16421 similar to review 966349"
 
 Attention Weights (what AI focuses on):
 ┌──────────────────────────────────────────────┐
-│ Token        Attention Weight   Meaning      │
-├──────────────────────────────────────────────┤
-│ "Create"     0.92                HIGH - Action│
-│ "spike"      0.95                HIGH - Type  │
-│ "OSPRH-16421" 0.88               HIGH - Target│
-│ "similar"    0.85                HIGH - Method│
-│ "966349"     0.90                HIGH - Reference│
-│ "to"         0.12                LOW - Grammar│
-│ "review"     0.65                MED - Context│
+│ Token        Attention Weight  Meaning       │  
+├──────────────────────────────────────────────┤ 
+│ "Create"     0.92           HIGH - Action    │
+│ "spike"      0.95           HIGH - Type      │
+│ "OSPRH-16421" 0.88          HIGH - Target    │
+│ "similar"    0.85           HIGH - Method    │
+│ "966349"     0.90           HIGH - Reference │
+│ "to"         0.12           LOW - Grammar    │
+│ "review"     0.65           MED - Context    │
 └──────────────────────────────────────────────┘
-
-Result: AI knows to:
-1. CREATE (action)
-2. SPIKE document (type)
-3. For OSPRH-16421 (target)
+                                                
+Result: AI knows to:                            
+1. CREATE (action)                              
+2. SPIKE document (type)                        
+3. For OSPRH-16421 (target)                     
 4. Using 966349 as structural reference (method)
-```
-
-#### 3. **Context Window**
-
+```                                             
+                                                
+#### 3. **Context Window**                      
+                                                
 The amount of text AI can "remember" in one session:
-
-```
+                                                
+```                                             
 ┌─────────────────────────────────────────────────────────────┐
 │  Claude Sonnet 4.5 Context Window: ~1M tokens               │
 │  (≈ 750,000 words, or ≈ 3,000 pages)                        │
 ├─────────────────────────────────────────────────────────────┤
-│                                                              │
+│                                                             │
 │  ┌──────────────────────────────────────────┐               │
 │  │ Your Conversation History                │ 5%            │
 │  ├──────────────────────────────────────────┤               │
@@ -887,27 +887,27 @@ The amount of text AI can "remember" in one session:
 │  ├──────────────────────────────────────────┤               │
 │  │ Available Space for Generation           │ 50%           │
 │  └──────────────────────────────────────────┘               │
-│                                                              │
+│                                                             │
 │  Why this matters:                                          │
 │  - Can read ENTIRE spike + patchsets + design in one go     │
 │  - No need to "forget" earlier conversation                 │
 │  - Can reference any part of long documents                 │
 └─────────────────────────────────────────────────────────────┘
-```
-
-#### 4. **Temperature and Sampling**
-
-Controls how "creative" vs "deterministic" AI output is:
-
-```
-Temperature Scale:
+```                                                            
+                                                               
+#### 4. **Temperature and Sampling**                           
+                                                               
+Controls how "creative" vs "deterministic" AI output is:       
+                                                               
+```                                                            
+Temperature Scale:                                             
 ┌─────────────────────────────────────────────────────────────┐
 │ 0.0                    0.5                    1.0           │
 │ Deterministic          Balanced               Creative      │
 │ Same output every time                        Varies widely │
-│ ├──────────────────────┼──────────────────────┤            │
-│ Method 4 (askme)       Method 3              Method 1      │
-│ Repeatable             Consistent            Flexible      │
+│ ├──────────────────────┼──────────────────────┤             │ 
+│ Method 4 (askme)       Method 3              Method 1       │
+│ Repeatable             Consistent            Flexible       │
 └─────────────────────────────────────────────────────────────┘
 
 Example with Temperature=0.0 (Method 4):
@@ -975,43 +975,43 @@ Users should click chevrons to view image details without navigating away.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  How AI "Learns" During Inference (Not Training)             │
+│  How AI "Learns" During Inference (Not Training)            │
 ├─────────────────────────────────────────────────────────────┤
-│                                                              │
+│                                                             │
 │  ┌────────────────────────────────────────┐                 │
 │  │ Pre-Training (OpenAI/Anthropic did)    │                 │
 │  │ Billions of documents, years of work   │                 │
 │  │ AI learned: language, code, patterns   │                 │
 │  └────────────┬───────────────────────────┘                 │
-│               ↓                                              │
-│               Your session starts                            │
-│               ↓                                              │
+│               ↓                                             │
+│               Your session starts                           │
+│               ↓                                             │
 │  ┌────────────────────────────────────────┐                 │
 │  │ In-Context Learning                    │                 │
 │  │ (During your conversation)             │                 │
-│  │                                         │                 │
+│  │                                        │                 │
 │  │ You: "Full spike for OSPRH-16421"      │                 │
 │  │ AI reads: spike_template.md            │                 │
 │  │ AI reads: 966349/spike.md              │                 │
 │  │ AI "learns": Your repo's style         │                 │
-│  │                                         │                 │
+│  │                                        │                 │
 │  │ This is NOT permanent training         │                 │
 │  │ This is temporary context adaptation   │                 │
 │  └────────────┬───────────────────────────┘                 │
-│               ↓                                              │
+│               ↓                                             │
 │  ┌────────────────────────────────────────┐                 │
 │  │ Few-Shot Learning                      │                 │
 │  │ (You provide 1-3 examples)             │                 │
-│  │                                         │                 │
+│  │                                        │                 │
 │  │ You: "Use structure from 966349"       │                 │
 │  │ AI: Reads 966349, extracts pattern     │                 │
 │  │     Applies pattern to new document    │                 │
 │  └────────────┬───────────────────────────┘                 │
-│               ↓                                              │
+│               ↓                                             │
 │  ┌────────────────────────────────────────┐                 │
 │  │ Zero-Shot Learning                     │                 │
 │  │ (No examples, just instructions)       │                 │
-│  │                                         │                 │
+│  │                                        │                 │
 │  │ You: "Create spike for OSPRH-16421"    │                 │
 │  │ AI: Uses pre-trained knowledge of      │                 │
 │  │     what "spike" means in Agile dev    │                 │
