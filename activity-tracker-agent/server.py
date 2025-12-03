@@ -1454,6 +1454,84 @@ def generate_in_progress_report() -> str:
             else:
                 return f"{score} 🔴"  # Very high complexity
         
+        def calculate_estimated_days(complexity_score):
+            """
+            Calculate estimated days to complete based on complexity score.
+            
+            Base time by complexity:
+            - 0-5 (Low): 0.5 days
+            - 6-15 (Medium): 1.5 days
+            - 16-30 (High): 3 days
+            - 31+ (Very High): 5 days
+            
+            Returns: (ai_assisted_days, manual_days)
+            """
+            if complexity_score <= 5:
+                return (0.5, 1.5)
+            elif complexity_score <= 15:
+                return (1.5, 4.0)
+            elif complexity_score <= 30:
+                return (3.0, 8.0)
+            else:
+                return (5.0, 15.0)
+        
+        def calculate_priority(item_type, is_awaiting_review=False, has_fix_version=False, 
+                               is_owned_by_me=False, days_tracked=0):
+            """
+            Calculate priority (P1-P4) for an item.
+            
+            P1: Blockers - Items blocking others (awaiting your review)
+            P2: High - Your work with fix version set
+            P3: Medium - Your own work items
+            P4: Low - Everything else (watching, backlog)
+            
+            Returns: (priority_number, priority_label, reason)
+            """
+            if is_awaiting_review:
+                return (1, "P1", "blocking others")
+            elif has_fix_version and is_owned_by_me:
+                return (2, "P2", "has fix version")
+            elif is_owned_by_me:
+                return (3, "P3", "your work")
+            else:
+                return (4, "P4", "watching/backlog")
+        
+        def calculate_target_date(first_seen_str, estimated_days):
+            """
+            Calculate target completion date.
+            
+            Target = first_seen + estimated_days (skipping weekends)
+            
+            Returns: target date string in YYYY-MM-DD format
+            """
+            try:
+                if first_seen_str:
+                    first_seen = datetime.strptime(first_seen_str, "%Y-%m-%d")
+                else:
+                    first_seen = datetime.now()
+                
+                # Add estimated days (simple approach - just add calendar days)
+                # A more sophisticated version would skip weekends
+                target = first_seen + timedelta(days=estimated_days)
+                
+                # If target is in the past, set to today + estimated_days
+                if target < datetime.now():
+                    target = datetime.now() + timedelta(days=estimated_days)
+                
+                return target.strftime("%Y-%m-%d")
+            except:
+                return (datetime.now() + timedelta(days=estimated_days)).strftime("%Y-%m-%d")
+        
+        def get_priority_display(priority_num):
+            """Get display string for priority."""
+            displays = {
+                1: "🔴 P1",
+                2: "🟠 P2",
+                3: "🟡 P3",
+                4: "🟢 P4"
+            }
+            return displays.get(priority_num, "P4")
+        
         def load_tracking_history():
             """Load the tracking history file that persists first_seen dates."""
             history_file = os.path.join(ACTIVITY_DIR, "tracking_history.json")
@@ -1509,6 +1587,8 @@ def generate_in_progress_report() -> str:
                 'type': item.get('type', 'unknown'),
                 'id': item.get('id', 'N/A'),
                 'title': item.get('title', 'N/A')[:50],
+                'owner': item.get('owner', 'N/A'),
+                'credit_due': item.get('credit_due', ''),  # Reviewers who gave +1/+2
                 'days_tracked': days_tracked,
                 'rating': rating,
                 'is_mine': item.get('is_mine', True),
@@ -1732,90 +1812,460 @@ def generate_in_progress_report() -> str:
             
             return success_stories
         
-        def generate_success_stories_section(success_stories, history):
-            """Generate markdown section for success stories with ratings."""
+        def get_platform_icon(item_type):
+            """Get platform icon from item type."""
+            icons = {
+                'opendev': '🟠 OpenDev',
+                'github': '🔵 GitHub',
+                'gitlab': '🦊 GitLab',
+                'jira': '📋 Jira',
+                'jira_watching': '📋 Jira',
+                'opendev_review': '🟠 OpenDev (Review)',
+                'gitlab_review': '🦊 GitLab (Review)',
+                'github_review': '🔵 GitHub (Review)'
+            }
+            return icons.get(item_type, item_type)
+        
+        def build_item_url(item_type, item_id):
+            """Build URL for an item based on type."""
+            clean_id = str(item_id).replace('!', '')
+            if item_type in ['opendev', 'opendev_review']:
+                return f"https://review.opendev.org/c/openstack/horizon/+/{clean_id}"
+            elif item_type in ['gitlab', 'gitlab_review']:
+                return f"https://gitlab.cee.redhat.com/eng/openstack/horizon/-/merge_requests/{clean_id}"
+            elif item_type in ['github', 'github_review']:
+                return f"https://github.com/openstack-k8s-operators/horizon-operator/pull/{clean_id}"
+            elif item_type in ['jira', 'jira_watching']:
+                return f"https://issues.redhat.com/browse/{item_id}"
+            return "#"
+        
+        def generate_success_stories_section(success_stories, history, unplanned_done=None):
+            """Generate markdown section for success stories with ratings.
+            
+            This section now shows PERSISTENT data from quarterly_stats,
+            not just the diff from the last run.
+            """
+            if unplanned_done is None:
+                unplanned_done = []
+            
             lines = []
             lines.append("## 🏆 Success Stories")
             lines.append("")
-            lines.append("_Items completed since last run_")
+            lines.append("_All completed items this quarter (persistent)_")
             lines.append("")
             
             # Rating legend
             lines.append("> **Rating System:** 🌟 A+ (<14 days) | ✅ A (<28 days) | ⚠️ B (<42 days) | 🔴 F (>42 days)")
             lines.append("")
             
-            if not success_stories:
-                # Show a fun placeholder when no victories yet
+            # Get ALL items from quarterly_stats (persistent history)
+            quarterly_stats = history.get('quarterly_stats', [])
+            today = datetime.now()
+            current_quarter = f"{today.year}-Q{(today.month - 1) // 3 + 1}"
+            quarter_items = [s for s in quarterly_stats if s.get('quarter') == current_quarter]
+            
+            # Separate into mine vs team from quarterly_stats
+            my_victories = [s for s in quarter_items if s.get('is_mine', False)]
+            team_progress = [s for s in quarter_items if not s.get('is_mine', False)]
+            
+            # Also add any NEW success stories from this run (not yet in quarterly_stats)
+            for story in success_stories:
+                story_key = f"{story.get('type', '')}:{story.get('id', '')}"
+                # Check if already in quarterly_stats
+                existing = any(f"{q.get('type', '')}:{q.get('id', '')}" == story_key for q in quarter_items)
+                if not existing:
+                    if story.get('is_mine', False):
+                        my_victories.append(story)
+                    else:
+                        team_progress.append(story)
+            
+            # Show placeholder if no completions at all
+            if not my_victories and not team_progress:
                 lines.append("### 🎉 Your Victories (0)")
                 lines.append("")
-                lines.append("_No completed items since last run... but here's what success will look like!_")
+                lines.append("_No completed items this quarter... but here's what success will look like!_")
                 lines.append("")
-                lines.append("| Platform | ID | Title | Days | Rating | Reason |")
-                lines.append("|----------|-------|-------|------|--------|--------|")
-                lines.append("| 🟠 OpenDev | [999999](https://example.com) | 🦄 Fix the unfixable bug that... | 41 | ⚠️ B | Merged! |")
-                lines.append("| 📋 Jira | OSPRH-99999 | 🎯 Implement world peace in Ho... | 7 | 🌟 A+ | Closed |")
+                lines.append("| Platform | Item | Completed | Days | Rating |")
+                lines.append("|----------|------|-----------|------|--------|")
+                lines.append("| 🟠 OpenDev | [999999](https://example.com) 🦄 Fix the unfixable bug that... | 2025-12-01 | 41 | ⚠️ B |")
+                lines.append("| 📋 Jira | [OSPRH-99999](https://example.com) 🎯 Implement world peace in Ho... | 2025-12-02 | 7 | 🌟 A+ |")
                 lines.append("")
                 lines.append("_^ Example placeholder - complete some items to see your real victories here!_")
                 lines.append("")
                 return "\n".join(lines)
             
-            # Separate mine vs others
-            my_victories = [s for s in success_stories if s['is_mine']]
-            team_victories = [s for s in success_stories if not s['is_mine']]
-            
+            # Your Victories (items you owned)
             if my_victories:
                 lines.append(f"### 🎉 Your Victories ({len(my_victories)})")
                 lines.append("")
-                lines.append("| Platform | ID | Title | Days | Rating | Reason |")
-                lines.append("|----------|-------|-------|------|--------|--------|")
-                for story in my_victories:
-                    days_str = str(story.get('days_tracked', 'N/A'))
-                    rating_display = f"{story.get('rating_emoji', '')} {story.get('rating', 'N/A')}"
-                    lines.append(f"| {story['platform']} | [{story['id']}]({story['url']}) | {story['title']} | {days_str} | {rating_display} | {story['reason']} |")
+                lines.append("_Items you owned that are now complete_")
                 lines.append("")
-            
-            if team_victories:
-                lines.append(f"### ⭐ Team Progress ({len(team_victories)})")
-                lines.append("")
-                lines.append("_Items you were watching/reviewing that are now complete_")
-                lines.append("")
-                lines.append("| Platform | ID | Title | Days | Rating | Reason |")
-                lines.append("|----------|-------|-------|------|--------|--------|")
-                for story in team_victories:
-                    days_str = str(story.get('days_tracked', 'N/A'))
-                    rating_display = f"{story.get('rating_emoji', '')} {story.get('rating', 'N/A')}"
-                    lines.append(f"| {story['platform']} | [{story['id']}]({story['url']}) | {story['title']} | {days_str} | {rating_display} | {story['reason']} |")
-                lines.append("")
-            
-            # Quarterly summary (if we have stats)
-            quarterly_stats = history.get('quarterly_stats', [])
-            if quarterly_stats:
-                # Get current quarter stats
-                today = datetime.now()
-                current_quarter = f"{today.year}-Q{(today.month - 1) // 3 + 1}"
-                quarter_items = [s for s in quarterly_stats if s.get('quarter') == current_quarter]
-                
-                if quarter_items:
-                    # Calculate rating distribution
-                    ratings = {'A+': 0, 'A': 0, 'B': 0, 'F': 0}
-                    for item in quarter_items:
-                        r = item.get('rating', 'F')
-                        if r in ratings:
-                            ratings[r] += 1
+                lines.append("| Platform | Item | Completed | Days | Rating |")
+                lines.append("|----------|------|-----------|------|--------|")
+                for item in sorted(my_victories, key=lambda x: x.get('date', x.get('completed', '')), reverse=True):
+                    platform = get_platform_icon(item.get('type', ''))
+                    item_id = str(item.get('id', 'N/A')).lstrip('!')  # Remove ! prefix from GitLab MR IDs
+                    title = item.get('title', 'N/A')[:40] + ('...' if len(item.get('title', '')) > 40 else '')
+                    url = item.get('url', build_item_url(item.get('type', ''), item_id))
+                    completed = item.get('date', item.get('completed', 'N/A'))[:10] if item.get('date') or item.get('completed') else 'N/A'
+                    days = item.get('days_tracked', 'N/A')
+                    rating = item.get('rating', 'N/A')
+                    rating_emoji = get_rating_emoji(rating)
                     
-                    total = len(quarter_items)
-                    lines.append(f"### 📊 Quarterly Progress ({current_quarter})")
-                    lines.append("")
-                    lines.append(f"**{total} items completed this quarter**")
-                    lines.append("")
-                    lines.append("| Rating | Count | Percentage |")
-                    lines.append("|--------|-------|------------|")
-                    for r in ['A+', 'A', 'B', 'F']:
-                        count = ratings[r]
-                        pct = (count / total * 100) if total > 0 else 0
-                        emoji = get_rating_emoji(r)
-                        lines.append(f"| {emoji} {r} | {count} | {pct:.1f}% |")
-                    lines.append("")
+                    # Format as MR-XX for GitLab, PR-XX for GitHub
+                    if 'gitlab' in item.get('type', ''):
+                        display_id = f"MR-{item_id}"
+                    elif 'github' in item.get('type', ''):
+                        display_id = f"PR-{item_id}"
+                    else:
+                        display_id = item_id
+                    
+                    item_display = f"[{display_id}]({url}) {title}"
+                    lines.append(f"| {platform} | {item_display} | {completed} | {days} | {rating_emoji} {rating} |")
+                lines.append("")
+            
+            # Team Progress (items you were watching/reviewing) - NOW PERSISTENT!
+            if team_progress:
+                lines.append(f"### ⭐ Team Progress ({len(team_progress)})")
+                lines.append("")
+                lines.append("_Items you were watching/reviewing that are now complete (persistent this quarter)_")
+                lines.append("")
+                lines.append("| Platform | Item | Owner | Credit Is Due | Completed | Rating |")
+                lines.append("|----------|------|-------|---------------|-----------|--------|")
+                for item in sorted(team_progress, key=lambda x: x.get('date', x.get('completed', '')), reverse=True):
+                    platform = get_platform_icon(item.get('type', ''))
+                    item_id = str(item.get('id', 'N/A')).lstrip('!')  # Remove ! prefix from GitLab MR IDs
+                    title = item.get('title', 'N/A')[:30] + ('...' if len(item.get('title', '')) > 30 else '')
+                    url = item.get('url', build_item_url(item.get('type', ''), item_id))
+                    owner = item.get('owner', 'N/A')
+                    credit_due = item.get('credit_due', '')
+                    if not credit_due:
+                        credit_due = '—'
+                    completed = item.get('date', item.get('completed', 'N/A'))[:10] if item.get('date') or item.get('completed') else 'N/A'
+                    rating = item.get('rating', 'N/A')
+                    rating_emoji = get_rating_emoji(rating)
+                    
+                    # Format as MR-XX for GitLab, PR-XX for GitHub
+                    if 'gitlab' in item.get('type', ''):
+                        display_id = f"MR-{item_id}"
+                    elif 'github' in item.get('type', ''):
+                        display_id = f"PR-{item_id}"
+                    else:
+                        display_id = item_id
+                    
+                    item_display = f"[{display_id}]({url}) {title}"
+                    lines.append(f"| {platform} | {item_display} | {owner} | {credit_due} | {completed} | {rating_emoji} {rating} |")
+                lines.append("")
+            
+            # Completed Unplanned Work (from unplanned_done.txt)
+            if unplanned_done:
+                lines.append("### 🔧 Unplanned Work Completed")
+                lines.append("")
+                lines.append("_Interrupts, firefights, and ad-hoc tasks that got done_")
+                lines.append("")
+                lines.append("| Date | Category | Description | Hours | Outcome |")
+                lines.append("|------|----------|-------------|-------|---------|")
+                
+                # Show last 5 unplanned completed items
+                for item in sorted(unplanned_done, key=lambda x: x.get('date', ''), reverse=True)[:5]:
+                    icon = get_unplanned_category_icon(item['category'])
+                    desc = item['description'][:30] + ('...' if len(item['description']) > 30 else '')
+                    outcome = item.get('outcome', '')[:20] + ('...' if len(item.get('outcome', '')) > 20 else '')
+                    lines.append(f"| {item['date']} | {icon} {item['category']} | {desc} | {item['hours']} | {outcome} |")
+                
+                if len(unplanned_done) > 5:
+                    lines.append(f"| ... | | _{len(unplanned_done) - 5} more_ | | |")
+                lines.append("")
+            
+            # Quarterly summary
+            total_quarter = len(my_victories) + len(team_progress)
+            if total_quarter > 0:
+                # Calculate rating distribution
+                all_items = my_victories + team_progress
+                ratings = {'A+': 0, 'A': 0, 'B': 0, 'F': 0}
+                for item in all_items:
+                    r = item.get('rating', 'F')
+                    if r in ratings:
+                        ratings[r] += 1
+                
+                lines.append(f"### 📊 Quarterly Summary ({current_quarter})")
+                lines.append("")
+                lines.append(f"**{total_quarter} items completed this quarter**")
+                lines.append("")
+                lines.append("| Rating | Count | Percentage |")
+                lines.append("|--------|-------|------------|")
+                for r in ['A+', 'A', 'B', 'F']:
+                    count = ratings[r]
+                    pct = (count / total_quarter * 100) if total_quarter > 0 else 0
+                    emoji = get_rating_emoji(r)
+                    lines.append(f"| {emoji} {r} | {count} | {pct:.1f}% |")
+                lines.append("")
+            
+            return "\n".join(lines)
+        
+        def generate_timeline_estimates_section(current_state, tracking_history):
+            """
+            Generate markdown section for AI Timeline Estimates.
+            
+            This section shows:
+            - Estimated completion time (AI-assisted vs manual)
+            - Priority ranking
+            - Target completion dates
+            - Work schedule
+            """
+            lines = []
+            lines.append("## ⏱️ AI Timeline Estimates")
+            lines.append("")
+            lines.append("_AI-calculated time estimates and priority scheduling_")
+            lines.append("")
+            
+            # Collect all items with estimates
+            all_items = []
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            
+            # Process OpenDev reviews (owned by me)
+            for item in current_state.get('opendev', []):
+                if item.get('status') in ['NEW', 'ACTIVE']:
+                    complexity = item.get('complexity_score', 0)
+                    ai_days, manual_days = calculate_estimated_days(complexity)
+                    first_seen = tracking_history.get('items', {}).get(f"opendev_{item['number']}", {}).get('first_seen', today_str)
+                    target = calculate_target_date(first_seen, ai_days)
+                    
+                    # Determine if it has a fix version (use subject as proxy)
+                    has_fix_version = 'osprh' in item.get('subject', '').lower()
+                    
+                    priority_num, priority_label, priority_reason = calculate_priority(
+                        'opendev',
+                        is_awaiting_review=False,
+                        has_fix_version=has_fix_version,
+                        is_owned_by_me=True
+                    )
+                    
+                    all_items.append({
+                        'platform': '🟠 OpenDev',
+                        'id': item.get('number'),
+                        'title': item.get('subject', 'N/A')[:35] + ('...' if len(item.get('subject', '')) > 35 else ''),
+                        'url': item.get('url', '#'),
+                        'owner': 'me',
+                        'complexity': complexity,
+                        'ai_days': ai_days,
+                        'manual_days': manual_days,
+                        'priority_num': priority_num,
+                        'priority_label': priority_label,
+                        'priority_reason': priority_reason,
+                        'target': target,
+                        'first_seen': first_seen
+                    })
+            
+            # Process GitHub PRs (owned by me)
+            for item in current_state.get('github', []):
+                complexity = item.get('complexity_score', 0)
+                ai_days, manual_days = calculate_estimated_days(complexity)
+                first_seen = tracking_history.get('items', {}).get(f"github_{item['number']}", {}).get('first_seen', today_str)
+                target = calculate_target_date(first_seen, ai_days)
+                
+                priority_num, priority_label, priority_reason = calculate_priority(
+                    'github',
+                    is_awaiting_review=False,
+                    has_fix_version=False,
+                    is_owned_by_me=True
+                )
+                
+                all_items.append({
+                    'platform': '🔵 GitHub',
+                    'id': item.get('number'),
+                    'title': item.get('title', 'N/A')[:35] + ('...' if len(item.get('title', '')) > 35 else ''),
+                    'url': item.get('url', '#'),
+                    'owner': 'me',
+                    'complexity': complexity,
+                    'ai_days': ai_days,
+                    'manual_days': manual_days,
+                    'priority_num': priority_num,
+                    'priority_label': priority_label,
+                    'priority_reason': priority_reason,
+                    'target': target,
+                    'first_seen': first_seen
+                })
+            
+            # Process GitLab MRs (owned by me)
+            for item in current_state.get('gitlab', []):
+                complexity = item.get('complexity_score', 0)
+                ai_days, manual_days = calculate_estimated_days(complexity)
+                first_seen = tracking_history.get('items', {}).get(f"gitlab_{item['iid']}", {}).get('first_seen', today_str)
+                target = calculate_target_date(first_seen, ai_days)
+                
+                priority_num, priority_label, priority_reason = calculate_priority(
+                    'gitlab',
+                    is_awaiting_review=False,
+                    has_fix_version=False,
+                    is_owned_by_me=True
+                )
+                
+                all_items.append({
+                    'platform': '🦊 GitLab',
+                    'id': item.get('iid'),
+                    'title': item.get('title', 'N/A')[:35] + ('...' if len(item.get('title', '')) > 35 else ''),
+                    'url': item.get('url', '#'),
+                    'owner': 'me',
+                    'complexity': complexity,
+                    'ai_days': ai_days,
+                    'manual_days': manual_days,
+                    'priority_num': priority_num,
+                    'priority_label': priority_label,
+                    'priority_reason': priority_reason,
+                    'target': target,
+                    'first_seen': first_seen
+                })
+            
+            # Process Jira tickets (owned by me)
+            for item in current_state.get('jira', []):
+                complexity = item.get('complexity_score', 0)
+                ai_days, manual_days = calculate_estimated_days(complexity)
+                first_seen = tracking_history.get('items', {}).get(f"jira_{item['key']}", {}).get('first_seen', today_str)
+                target = calculate_target_date(first_seen, ai_days)
+                
+                # Check if has fix version
+                has_fix_version = bool(item.get('fix_version'))
+                
+                priority_num, priority_label, priority_reason = calculate_priority(
+                    'jira',
+                    is_awaiting_review=False,
+                    has_fix_version=has_fix_version,
+                    is_owned_by_me=True
+                )
+                
+                all_items.append({
+                    'platform': '📋 Jira',
+                    'id': item.get('key'),
+                    'title': item.get('summary', 'N/A')[:35] + ('...' if len(item.get('summary', '')) > 35 else ''),
+                    'url': item.get('url', '#'),
+                    'owner': 'me',
+                    'complexity': complexity,
+                    'ai_days': ai_days,
+                    'manual_days': manual_days,
+                    'priority_num': priority_num,
+                    'priority_label': priority_label,
+                    'priority_reason': priority_reason,
+                    'target': target,
+                    'first_seen': first_seen
+                })
+            
+            # Add items awaiting review (P1 - blocking others)
+            for item in current_state.get('opendev_awaiting', []):
+                if not item.get('has_voted'):
+                    complexity = item.get('complexity_score', 0)
+                    ai_days, manual_days = calculate_estimated_days(complexity)
+                    first_seen = tracking_history.get('items', {}).get(f"opendev_review_{item['number']}", {}).get('first_seen', today_str)
+                    target = calculate_target_date(first_seen, ai_days)
+                    
+                    all_items.append({
+                        'platform': '🟠 OpenDev',
+                        'id': f"Review {item.get('number')}",
+                        'title': item.get('subject', 'N/A')[:35] + ('...' if len(item.get('subject', '')) > 35 else ''),
+                        'url': item.get('url', '#'),
+                        'owner': item.get('owner', 'N/A'),
+                        'complexity': complexity,
+                        'ai_days': ai_days,
+                        'manual_days': manual_days,
+                        'priority_num': 1,
+                        'priority_label': 'P1',
+                        'priority_reason': 'blocking teammate',
+                        'target': target,
+                        'first_seen': first_seen
+                    })
+            
+            for item in current_state.get('gitlab_awaiting', []):
+                if not item.get('has_approved'):
+                    complexity = item.get('complexity_score', 0)
+                    ai_days, manual_days = calculate_estimated_days(complexity)
+                    first_seen = tracking_history.get('items', {}).get(f"gitlab_review_{item['iid']}", {}).get('first_seen', today_str)
+                    target = calculate_target_date(first_seen, ai_days)
+                    
+                    all_items.append({
+                        'platform': '🦊 GitLab',
+                        'id': f"MR-{item.get('iid')}",
+                        'title': item.get('title', 'N/A')[:35] + ('...' if len(item.get('title', '')) > 35 else ''),
+                        'url': item.get('url', '#'),
+                        'owner': item.get('owner', 'N/A'),
+                        'complexity': complexity,
+                        'ai_days': ai_days,
+                        'manual_days': manual_days,
+                        'priority_num': 1,
+                        'priority_label': 'P1',
+                        'priority_reason': 'blocking teammate',
+                        'target': target,
+                        'first_seen': first_seen
+                    })
+            
+            for item in current_state.get('github_awaiting', []):
+                if not item.get('has_reviewed'):
+                    complexity = item.get('complexity_score', 0)
+                    ai_days, manual_days = calculate_estimated_days(complexity)
+                    first_seen = tracking_history.get('items', {}).get(f"github_review_{item['number']}", {}).get('first_seen', today_str)
+                    target = calculate_target_date(first_seen, ai_days)
+                    
+                    all_items.append({
+                        'platform': '🔵 GitHub',
+                        'id': f"PR-{item.get('number')}",
+                        'title': item.get('title', 'N/A')[:35] + ('...' if len(item.get('title', '')) > 35 else ''),
+                        'url': item.get('url', '#'),
+                        'owner': item.get('owner', 'N/A'),
+                        'complexity': complexity,
+                        'ai_days': ai_days,
+                        'manual_days': manual_days,
+                        'priority_num': 1,
+                        'priority_label': 'P1',
+                        'priority_reason': 'blocking teammate',
+                        'target': target,
+                        'first_seen': first_seen
+                    })
+            
+            if not all_items:
+                lines.append("_No active items to estimate. Nice work!_ 🎉")
+                lines.append("")
+                return "\n".join(lines)
+            
+            # Sort by priority (P1 first), then by target date
+            all_items.sort(key=lambda x: (x['priority_num'], x['target']))
+            
+            # Priority legend
+            lines.append("> **Priority:** 🔴 P1 (blocking others) | 🟠 P2 (has fix version) | 🟡 P3 (your work) | 🟢 P4 (watching)")
+            lines.append("")
+            
+            # Work schedule table
+            lines.append("### 📅 Work Schedule")
+            lines.append("")
+            lines.append("_Items sorted by priority and target date_")
+            lines.append("")
+            lines.append("| Priority | Platform | Item | Owner | AI Est. | Target | Complexity |")
+            lines.append("|----------|----------|------|-------|---------|--------|------------|")
+            
+            for item in all_items[:15]:  # Limit to top 15
+                priority_display = get_priority_display(item['priority_num'])
+                complexity_display = get_complexity_display(item['complexity'])
+                ai_est = f"{item['ai_days']}d"
+                owner = item.get('owner', 'me')
+                
+                lines.append(f"| {priority_display} | {item['platform']} | [{item['id']}]({item['url']}) {item['title']} | {owner} | {ai_est} | {item['target']} | {complexity_display} |")
+            
+            if len(all_items) > 15:
+                lines.append(f"| ... | | _{len(all_items) - 15} more items_ | | | | |")
+            
+            lines.append("")
+            
+            # Summary stats
+            total_ai_days = sum(item['ai_days'] for item in all_items)
+            total_manual_days = sum(item['manual_days'] for item in all_items)
+            p1_count = len([i for i in all_items if i['priority_num'] == 1])
+            
+            lines.append("### 📊 Summary")
+            lines.append("")
+            lines.append(f"- **Total Items**: {len(all_items)}")
+            lines.append(f"- **P1 (Blocking)**: {p1_count}")
+            lines.append(f"- **Total AI-Assisted Time**: {total_ai_days:.1f} days")
+            lines.append(f"- **Total Manual Time**: {total_manual_days:.1f} days")
+            lines.append(f"- **AI Time Savings**: {total_manual_days - total_ai_days:.1f} days ({((total_manual_days - total_ai_days) / total_manual_days * 100):.0f}%)" if total_manual_days > 0 else "")
+            lines.append("")
             
             return "\n".join(lines)
         
@@ -1832,6 +2282,139 @@ def generate_in_progress_report() -> str:
                 return "🟣"
             else:
                 return "🟢"  # Default to green
+        
+        def get_unplanned_category_icon(category):
+            """Get icon for unplanned work category."""
+            icons = {
+                'INTERRUPT': '💬',
+                'MEETING': '📅',
+                'FIREFIGHT': '🔥',
+                'LEARNING': '📚',
+                'HELPING': '🤝',
+                'ADMIN': '📋',
+                'OTHER': '📌'
+            }
+            return icons.get(category.upper(), '📌')
+        
+        def parse_unplanned_file(filepath):
+            """Parse unplanned.txt file and return list of items."""
+            items = []
+            if not os.path.exists(filepath):
+                return items
+            
+            try:
+                with open(filepath, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        # Skip comments and empty lines
+                        if not line or line.startswith('#'):
+                            continue
+                        
+                        # Parse: YYYY-MM-DD | Category | Description | Hours
+                        parts = [p.strip() for p in line.split('|')]
+                        if len(parts) >= 4:
+                            items.append({
+                                'date': parts[0],
+                                'category': parts[1].upper(),
+                                'description': parts[2],
+                                'hours': parts[3]
+                            })
+            except Exception as e:
+                print(f"Warning: Could not parse unplanned file: {e}", file=sys.stderr)
+            
+            return items
+        
+        def parse_unplanned_done_file(filepath):
+            """Parse unplanned_done.txt file and return list of completed items."""
+            items = []
+            if not os.path.exists(filepath):
+                return items
+            
+            try:
+                with open(filepath, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        # Skip comments and empty lines
+                        if not line or line.startswith('#'):
+                            continue
+                        
+                        # Parse: YYYY-MM-DD | Category | Description | Actual Hours | Outcome
+                        parts = [p.strip() for p in line.split('|')]
+                        if len(parts) >= 5:
+                            items.append({
+                                'date': parts[0],
+                                'category': parts[1].upper(),
+                                'description': parts[2],
+                                'hours': parts[3],
+                                'outcome': parts[4]
+                            })
+            except Exception as e:
+                print(f"Warning: Could not parse unplanned done file: {e}", file=sys.stderr)
+            
+            return items
+        
+        def generate_unplanned_section(unplanned_items, unplanned_done_items):
+            """Generate markdown section for unplanned work."""
+            lines = []
+            lines.append("## 🔧 Unplanned Work")
+            lines.append("")
+            
+            if not unplanned_items and not unplanned_done_items:
+                lines.append("_No unplanned work tracked. Use `~/Work/mymcp/unplanned-add.sh` to add items._")
+                lines.append("")
+                lines.append("```bash")
+                lines.append("# Quick add:")
+                lines.append("~/Work/mymcp/unplanned-add.sh INTERRUPT \"Description\" 1.5")
+                lines.append("```")
+                lines.append("")
+                return "\n".join(lines)
+            
+            # Active unplanned work
+            if unplanned_items:
+                total_hours = sum(float(item.get('hours', 0)) for item in unplanned_items)
+                lines.append(f"**Currently Tracking: {len(unplanned_items)} item(s) ({total_hours:.1f} hours estimated)**")
+                lines.append("")
+                lines.append("| Date | Category | Description | Est. Hours |")
+                lines.append("|------|----------|-------------|------------|")
+                for item in sorted(unplanned_items, key=lambda x: x['date'], reverse=True):
+                    icon = get_unplanned_category_icon(item['category'])
+                    lines.append(f"| {item['date']} | {icon} {item['category']} | {item['description'][:40]}{'...' if len(item['description']) > 40 else ''} | {item['hours']} |")
+                lines.append("")
+            else:
+                lines.append("_No active unplanned work items._")
+                lines.append("")
+            
+            # Recently completed unplanned work (last 7 days)
+            if unplanned_done_items:
+                # Filter to last 7 days
+                today = datetime.now()
+                recent_done = []
+                for item in unplanned_done_items:
+                    try:
+                        item_date = datetime.strptime(item['date'], '%Y-%m-%d')
+                        if (today - item_date).days <= 7:
+                            recent_done.append(item)
+                    except:
+                        recent_done.append(item)  # Include if can't parse date
+                
+                if recent_done:
+                    total_done_hours = sum(float(item.get('hours', 0)) for item in recent_done)
+                    lines.append(f"### ✅ Completed This Week ({len(recent_done)} items, {total_done_hours:.1f} hours)")
+                    lines.append("")
+                    lines.append("| Date | Category | Description | Hours | Outcome |")
+                    lines.append("|------|----------|-------------|-------|---------|")
+                    for item in sorted(recent_done, key=lambda x: x['date'], reverse=True)[:5]:
+                        icon = get_unplanned_category_icon(item['category'])
+                        desc = item['description'][:30] + ('...' if len(item['description']) > 30 else '')
+                        outcome = item.get('outcome', '')[:25] + ('...' if len(item.get('outcome', '')) > 25 else '')
+                        lines.append(f"| {item['date']} | {icon} {item['category']} | {desc} | {item['hours']} | {outcome} |")
+                    lines.append("")
+            
+            # Quick add reminder
+            lines.append("_Quick add: `~/Work/mymcp/unplanned-add.sh CATEGORY \"Description\" HOURS`_")
+            lines.append("")
+            
+            return "\n".join(lines)
         
         # Fetch reviews where I'm a reviewer (people waiting for my review)
         # OpenDev: Query for reviews where I'm added as reviewer but haven't voted
@@ -2388,6 +2971,9 @@ def generate_in_progress_report() -> str:
             for mr in open_gitlab_mrs:
                 mr_iid = mr.get('iid', mr.get('id', 'N/A'))
                 project = mr.get('project_name', mr.get('project', 'N/A'))
+                # Strip MR reference from project name (e.g., "ci-framework/project!123" -> "ci-framework/project")
+                if '!' in str(project):
+                    project = str(project).split('!')[0]
                 title = mr.get('title', 'N/A')
                 if len(title) > 40:
                     title = title[:37] + '...'
@@ -2405,11 +2991,111 @@ def generate_in_progress_report() -> str:
                 complexity_score, _ = calculate_complexity_score(mr, 'gitlab', GITLAB_USERNAME)
                 complexity_display = get_complexity_display(complexity_score)
                 
-                report_lines.append(f"| [!{mr_iid}]({url}) | {project} | {title} | 🟢 {state.upper()} | {first_seen} | {days_display} | {complexity_display} | [View]({url}) |")
+                report_lines.append(f"| [MR-{mr_iid}]({url}) | {project} | {title} | 🟢 {state.upper()} | {first_seen} | {days_display} | {complexity_display} | [View]({url}) |")
             report_lines.append("")
         else:
             report_lines.append("_No open MRs_")
             report_lines.append("")
+        
+        # ========== JIRA HEALTH HEATMAP ==========
+        # Calculate ticket aging buckets for heatmap
+        all_jira_tickets = [
+            issue for issue in jira_data.get('issues_assigned', [])
+            if issue.get('status') not in ['Done', 'Closed', 'Resolved']
+        ]
+        
+        # Categorize by idle days
+        fresh_tickets = []      # 0-3 days
+        warm_tickets = []       # 4-7 days
+        hot_tickets = []        # 8-14 days
+        critical_tickets = []   # 14+ days
+        
+        for issue in all_jira_tickets:
+            days_idle_str = days_since_update(issue.get('updated_at'))
+            try:
+                days_idle_num = int(days_idle_str) if days_idle_str.isdigit() else 0
+            except:
+                days_idle_num = 0
+            
+            if days_idle_num <= 3:
+                fresh_tickets.append(issue)
+            elif days_idle_num <= 7:
+                warm_tickets.append(issue)
+            elif days_idle_num <= 14:
+                hot_tickets.append(issue)
+            else:
+                critical_tickets.append(issue)
+        
+        # Calculate health score (0-100)
+        total_tickets = len(all_jira_tickets)
+        if total_tickets > 0:
+            # Weighted score: fresh=100%, warm=75%, hot=25%, critical=0%
+            health_score = int((
+                len(fresh_tickets) * 100 +
+                len(warm_tickets) * 75 +
+                len(hot_tickets) * 25 +
+                len(critical_tickets) * 0
+            ) / total_tickets)
+        else:
+            health_score = 100
+        
+        # Determine health emoji
+        if health_score >= 80:
+            health_emoji = "🟢"
+            health_status = "Excellent"
+        elif health_score >= 60:
+            health_emoji = "🟡"
+            health_status = "Good"
+        elif health_score >= 40:
+            health_emoji = "🟠"
+            health_status = "Needs Attention"
+        else:
+            health_emoji = "🔴"
+            health_status = "Critical"
+        
+        # Generate heatmap bars (max 20 chars wide)
+        def make_bar(count, total, max_width=20):
+            if total == 0:
+                return ""
+            width = int((count / total) * max_width) if total > 0 else 0
+            return "█" * max(width, 1) if count > 0 else ""
+        
+        report_lines.append("## 🌡️ Jira Health Heatmap")
+        report_lines.append("")
+        report_lines.append(f"**Health Score: {health_score}/100 {health_emoji} {health_status}**")
+        report_lines.append("")
+        report_lines.append("```")
+        report_lines.append(f"🟢 Fresh (0-3 days):    {make_bar(len(fresh_tickets), total_tickets):20s} {len(fresh_tickets)} ticket(s)")
+        report_lines.append(f"🟡 Warm (4-7 days):     {make_bar(len(warm_tickets), total_tickets):20s} {len(warm_tickets)} ticket(s)")
+        report_lines.append(f"🟠 Hot (8-14 days):     {make_bar(len(hot_tickets), total_tickets):20s} {len(hot_tickets)} ticket(s)")
+        if len(critical_tickets) > 0:
+            report_lines.append(f"🔴 Critical (14+ days): {make_bar(len(critical_tickets), total_tickets):20s} {len(critical_tickets)} ticket(s) ← ACTION NEEDED")
+        else:
+            report_lines.append(f"🔴 Critical (14+ days): {make_bar(len(critical_tickets), total_tickets):20s} {len(critical_tickets)} ticket(s)")
+        report_lines.append("```")
+        report_lines.append("")
+        
+        # Quick action summary
+        if critical_tickets:
+            report_lines.append(f"⚠️ **{len(critical_tickets)} ticket(s) need immediate attention:**")
+            for issue in critical_tickets[:3]:  # Show top 3
+                key = issue.get('key', 'N/A')
+                summary = issue.get('summary', 'N/A')[:30] + ('...' if len(issue.get('summary', '')) > 30 else '')
+                days_idle_str = days_since_update(issue.get('updated_at'))
+                url = issue.get('url', '#')
+                report_lines.append(f"- [{key}]({url}): {summary} ({days_idle_str} days idle)")
+            if len(critical_tickets) > 3:
+                report_lines.append(f"- _...and {len(critical_tickets) - 3} more_")
+            report_lines.append("")
+        elif hot_tickets:
+            report_lines.append(f"📋 **{len(hot_tickets)} ticket(s) warming up** - consider updating soon")
+            report_lines.append("")
+        else:
+            report_lines.append("✅ **All tickets are up to date!** Great job keeping Jira healthy.")
+            report_lines.append("")
+        
+        report_lines.append("---")
+        report_lines.append("")
         
         # Jira Tickets Ownership - Open tickets
         report_lines.append("## 📋 Jira: My Open Tickets")
@@ -2488,6 +3174,17 @@ def generate_in_progress_report() -> str:
         else:
             report_lines.append("_No tickets requiring immediate attention_")
             report_lines.append("")
+        
+        # Parse and add Unplanned Work section
+        unplanned_file = os.path.join(ACTIVITY_DIR, "unplanned.txt")
+        unplanned_done_file = os.path.join(ACTIVITY_DIR, "unplanned_done.txt")
+        unplanned_items = parse_unplanned_file(unplanned_file)
+        unplanned_done_items = parse_unplanned_done_file(unplanned_done_file)
+        
+        unplanned_section = generate_unplanned_section(unplanned_items, unplanned_done_items)
+        report_lines.append(unplanned_section)
+        report_lines.append("---")
+        report_lines.append("")
         
         # Jira tickets I'm watching (but not assigned to) - grouped with other Jira tables
         report_lines.append("## 📋 Jira: Watching")
@@ -2686,15 +3383,116 @@ def generate_in_progress_report() -> str:
         save_tracking_history(tracking_history)
         
         # Insert Success Stories section at the top (after header)
-        success_section = generate_success_stories_section(success_stories, tracking_history)
+        success_section = generate_success_stories_section(success_stories, tracking_history, unplanned_done_items)
         
-        # Find where to insert (after the header, before "People Waiting")
+        # Build timeline state with complexity scores for timeline estimates
+        timeline_state = {
+            'opendev': [
+                {
+                    'number': r.get('number'),
+                    'subject': r.get('subject', ''),
+                    'status': r.get('status', ''),
+                    'url': r.get('url', ''),
+                    'complexity_score': calculate_complexity_score(r, 'opendev', OPENDEV_USERNAME)[0]
+                }
+                for r in opendev_data.get('reviews_posted', [])
+                if r.get('status') not in ['MERGED', 'ABANDONED']
+            ],
+            'github': [
+                {
+                    'number': pr.get('number'),
+                    'title': pr.get('title', ''),
+                    'url': pr.get('url', ''),
+                    'complexity_score': calculate_complexity_score(pr, 'github', GITHUB_USERNAME)[0]
+                }
+                for pr in github_data.get('prs_created', [])
+                if pr.get('state') == 'open'
+            ],
+            'gitlab': [
+                {
+                    'iid': mr.get('iid'),
+                    'title': mr.get('title', ''),
+                    'url': mr.get('url', ''),
+                    'complexity_score': calculate_complexity_score(mr, 'gitlab', GITLAB_USERNAME)[0]
+                }
+                for mr in gitlab_data.get('mrs_created', [])
+                if mr.get('state') == 'opened'
+            ],
+            'jira': [
+                {
+                    'key': issue.get('key'),
+                    'summary': issue.get('summary', ''),
+                    'url': issue.get('url', ''),
+                    'fix_version': issue.get('fix_version'),
+                    'complexity_score': calculate_complexity_score(issue, 'jira')[0]
+                }
+                for issue in jira_data.get('issues_assigned', [])
+                if issue.get('status') not in ['Done', 'Closed', 'Resolved']
+            ],
+            'opendev_awaiting': [
+                {
+                    'number': r.get('number'),
+                    'subject': r.get('subject', ''),
+                    'url': r.get('url', ''),
+                    'owner': r.get('owner', 'N/A'),
+                    'has_voted': r.get('has_voted', False),
+                    'complexity_score': calculate_complexity_score(r, 'opendev', OPENDEV_USERNAME)[0]
+                }
+                for r in opendev_awaiting_review
+            ],
+            'gitlab_awaiting': [
+                {
+                    'iid': mr.get('iid'),
+                    'title': mr.get('title', ''),
+                    'url': mr.get('url', ''),
+                    'owner': mr.get('owner', 'N/A'),
+                    'has_approved': mr.get('has_approved', False),
+                    'complexity_score': calculate_complexity_score(mr, 'gitlab', GITLAB_USERNAME)[0]
+                }
+                for mr in gitlab_awaiting_review
+            ],
+            'github_awaiting': [
+                {
+                    'number': pr.get('number'),
+                    'title': pr.get('title', ''),
+                    'url': pr.get('url', ''),
+                    'owner': pr.get('owner', 'N/A'),
+                    'has_reviewed': pr.get('has_reviewed', False),
+                    'complexity_score': calculate_complexity_score(pr, 'github', GITHUB_USERNAME)[0]
+                }
+                for pr in github_awaiting_review
+            ]
+        }
+        
+        # Generate Timeline Estimates section
+        timeline_section = generate_timeline_estimates_section(timeline_state, tracking_history)
+        
+        # Build the final report
         report = "\n".join(report_lines)
-        if success_section:
-            # Insert after the first "---" separator
-            parts = report.split("---\n", 1)
-            if len(parts) == 2:
-                report = parts[0] + "---\n\n" + success_section + "\n---\n" + parts[1]
+        
+        # Insert Success Stories and Timeline AFTER the "My Open MRs" section
+        # This keeps People Waiting, OpenDev, GitHub, GitLab sections first
+        # Look for the marker after GitLab section (before Jira Health or Jira Assigned)
+        if success_section or timeline_section:
+            # Find the Jira Health Heatmap or Jira Assigned section as insertion point
+            jira_marker = "## 🌡️ Jira Health Heatmap"
+            jira_assigned_marker = "## 📋 Jira: Assigned to Me"
+            
+            insertion_marker = None
+            if jira_marker in report:
+                insertion_marker = jira_marker
+            elif jira_assigned_marker in report:
+                insertion_marker = jira_assigned_marker
+            
+            if insertion_marker:
+                parts = report.split(insertion_marker, 1)
+                if len(parts) == 2:
+                    sections_to_insert = ""
+                    if success_section:
+                        sections_to_insert += success_section + "\n\n---\n\n"
+                    if timeline_section:
+                        sections_to_insert += timeline_section + "\n\n---\n\n"
+                    report = parts[0] + sections_to_insert + insertion_marker + parts[1]
         
         # Save report to workspace
         report_file = os.path.join(ACTIVITY_DIR, "in_progress.md")

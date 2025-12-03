@@ -2,6 +2,17 @@
 
 An MCP (Model Context Protocol) server that tracks GitHub, OpenDev, GitLab, and Jira activities for automated status report generation.
 
+## What's New (v2.5)
+
+- 🏆 **Success Stories**: Tracks completed items with accountability ratings (A+/A/B/F)
+- ⏱️ **AI Timeline Estimates**: Priority scheduling with estimated completion dates
+- 🌡️ **Jira Health Heatmap**: Visual ticket aging with health score (0-100)
+- 📊 **Complexity Scoring**: Heuristic-based complexity for all platforms
+- 🔔 **People Waiting**: Shows reviews/PRs/MRs awaiting your action
+- 🔧 **Unplanned Work Tracking**: Track interrupts, firefights, ad-hoc tasks
+- 📅 **First Seen / Days Tracked**: Timeline accountability for all items
+- 📧 **Slack & Email Notifications**: Proactive reminders for stale reviews
+
 ## Purpose
 
 This agent enables automated collection and reporting of development activities across multiple platforms:
@@ -9,9 +20,10 @@ This agent enables automated collection and reporting of development activities 
 - **GitHub Activity Tracking**: PRs created/reviewed, commits, issues
 - **OpenDev Activity Tracking**: Reviews posted, comments, votes
 - **GitLab Activity Tracking**: Merge requests, issues, comments
-- **Jira Activity Tracking**: Issues created/resolved/assigned
-- **Automated Report Generation**: Weekly/custom status reports
+- **Jira Activity Tracking**: Issues created/resolved/assigned, watched tickets
+- **Automated Report Generation**: Weekly reports + real-time In Progress dashboard
 - **Smart Caching**: Avoids API rate limits with intelligent caching
+- **Success Tracking**: Persistent quarterly stats with completion ratings
 - **Workspace Integration**: Stores activity history in `workspace/iproject/activity/`
 
 ## Architecture
@@ -373,29 +385,39 @@ Supported formats:
 
 #### Generate In Progress Report
 
-**New in v2.3**: Generate a current "In Progress" ownership report showing all open items across platforms:
+Generate a comprehensive "In Progress" dashboard showing all open items across platforms:
 
 ```
 @activity-tracker generate_in_progress_report()
 ```
 
-This report shows:
-- 🟠 **OpenDev**: Active reviews (not merged/abandoned)
-- 🔵 **GitHub**: Open PRs
-- 🦊 **GitLab**: Open MRs  
-- 📋 **Jira**: Open tickets + tickets requiring update (idle > 7 days)
+**Report Sections:**
+- 🔔 **People Waiting for Your Review**: Reviews/PRs/MRs awaiting your action
+- 🟠 **OpenDev**: Your active reviews with complexity scores
+- 🔵 **GitHub**: Your open PRs with complexity scores
+- 🦊 **GitLab**: Your open MRs with complexity scores
+- 🏆 **Success Stories**: Completed items with ratings (persistent quarterly)
+- ⏱️ **AI Timeline Estimates**: Priority-ranked work schedule
+- 🌡️ **Jira Health Heatmap**: Visual ticket aging (0-100 health score)
+- 📋 **Jira**: Open tickets, tickets needing update, watched tickets
+- 🔧 **Unplanned Work**: Active interrupts/firefights being tracked
 
-**Key differences from weekly reports**:
+**Key features**:
 - ✅ Always fetches fresh data (no caching)
-- ✅ Shows ALL open items (not limited to a date range)
-- ✅ Saves to `in_progress.md` (not week-specific)
-- ✅ Focused on current work status, not historical activity
+- ✅ Compares against previous run for Success Stories
+- ✅ Tracks "First Seen" and "Days Tracked" for accountability
+- ✅ Calculates complexity scores based on comments/reviewers/patchsets
 
 ### From Command Line
 
 #### Quick Method (Recommended)
 
 Use the convenience wrapper scripts:
+
+**Daily Standup Prep** (recommended):
+```bash
+~/Work/mymcp/standup-prep.sh
+```
 
 **Weekly Activity Reports**:
 ```bash
@@ -409,6 +431,16 @@ cd <mymcp-repo-path>/activity-tracker-agent
 ```bash
 cd <mymcp-repo-path>/activity-tracker-agent
 ./generate_in_progress.sh
+```
+
+**Unplanned Work Tracking**:
+```bash
+# Add unplanned work as it happens
+~/Work/mymcp/unplanned-add.sh INTERRUPT "Helped debug issue" 1.5
+~/Work/mymcp/unplanned-add.sh FIREFIGHT "CI investigation" 2.0
+
+# Mark as complete with outcome
+~/Work/mymcp/unplanned-done.sh "Helped debug issue" 2.0 "Fixed, PR merged"
 ```
 
 This generates reports and saves them to `workspace/iproject/activity/`.
@@ -430,11 +462,14 @@ This will generate a test report for "last week" and print to stdout.
 Generated reports are saved to:
 ```
 workspace/iproject/activity/
-├── 2025-W46.json          # Cached activity data (weekly)
-├── 2025-W46_report.md     # Generated markdown report (weekly)
-├── 2025-W47.json
-├── 2025-W47_report.md
-├── in_progress.md         # Current ownership status (always fresh)
+├── 2025-W46.json              # Cached activity data (weekly)
+├── 2025-W46_report.md         # Generated markdown report (weekly)
+├── in_progress.md             # Current ownership dashboard
+├── in_progress.json           # Current state (for diff comparison)
+├── in_progress_previous.json  # Previous state (for Success Stories)
+├── tracking_history.json      # Persistent first_seen dates + quarterly stats
+├── unplanned.txt              # Active unplanned work items
+├── unplanned_done.txt         # Completed unplanned work
 └── ...
 ```
 
@@ -566,18 +601,50 @@ status report this week
 status report 2025-11-01 to 2025-11-30
 ```
 
-See `askme/STATUS_REPORTS.md` (coming soon) for details.
+See [`askme/README.md`](../askme/README.md) for the askme framework details.
 
 ### Workshop
 
 This agent will be included in Workshop Session #5: "Automated Status Reports".
 
-See `workshop/README.md` for the full workshop agenda.
+See [`workshop/README.md`](../workshop/README.md) for the full workshop agenda.
+
+## Workspace Project Setup
+
+The activity tracker stores reports in `workspace/<your-project>/activity/`. You have options:
+
+| Option | Description | Best For |
+|--------|-------------|----------|
+| **Default** | Auto-creates `workspace/iproject/` | Quick start, temporary use |
+| **Custom Dir** | Use `--myworkspace <name>` | Custom organization |
+| **Git Repo** | Clone your repo to `workspace/` | Version control, sharing |
+
+**Minimum structure needed:**
+```
+workspace/<your-project>/
+├── activity/          # Reports, tracking (auto-created)
+├── results/           # Review assessments
+└── analysis/          # Feature analysis, spikes
+```
+
+**If you don't configure a workspace project:**
+- A temporary `workspace/iproject/` is created automatically
+- Works fine for getting started
+- Consider a git repo for persistent tracking
+
+**To use your own repository:**
+```bash
+cd ~/Work/mymcp/workspace
+git clone https://gitlab.example.com/you/your-project.git
+# Then set WORKSPACE_PROJECT in activity-tracker-agent/.env
+```
+
+**Full documentation:** [`docs/WORKSPACE_PROJECT.md`](../docs/WORKSPACE_PROJECT.md)
 
 ## Resources
 
 - **Design Document**: [`design/Design_MCP_Standup.md`](../design/Design_MCP_Standup.md)
-- **Implementation WIP**: [`workspace/iproject/analysis/activity_tracker_implementation_wip.md`](../workspace/iproject/analysis/activity_tracker_implementation_wip.md)
+- **Workspace Setup**: [`docs/WORKSPACE_PROJECT.md`](../docs/WORKSPACE_PROJECT.md)
 - **FastMCP**: https://github.com/pydantic/fastmcp
 - **GitHub API**: https://docs.github.com/en/rest
 - **Gerrit API**: https://gerrit-review.googlesource.com/Documentation/rest-api.html
@@ -588,9 +655,10 @@ Part of the mymcp project. See main repository README for license information.
 
 ---
 
-**Version**: 1.0  
+**Version**: 2.5  
 **Created**: 2025-11-22  
-**Status**: MVP - Phase 1 Complete
+**Updated**: 2025-12-03  
+**Status**: Production - Full Feature Set
 
 
 
