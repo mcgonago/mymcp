@@ -44,10 +44,10 @@ This agent enables automated collection and reporting of development activities 
 └──────┬────┬────┬────┬──────────────┘
        │    │    │    │
        ▼    ▼    ▼    ▼
-  ┌────────┬─────┬────────┬──────────┐
+  ┌────────┬──────┬────────┬──────────┐
   │GitHub  │Gerrit│GitLab  │Jira API  │
   │API     │API   │API     │          │
-  └────────┴─────┴────────┴──────────┘
+  └────────┴──────┴────────┴──────────┘
 ```
 
 For detailed architecture, see [`design/Design_MCP_Standup.md`](../design/Design_MCP_Standup.md).
@@ -296,53 +296,53 @@ User Request: @activity-tracker generate_status_report("last week")
        ↓
 ┌──────────────────────────────────────────────────────────────┐
 │ 1. Parse Time Range                                          │
-│    "last week" → 2025-11-15 to 2025-11-22                   │
+│    "last week" → 2025-11-15 to 2025-11-22                    │
 └──────────────────────────────────────────────────────────────┘
        ↓
 ┌──────────────────────────────────────────────────────────────┐
-│ 2. Check Cache (uses WORKSPACE_PROJECT + ACTIVITY_DIR)      │
-│    Location: ${WORKSPACE_PROJECT}/activity/2025-W46.json    │
-│    Cache age check: CACHE_MAX_AGE_HOURS                     │
+│ 2. Check Cache (uses WORKSPACE_PROJECT + ACTIVITY_DIR)       │
+│    Location: ${WORKSPACE_PROJECT}/activity/2025-W46.json     │
+│    Cache age check: CACHE_MAX_AGE_HOURS                      │
 │                                                              │
-│    If cache valid (< 24 hours old) → Skip API calls         │
-│    If cache stale (> 24 hours old) → Fetch from APIs        │
+│    If cache valid (< 24 hours old) → Skip API calls          │
+│    If cache stale (> 24 hours old) → Fetch from APIs         │
 └──────────────────────────────────────────────────────────────┘
        ↓
 ┌──────────────────────────────────────────────────────────────┐
 │ 3. Fetch GitHub Activity (if needed)                         │
-│    Uses: GITHUB_USERNAME, GITHUB_TOKEN                      │
+│    Uses: GITHUB_USERNAME, GITHUB_TOKEN                       │
 │                                                              │
 │    API Queries:                                              │
-│    - PRs created:  author:${GITHUB_USERNAME}                │
-│    - PRs reviewed: reviewed-by:${GITHUB_USERNAME}           │
-│    - Commits:      author:${GITHUB_USERNAME}                │
-│    - Issues:       author:${GITHUB_USERNAME}                │
+│    - PRs created:  author:${GITHUB_USERNAME}                 │
+│    - PRs reviewed: reviewed-by:${GITHUB_USERNAME}            │
+│    - Commits:      author:${GITHUB_USERNAME}                 │
+│    - Issues:       author:${GITHUB_USERNAME}                 │
 │                                                              │
-│    Authentication: GITHUB_TOKEN in request headers          │
+│    Authentication: GITHUB_TOKEN in request headers           │
 └──────────────────────────────────────────────────────────────┘
        ↓
 ┌──────────────────────────────────────────────────────────────┐
 │ 4. Fetch OpenDev Activity (if needed)                        │
-│    Uses: OPENDEV_USERNAME                                   │
+│    Uses: OPENDEV_USERNAME                                    │
 │                                                              │
 │    Gerrit API Queries:                                       │
-│    - Reviews posted: owner:${OPENDEV_USERNAME}              │
-│    - Comments made:  commenter:${OPENDEV_USERNAME}          │
-│    - Votes given:    reviewer:${OPENDEV_USERNAME}           │
+│    - Reviews posted: owner:${OPENDEV_USERNAME}               │
+│    - Comments made:  commenter:${OPENDEV_USERNAME}           │
+│    - Votes given:    reviewer:${OPENDEV_USERNAME}            │
 │                                                              │
-│    Note: No authentication needed (public API)              │
+│    Note: No authentication needed (public API)               │
 └──────────────────────────────────────────────────────────────┘
        ↓
 ┌──────────────────────────────────────────────────────────────┐
-│ 5. Save Cache (uses WORKSPACE_PROJECT + ACTIVITY_DIR)       │
-│    Save to: ${WORKSPACE_PROJECT}/activity/2025-W46.json     │
-│    Contains: Raw GitHub + OpenDev activity data             │
+│ 5. Save Cache (uses WORKSPACE_PROJECT + ACTIVITY_DIR)        │
+│    Save to: ${WORKSPACE_PROJECT}/activity/2025-W46.json      │
+│    Contains: Raw GitHub + OpenDev activity data              │
 └──────────────────────────────────────────────────────────────┘
        ↓
 ┌──────────────────────────────────────────────────────────────┐
-│ 6. Generate Report (uses WORKSPACE_PROJECT + ACTIVITY_DIR)  │
-│    Save to: ${WORKSPACE_PROJECT}/activity/2025-W46_report.md│
-│    Format: Markdown with activity summaries                 │
+│ 6. Generate Report (uses WORKSPACE_PROJECT + ACTIVITY_DIR)   │
+│    Save to: ${WORKSPACE_PROJECT}/activity/2025-W46_report.md │
+│    Format: Markdown with activity summaries                  │
 └──────────────────────────────────────────────────────────────┘
        ↓
    Return report to user in Cursor
