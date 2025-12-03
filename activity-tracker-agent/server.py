@@ -1978,10 +1978,13 @@ def generate_in_progress_report() -> str:
                             pass  # If we can't check approvals, assume not approved
                         
                         author = mr.get('author', {})
+                        # Extract project name from web_url (e.g., https://gitlab.cee.redhat.com/eng/openstack/horizon/-/merge_requests/15)
+                        web_url = mr.get('web_url', '')
+                        project_name = web_url.split('/-/')[0].split('/')[-1] if '/-/' in web_url else 'N/A'
                         gitlab_awaiting_review.append({
                             'iid': mr.get('iid'),
                             'title': mr.get('title', ''),
-                            'project': mr.get('references', {}).get('full', mr.get('web_url', '').split('/-/')[0].split('/')[-1]),
+                            'project': project_name,
                             'state': mr.get('state', ''),
                             'created_at': mr.get('created_at', ''),
                             'updated_at': mr.get('updated_at', ''),
@@ -2184,20 +2187,22 @@ def generate_in_progress_report() -> str:
             if not_approved:
                 report_lines.append(f"### 🦊 GitLab: Needs Your Review ({len(not_approved)})")
                 report_lines.append("")
-                report_lines.append("| MR | Owner | Project | Title | Updated | Days | Link |")
-                report_lines.append("|----|-------|---------|-------|---------|------|------|")
+                report_lines.append("| MR | Owner | Project | Updated | Days |")
+                report_lines.append("|----|-------|---------|---------|------|")
                 for mr in not_approved:
                     mr_iid = mr.get('iid', 'N/A')
                     owner = mr.get('owner', 'N/A')
                     project = mr.get('project', 'N/A').split('/')[-1] if mr.get('project') else 'N/A'
                     title = mr.get('title', 'N/A')
-                    if len(title) > 40:
-                        title = title[:37] + '...'
+                    if len(title) > 50:
+                        title = title[:47] + '...'
                     updated = mr.get('updated_at', 'N/A')[:10] if mr.get('updated_at') else 'N/A'
                     days_idle = days_since_update(mr.get('updated_at'))
                     url = mr.get('url', '#')
                     
-                    report_lines.append(f"| [!{mr_iid}]({url}) | {owner} | {project} | {title} | {updated} | {days_idle} | [Review]({url}) |")
+                    # Format: MR-15: Use server filter mode for flavors tables
+                    mr_link = f"[MR-{mr_iid}: {title}]({url})"
+                    report_lines.append(f"| {mr_link} | {owner} | {project} | {updated} | {days_idle} |")
                 report_lines.append("")
             
             if already_approved:
@@ -2205,21 +2210,23 @@ def generate_in_progress_report() -> str:
                 report_lines.append("")
                 report_lines.append("_You've approved these, but they're still open_")
                 report_lines.append("")
-                report_lines.append("| MR | Owner | Project | Title | Updated | Link |")
-                report_lines.append("|----|-------|---------|-------|---------|------|")
+                report_lines.append("| MR | Owner | Project | Updated |")
+                report_lines.append("|----|-------|---------|---------|")
                 for mr in already_approved[:5]:  # Limit to 5
                     mr_iid = mr.get('iid', 'N/A')
                     owner = mr.get('owner', 'N/A')
                     project = mr.get('project', 'N/A').split('/')[-1] if mr.get('project') else 'N/A'
                     title = mr.get('title', 'N/A')
-                    if len(title) > 40:
-                        title = title[:37] + '...'
+                    if len(title) > 50:
+                        title = title[:47] + '...'
                     updated = mr.get('updated_at', 'N/A')[:10] if mr.get('updated_at') else 'N/A'
                     url = mr.get('url', '#')
                     
-                    report_lines.append(f"| [!{mr_iid}]({url}) | {owner} | {project} | {title} | {updated} | [View]({url}) |")
+                    # Format: MR-15: Use server filter mode for flavors tables
+                    mr_link = f"[MR-{mr_iid}: {title}]({url})"
+                    report_lines.append(f"| {mr_link} | {owner} | {project} | {updated} |")
                 if len(already_approved) > 5:
-                    report_lines.append(f"| ... | | | _{len(already_approved) - 5} more_ | | |")
+                    report_lines.append(f"| ... | | _{len(already_approved) - 5} more_ | |")
                 report_lines.append("")
         
         # GitHub PRs awaiting my review
@@ -2232,20 +2239,22 @@ def generate_in_progress_report() -> str:
             if not_reviewed:
                 report_lines.append(f"### 🔵 GitHub: Needs Your Review ({len(not_reviewed)})")
                 report_lines.append("")
-                report_lines.append("| PR | Owner | Repo | Title | Updated | Days | Link |")
-                report_lines.append("|----|-------|------|-------|---------|------|------|")
+                report_lines.append("| PR | Owner | Repo | Updated | Days |")
+                report_lines.append("|----|-------|------|---------|------|")
                 for pr in not_reviewed:
                     pr_num = pr.get('number', 'N/A')
                     owner = pr.get('owner', 'N/A')
                     repo = pr.get('repo', 'N/A')
                     title = pr.get('title', 'N/A')
-                    if len(title) > 40:
-                        title = title[:37] + '...'
+                    if len(title) > 50:
+                        title = title[:47] + '...'
                     updated = pr.get('updated_at', 'N/A')[:10] if pr.get('updated_at') else 'N/A'
                     days_idle = days_since_update(pr.get('updated_at'))
                     url = pr.get('url', '#')
                     
-                    report_lines.append(f"| [#{pr_num}]({url}) | {owner} | {repo} | {title} | {updated} | {days_idle} | [Review]({url}) |")
+                    # Format: PR-123: Add new feature for widgets
+                    pr_link = f"[PR-{pr_num}: {title}]({url})"
+                    report_lines.append(f"| {pr_link} | {owner} | {repo} | {updated} | {days_idle} |")
                 report_lines.append("")
             
             if already_reviewed:
@@ -2253,21 +2262,23 @@ def generate_in_progress_report() -> str:
                 report_lines.append("")
                 report_lines.append("_You've reviewed these, but they're still open_")
                 report_lines.append("")
-                report_lines.append("| PR | Owner | Repo | Title | Updated | Link |")
-                report_lines.append("|----|-------|------|-------|---------|------|")
+                report_lines.append("| PR | Owner | Repo | Updated |")
+                report_lines.append("|----|-------|------|---------|")
                 for pr in already_reviewed[:5]:  # Limit to 5
                     pr_num = pr.get('number', 'N/A')
                     owner = pr.get('owner', 'N/A')
                     repo = pr.get('repo', 'N/A')
                     title = pr.get('title', 'N/A')
-                    if len(title) > 40:
-                        title = title[:37] + '...'
+                    if len(title) > 50:
+                        title = title[:47] + '...'
                     updated = pr.get('updated_at', 'N/A')[:10] if pr.get('updated_at') else 'N/A'
                     url = pr.get('url', '#')
                     
-                    report_lines.append(f"| [#{pr_num}]({url}) | {owner} | {repo} | {title} | {updated} | [View]({url}) |")
+                    # Format: PR-123: Add new feature for widgets
+                    pr_link = f"[PR-{pr_num}: {title}]({url})"
+                    report_lines.append(f"| {pr_link} | {owner} | {repo} | {updated} |")
                 if len(already_reviewed) > 5:
-                    report_lines.append(f"| ... | | | _{len(already_reviewed) - 5} more_ | | |")
+                    report_lines.append(f"| ... | | _{len(already_reviewed) - 5} more_ | |")
                 report_lines.append("")
         
         # Note: Jira watching section moved to be with other Jira tables at the end

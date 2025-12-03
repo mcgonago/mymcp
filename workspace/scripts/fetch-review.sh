@@ -298,12 +298,25 @@ create_review_assessment() {
         exit 1
     fi
     
-    # Create assessment in workspace project results/
+    # Determine review directory name based on type
+    local review_dir_name
+    case "$type" in
+        opendev) review_dir_name="review_${number}" ;;
+        github)  review_dir_name="review_pr_${number}" ;;
+        gitlab)  review_dir_name="review_mr_${number}" ;;
+        *)       review_dir_name="review_${number}" ;;
+    esac
+    
+    # Create assessment in workspace project results/<review_dir>/
     local results_dir="$WORK_DIR/$WORKSPACE_PROJECT_DIR/results"
-    local assessment_file="$results_dir/review_${number}.md"
+    local review_dir="$results_dir/$review_dir_name"
+    local assessment_file="$review_dir/${review_dir_name}.md"
     local template_file="$SCRIPT_DIR/../../results/review_template.md"
     
-    echo -e "${BLUE}Creating review assessment document: $WORKSPACE_PROJECT_DIR/results/review_${number}.md${NC}"
+    # Create the review directory
+    mkdir -p "$review_dir"
+    
+    echo -e "${BLUE}Creating review assessment document: $WORKSPACE_PROJECT_DIR/results/${review_dir_name}/${review_dir_name}.md${NC}"
     
     # Get basic info from the review (using WORK_DIR as base)
     cd "$WORK_DIR/$dir_name"
@@ -546,9 +559,10 @@ tox -e py3
 **Last Updated:** $(date +%Y-%m-%d)
 EOF
     
-    echo -e "${GREEN}✓ Review assessment created: $WORKSPACE_PROJECT_DIR/results/review_${number}.md${NC}"
+    echo -e "${GREEN}✓ Review assessment created: $WORKSPACE_PROJECT_DIR/results/${review_dir_name}/${review_dir_name}.md${NC}"
     echo -e "${YELLOW}  Next: Ask Cursor to analyze and fill in the assessment${NC}"
     echo -e "${YELLOW}  Try: 'Please analyze review ${number}'${NC}"
+    echo -e "${CYAN}  Directory ready for follow-up notes and artifacts${NC}"
 }
 
 case "$TYPE" in
@@ -646,7 +660,7 @@ case "$TYPE" in
         echo -e "  ${DIR_NAME}/           - The review patchset"
         [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/           - Clean master branch (for comparison)"
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  ${EXPERIMENT_DIR}/ - Experiment area (for testing changes)"
-        [ "$WITH_ASSESSMENT" = true ] && echo -e "  $WORKSPACE_PROJECT_DIR/results/review_${CHANGE}.md  - Review assessment document"
+        [ "$WITH_ASSESSMENT" = true ] && echo -e "  $WORKSPACE_PROJECT_DIR/results/review_${CHANGE}/  - Review assessment directory"
         echo ""
         echo -e "${BLUE}Next steps:${NC}"
         echo -e "  cd ${DIR_NAME}                                     # Examine the review"
@@ -660,8 +674,11 @@ case "$TYPE" in
         
         if [ "$WITH_ASSESSMENT" = true ]; then
             echo ""
-            echo -e "${GREEN}📋 Assessment template ready: $WORKSPACE_PROJECT_DIR/results/review_${CHANGE}.md${NC}"
-            echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze review ${CHANGE}'${NC}"
+            echo -e "${GREEN}📋 Assessment template ready: $WORKSPACE_PROJECT_DIR/results/review_${CHANGE}/review_${CHANGE}.md${NC}"
+            echo -e "${CYAN}   📁 Follow-up directory: $WORKSPACE_PROJECT_DIR/results/review_${CHANGE}/${NC}"
+            echo ""
+            echo -e "${BOLD}From Cursor run:${NC}"
+            echo -e "${YELLOW}   Analyze review ${CHANGE} - which will fill in the analysis at ~/Work/mymcp/workspace/$WORKSPACE_PROJECT_DIR/results/review_${CHANGE}/review_${CHANGE}.md${NC}"
         fi
         ;;
         
@@ -761,7 +778,7 @@ case "$TYPE" in
         echo -e "  ${DIR_NAME}/           - The PR"
         [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/           - Clean ${BRANCH} branch"
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  ${EXPERIMENT_DIR}/ - Experiment area"
-        [ "$WITH_ASSESSMENT" = true ] && echo -e "  $WORKSPACE_PROJECT_DIR/results/review_pr_${PR}.md  - Review assessment document"
+        [ "$WITH_ASSESSMENT" = true ] && echo -e "  $WORKSPACE_PROJECT_DIR/results/review_pr_${PR}/  - Review assessment directory"
         echo ""
         echo -e "${BLUE}Next steps:${NC}"
         echo -e "  cd ${DIR_NAME}                                     # Examine the PR"
@@ -771,8 +788,11 @@ case "$TYPE" in
         
         if [ "$WITH_ASSESSMENT" = true ]; then
             echo ""
-            echo -e "${GREEN}📋 Assessment template ready: $WORKSPACE_PROJECT_DIR/results/review_pr_${PR}.md${NC}"
-            echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze PR ${PR}'${NC}"
+            echo -e "${GREEN}📋 Assessment template ready: $WORKSPACE_PROJECT_DIR/results/review_pr_${PR}/review_pr_${PR}.md${NC}"
+            echo -e "${CYAN}   📁 Follow-up directory: $WORKSPACE_PROJECT_DIR/results/review_pr_${PR}/${NC}"
+            echo ""
+            echo -e "${BOLD}From Cursor run:${NC}"
+            echo -e "${YELLOW}   Analyze PR ${PR} - which will fill in the analysis at ~/Work/mymcp/workspace/$WORKSPACE_PROJECT_DIR/results/review_pr_${PR}/review_pr_${PR}.md${NC}"
         fi
         ;;
         
@@ -873,7 +893,7 @@ case "$TYPE" in
         echo -e "  ${DIR_NAME}/           - The MR"
         [ "$WITH_MASTER" = true ] && echo -e "  ${MASTER_DIR}/           - Clean ${BRANCH} branch"
         [ "$WITH_EXPERIMENT" = true ] && echo -e "  ${EXPERIMENT_DIR}/ - Experiment area"
-        [ "$WITH_ASSESSMENT" = true ] && echo -e "  $WORKSPACE_PROJECT_DIR/results/review_mr_${MR}.md  - Review assessment document"
+        [ "$WITH_ASSESSMENT" = true ] && echo -e "  $WORKSPACE_PROJECT_DIR/results/review_mr_${MR}/  - Review assessment directory"
         echo ""
         echo -e "${BLUE}Next steps:${NC}"
         echo -e "  cd ${DIR_NAME}                                     # Examine the MR"
@@ -883,8 +903,11 @@ case "$TYPE" in
         
         if [ "$WITH_ASSESSMENT" = true ]; then
             echo ""
-            echo -e "${GREEN}📋 Assessment template ready: $WORKSPACE_PROJECT_DIR/results/review_mr_${MR}.md${NC}"
-            echo -e "${YELLOW}   → Ask Cursor to complete the analysis: 'Please analyze MR ${MR}'${NC}"
+            echo -e "${GREEN}📋 Assessment template ready: $WORKSPACE_PROJECT_DIR/results/review_mr_${MR}/review_mr_${MR}.md${NC}"
+            echo -e "${CYAN}   📁 Follow-up directory: $WORKSPACE_PROJECT_DIR/results/review_mr_${MR}/${NC}"
+            echo ""
+            echo -e "${BOLD}From Cursor run:${NC}"
+            echo -e "${YELLOW}   Analyze MR ${MR} - which will fill in the analysis at ~/Work/mymcp/workspace/$WORKSPACE_PROJECT_DIR/results/review_mr_${MR}/review_mr_${MR}.md${NC}"
         fi
         ;;
         
