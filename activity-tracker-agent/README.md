@@ -111,11 +111,11 @@ These environment variables must be set for the agent to function:
 
 **`WORKSPACE_PROJECT`**
 - **Purpose**: Root directory for storing activity reports and cached data
-- **Default**: `~/Work/mymcp/workspace/iproject`
+- **Default**: `<mymcp-repo-path>/workspace/iproject`
 - **Usage**: The agent creates an `activity/` subdirectory here to store:
   - Cached API responses (`YYYY-Www.json`)
   - Generated reports (`YYYY-Www_report.md`)
-- **Example**: `/home/username/Work/mymcp/workspace/iproject`
+- **Example**: `<mymcp-repo-path>/workspace/iproject`
 
 **`GITHUB_USERNAME`**
 - **Purpose**: Your GitHub username for filtering activity
@@ -124,7 +124,7 @@ These environment variables must be set for the agent to function:
   - PRs you reviewed (`reviewed-by:username`)
   - Commits you authored (`author:username`)
   - Issues you created or commented on
-- **Example**: `omcgonag`
+- **Example**: `yourusername`
 - **Where to find**: Your GitHub profile URL: `https://github.com/USERNAME`
 
 **`OPENDEV_USERNAME`**
@@ -133,7 +133,7 @@ These environment variables must be set for the agent to function:
   - Reviews you posted (`owner:username`)
   - Comments you made
   - Votes you gave (Code-Review, Workflow)
-- **Example**: `omcgonag`
+- **Example**: `yourusername`
 - **Where to find**: Your OpenDev profile: `https://review.opendev.org/q/owner:USERNAME`
 
 **`GITHUB_TOKEN`**
@@ -155,7 +155,7 @@ These environment variables must be set for the agent to function:
   - Merge requests you created
   - Merge requests you reviewed/commented on
   - Issues you created or commented on
-- **Example**: `omcgonag`
+- **Example**: `yourusername`
 - **Where to find**: Your GitLab profile URL: `https://gitlab.cee.redhat.com/USERNAME`
 - **Reuse existing**: If you have `gitlab-rh-agent` configured, this will be automatically sourced from `.mymcp-config`
 
@@ -214,7 +214,7 @@ These variables have sensible defaults but can be customized:
 - **Purpose**: Custom location for activity reports and cache
 - **Default**: `${WORKSPACE_PROJECT}/activity`
 - **Usage**: Override if you want to store reports elsewhere
-- **Example**: `/home/username/my_reports/activity`
+- **Example**: `~/my_reports/activity`
 - **Note**: The directory will be created automatically if it doesn't exist
 
 #### Configuration Example
@@ -226,15 +226,15 @@ Here's a complete `.env` file example:
 WORKSPACE_PROJECT=<mymcp-repo-path>/workspace/iproject
 
 # Required: Your GitHub username (find at https://github.com/USERNAME)
-GITHUB_USERNAME=omcgonag
+GITHUB_USERNAME=yourusername
 
 # Required: Your OpenDev username (find at https://review.opendev.org/q/owner:USERNAME)
-OPENDEV_USERNAME=omcgonag
+OPENDEV_USERNAME=yourusername
 
 # Optional: GitLab tracking
 # If you have gitlab-rh-agent configured, these will be auto-sourced from ../gitlab-rh-agent/.env
 # Otherwise, set them here:
-# GITLAB_USERNAME=omcgonag
+# GITLAB_USERNAME=yourusername
 # GITLAB_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
 # GITLAB_URL=https://gitlab.cee.redhat.com
 
@@ -256,7 +256,7 @@ OPENDEV_USERNAME=omcgonag
 CACHE_MAX_AGE_HOURS=24
 
 # Optional: Custom activity directory (default: ${WORKSPACE_PROJECT}/activity)
-# ACTIVITY_DIR=/home/omcgonag/custom_activity_reports
+# ACTIVITY_DIR=~/custom_activity_reports
 ```
 
 **Quick Setup Tip:**
@@ -351,7 +351,7 @@ User Request: @activity-tracker generate_status_report("last week")
 **Example File Structure After Running:**
 
 ```
-~/Work/mymcp/workspace/iproject/           ← WORKSPACE_PROJECT
+<mymcp-repo-path>/workspace/iproject/      ← WORKSPACE_PROJECT
 └── activity/                               ← ACTIVITY_DIR
     ├── 2025-W45.json                       ← Cached data (week 45)
     ├── 2025-W45_report.md                  ← Generated report (week 45)
@@ -366,7 +366,7 @@ User Request: @activity-tracker generate_status_report("last week")
 #### Get GitHub Activity
 
 ```
-@activity-tracker get_github_activity("2025-11-15", "2025-11-22", "omcgonag")
+@activity-tracker get_github_activity("2025-11-15", "2025-11-22", "yourusername")
 ```
 
 Returns JSON with:
@@ -378,7 +378,7 @@ Returns JSON with:
 #### Get OpenDev Activity
 
 ```
-@activity-tracker get_opendev_activity("2025-11-15", "2025-11-22", "omcgonag")
+@activity-tracker get_opendev_activity("2025-11-15", "2025-11-22", "yourusername")
 ```
 
 Returns JSON with:
@@ -443,7 +443,7 @@ Use the convenience wrapper scripts:
 
 **Daily Standup Prep** (recommended):
 ```bash
-~/Work/mymcp/standup-prep.sh
+<mymcp-repo-path>/standup-prep.sh
 ```
 
 **Weekly Activity Reports**:
@@ -463,11 +463,11 @@ cd <mymcp-repo-path>/activity-tracker-agent
 **Unplanned Work Tracking**:
 ```bash
 # Add unplanned work as it happens
-~/Work/mymcp/unplanned-add.sh INTERRUPT "Helped debug issue" 1.5
-~/Work/mymcp/unplanned-add.sh FIREFIGHT "CI investigation" 2.0
+<mymcp-repo-path>/unplanned-add.sh INTERRUPT "Helped debug issue" 1.5
+<mymcp-repo-path>/unplanned-add.sh FIREFIGHT "CI investigation" 2.0
 
 # Mark as complete with outcome
-~/Work/mymcp/unplanned-done.sh "Helped debug issue" 2.0 "Fixed, PR merged"
+<mymcp-repo-path>/unplanned-done.sh "Helped debug issue" 2.0 "Fixed, PR merged"
 ```
 
 This generates reports and saves them to `workspace/iproject/activity/`.
@@ -563,13 +563,13 @@ _Data cached at: `workspace/iproject/activity/2025-W47.json`_
 
 ```bash
 # View cached data
-ls -lh ~/Work/mymcp/workspace/iproject/activity/
+ls -lh <mymcp-repo-path>/workspace/iproject/activity/
 
 # Clear cache (force fresh fetch)
-rm ~/Work/mymcp/workspace/iproject/activity/*.json
+rm <mymcp-repo-path>/workspace/iproject/activity/*.json
 
 # View cached JSON
-cat ~/Work/mymcp/workspace/iproject/activity/2025-W47.json | jq
+cat <mymcp-repo-path>/workspace/iproject/activity/2025-W47.json | jq
 ```
 
 ### Why Caching?
@@ -661,7 +661,7 @@ workspace/<your-project>/
 
 **To use your own repository:**
 ```bash
-cd ~/Work/mymcp/workspace
+cd <mymcp-repo-path>/workspace
 git clone https://gitlab.example.com/you/your-project.git
 # Then set WORKSPACE_PROJECT in activity-tracker-agent/.env
 ```
