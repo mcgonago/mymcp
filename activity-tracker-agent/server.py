@@ -265,13 +265,44 @@ def get_github_activity(
         
         for pr in prs_data.get('items', []):
             repo_full_name = pr['repository_url'].split('/')[-2:]
+            repo_name = '/'.join(repo_full_name)
+            pr_number = pr['number']
+            
+            # Fetch comments and reviews for complexity scoring
+            comments = []
+            reviews = []
+            try:
+                # Get PR comments
+                comments_response = requests.get(
+                    f'https://api.github.com/repos/{repo_name}/issues/{pr_number}/comments',
+                    headers=headers,
+                    params={'per_page': 100}
+                )
+                if comments_response.status_code == 200:
+                    comments = comments_response.json()
+                
+                # Get PR reviews
+                reviews_response = requests.get(
+                    f'https://api.github.com/repos/{repo_name}/pulls/{pr_number}/reviews',
+                    headers=headers,
+                    params={'per_page': 100}
+                )
+                if reviews_response.status_code == 200:
+                    reviews = reviews_response.json()
+            except Exception as e:
+                print(f"Warning: Could not fetch comments for PR {pr_number}: {e}", file=sys.stderr)
+            
             result['prs_created'].append({
-                'repo': '/'.join(repo_full_name),
-                'number': pr['number'],
+                'repo': repo_name,
+                'number': pr_number,
                 'title': pr['title'],
                 'state': pr['state'],
                 'created_at': pr['created_at'],
-                'url': pr['html_url']
+                'updated_at': pr.get('updated_at', ''),
+                'url': pr['html_url'],
+                'html_url': pr['html_url'],
+                'comments': comments,
+                'reviews': reviews
             })
         
         # Query 2: PRs reviewed by user
@@ -401,10 +432,11 @@ def get_opendev_activity(
     
     try:
         # Query 1: Changes authored by user in date range
+        # Include MESSAGES and ALL_REVISIONS for complexity scoring
         owner_query = f"owner:{username} after:{start_date} before:{end_date}"
         owner_response = requests.get(
             f'{base_url}/changes/',
-            params={'q': owner_query, 'o': 'DETAILED_ACCOUNTS'}
+            params={'q': owner_query, 'o': ['DETAILED_ACCOUNTS', 'MESSAGES', 'ALL_REVISIONS']}
         )
         owner_response.raise_for_status()
         
@@ -423,7 +455,9 @@ def get_opendev_activity(
                 'created': change.get('created', ''),
                 'updated': change.get('updated', ''),
                 'owner': username,  # This is from owner query, so owner is the user
-                'url': f"{base_url}/c/{change.get('project', '')}/+/{change.get('_number', 0)}"
+                'url': f"{base_url}/c/{change.get('project', '')}/+/{change.get('_number', 0)}",
+                'messages': change.get('messages', []),  # Include messages for complexity scoring
+                'revisions': change.get('revisions', {})  # Include revisions for complexity scoring
             })
         
         # Query 2: Changes reviewed by user (where they voted or commented)
@@ -570,13 +604,32 @@ def get_gitlab_activity(
         mrs_response.raise_for_status()
         
         for mr in mrs_response.json():
+            project_id = mr.get('project_id')
+            mr_iid = mr['iid']
+            
+            # Fetch notes (comments) for complexity scoring
+            notes = []
+            try:
+                notes_response = requests.get(
+                    f'{GITLAB_URL}/api/v4/projects/{project_id}/merge_requests/{mr_iid}/notes',
+                    headers=headers,
+                    params={'per_page': 100}
+                )
+                if notes_response.status_code == 200:
+                    notes = notes_response.json()
+            except Exception as e:
+                print(f"Warning: Could not fetch notes for MR {mr_iid}: {e}", file=sys.stderr)
+            
             result['mrs_created'].append({
                 'project': mr.get('references', {}).get('full', ''),
-                'iid': mr['iid'],
+                'project_id': project_id,
+                'iid': mr_iid,
                 'title': mr['title'],
                 'state': mr['state'],
                 'created_at': mr['created_at'],
-                'url': mr['web_url']
+                'updated_at': mr.get('updated_at', ''),
+                'url': mr['web_url'],
+                'notes': notes
             })
         
         # Query 2: User events for reviews/comments
@@ -1206,7 +1259,9 @@ def generate_in_progress_report() -> str:
         # Fetch data for "all time" to get all open items
         # Use a very old start date to capture everything
         start_date = "2020-01-01"
-        end_date = datetime.now().strftime("%Y-%m-%d")
+        # Use tomorrow's date for end_date because Gerrit's "before:" is exclusive
+        # and we want to include items updated today (especially for UTC timezone differences)
+        end_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
         
         # Fetch fresh data from all platforms
         github_data = get_github_activity(start_date, end_date)
@@ -1227,6 +1282,543 @@ def generate_in_progress_report() -> str:
             except:
                 return "N/A"
         
+        def calculate_success_rating(days_tracked):
+            """
+            Calculate success rating based on days tracked.
+            
+            Rating System:
+            - A+ : Completed in under 14 days (one 2-week sprint)
+            - A  : Completed in under 28 days (two 2-week sprints)
+            - B  : Completed in under 42 days (three 2-week sprints)
+            - F  : Over 42 days (more than three sprints)
+            """
+            try:
+                days = int(days_tracked) if days_tracked != 'N/A' else 999
+            except (ValueError, TypeError):
+                days = 999
+            
+            if days < 14:
+                return 'A+'
+            elif days < 28:
+                return 'A'
+            elif days < 42:
+                return 'B'
+            else:
+                return 'F'
+        
+        def get_rating_emoji(rating):
+            """Get emoji for rating display."""
+            return {
+                'A+': '🌟',
+                'A': '✅',
+                'B': '⚠️',
+                'F': '🔴'
+            }.get(rating, '❓')
+        
+        def calculate_complexity_score(item_data, item_type, my_username=None):
+            """
+            Calculate complexity score for an item.
+            
+            Scoring:
+            - +1 for each comment (any commenter)
+            - +1 for each unique reviewer who commented
+            - +3 for each of MY comments
+            - +2 bonus if my comment led to new patchset within 1 week
+            
+            Returns: (score, breakdown_dict)
+            """
+            score = 0
+            breakdown = {
+                'total_comments': 0,
+                'unique_reviewers': 0,
+                'my_comments': 0,
+                'responsive_patchsets': 0
+            }
+            
+            # For OpenDev reviews
+            if item_type == 'opendev':
+                messages = item_data.get('messages', [])
+                revisions = item_data.get('revisions', {})
+                
+                # Count comments and unique reviewers
+                reviewers = set()
+                my_comments = 0
+                
+                for msg in messages:
+                    author = msg.get('author', {}).get('username', '')
+                    breakdown['total_comments'] += 1
+                    score += 1  # +1 per comment
+                    
+                    if author and author != '_anonymous':
+                        reviewers.add(author)
+                    
+                    # Check if this is my comment
+                    if my_username and author == my_username:
+                        my_comments += 1
+                        score += 2  # +3 total for my comments (1 base + 2 bonus)
+                
+                breakdown['unique_reviewers'] = len(reviewers)
+                score += len(reviewers)  # +1 per unique reviewer
+                breakdown['my_comments'] = my_comments
+                
+                # Count patchsets (revisions)
+                num_patchsets = len(revisions) if revisions else 1
+                if num_patchsets > 1 and my_comments > 0:
+                    # Simplified: assume responsive if multiple patchsets and I commented
+                    responsive_bonus = min(my_comments, num_patchsets - 1)
+                    breakdown['responsive_patchsets'] = responsive_bonus
+                    score += responsive_bonus * 2  # +2 per responsive patchset
+            
+            # For Jira tickets
+            elif item_type == 'jira':
+                comments = item_data.get('comments', [])
+                
+                reviewers = set()
+                my_comments = 0
+                
+                for comment in comments:
+                    author = comment.get('author', '')
+                    breakdown['total_comments'] += 1
+                    score += 1
+                    
+                    if author:
+                        reviewers.add(author)
+                    
+                    if my_username and author == my_username:
+                        my_comments += 1
+                        score += 2
+                
+                breakdown['unique_reviewers'] = len(reviewers)
+                score += len(reviewers)
+                breakdown['my_comments'] = my_comments
+            
+            # For GitLab MRs
+            elif item_type == 'gitlab':
+                notes = item_data.get('notes', [])
+                
+                reviewers = set()
+                my_comments = 0
+                
+                for note in notes:
+                    author = note.get('author', {}).get('username', '')
+                    breakdown['total_comments'] += 1
+                    score += 1
+                    
+                    if author:
+                        reviewers.add(author)
+                    
+                    if my_username and author == my_username:
+                        my_comments += 1
+                        score += 2
+                
+                breakdown['unique_reviewers'] = len(reviewers)
+                score += len(reviewers)
+                breakdown['my_comments'] = my_comments
+            
+            # For GitHub PRs
+            elif item_type == 'github':
+                comments = item_data.get('comments', [])
+                reviews = item_data.get('reviews', [])
+                
+                reviewers = set()
+                my_comments = 0
+                
+                for comment in comments + reviews:
+                    author = comment.get('user', {}).get('login', '')
+                    breakdown['total_comments'] += 1
+                    score += 1
+                    
+                    if author:
+                        reviewers.add(author)
+                    
+                    if my_username and author == my_username:
+                        my_comments += 1
+                        score += 2
+                
+                breakdown['unique_reviewers'] = len(reviewers)
+                score += len(reviewers)
+                breakdown['my_comments'] = my_comments
+            
+            return score, breakdown
+        
+        def get_complexity_display(score):
+            """Get display string for complexity score."""
+            if score == 0:
+                return "—"
+            elif score <= 5:
+                return f"{score} 🟢"  # Low complexity
+            elif score <= 15:
+                return f"{score} 🟡"  # Medium complexity
+            elif score <= 30:
+                return f"{score} 🟠"  # High complexity
+            else:
+                return f"{score} 🔴"  # Very high complexity
+        
+        def load_tracking_history():
+            """Load the tracking history file that persists first_seen dates."""
+            history_file = os.path.join(ACTIVITY_DIR, "tracking_history.json")
+            if os.path.exists(history_file):
+                try:
+                    with open(history_file, 'r') as f:
+                        return json.load(f)
+                except (json.JSONDecodeError, IOError):
+                    pass
+            return {'items': {}, 'quarterly_stats': [], 'last_quarter': None}
+        
+        def save_tracking_history(history):
+            """Save the tracking history file."""
+            history_file = os.path.join(ACTIVITY_DIR, "tracking_history.json")
+            try:
+                with open(history_file, 'w') as f:
+                    json.dump(history, f, indent=2, default=str)
+            except IOError as e:
+                print(f"Warning: Could not save tracking history: {e}", file=sys.stderr)
+        
+        def get_item_key(item_type, item_id):
+            """Generate unique key for tracking an item."""
+            return f"{item_type}:{item_id}"
+        
+        def update_tracking_history(history, current_items):
+            """
+            Update tracking history with current items.
+            - Add first_seen for new items
+            - Keep existing first_seen for known items
+            """
+            today = datetime.now().strftime('%Y-%m-%d')
+            
+            for item in current_items:
+                key = get_item_key(item['type'], item['id'])
+                if key not in history['items']:
+                    # New item - record first_seen
+                    history['items'][key] = {
+                        'first_seen': today,
+                        'type': item['type'],
+                        'id': item['id'],
+                        'title': item.get('title', item.get('subject', item.get('summary', 'N/A')))[:50],
+                        'is_mine': item.get('is_mine', True)
+                    }
+            return history
+        
+        def record_completion(history, item, days_tracked, rating):
+            """Record a completed item to quarterly stats."""
+            today = datetime.now()
+            quarter = f"{today.year}-Q{(today.month - 1) // 3 + 1}"
+            
+            completion_record = {
+                'date': today.strftime('%Y-%m-%d'),
+                'type': item.get('type', 'unknown'),
+                'id': item.get('id', 'N/A'),
+                'title': item.get('title', 'N/A')[:50],
+                'days_tracked': days_tracked,
+                'rating': rating,
+                'is_mine': item.get('is_mine', True),
+                'quarter': quarter
+            }
+            
+            history['quarterly_stats'].append(completion_record)
+            
+            # Clean up the item from active tracking
+            key = get_item_key(item.get('type', ''), item.get('id', ''))
+            if key in history['items']:
+                del history['items'][key]
+            
+            return history
+        
+        def get_days_tracked(history, item_type, item_id):
+            """Get the number of days an item has been tracked."""
+            key = get_item_key(item_type, item_id)
+            if key in history['items']:
+                first_seen = history['items'][key].get('first_seen')
+                if first_seen:
+                    try:
+                        first_date = datetime.strptime(first_seen, '%Y-%m-%d')
+                        delta = datetime.now() - first_date
+                        return delta.days
+                    except:
+                        pass
+            return 'N/A'
+        
+        def get_first_seen(history, item_type, item_id):
+            """Get the first_seen date for an item."""
+            key = get_item_key(item_type, item_id)
+            if key in history['items']:
+                return history['items'][key].get('first_seen', 'N/A')
+            return 'N/A'
+        
+        # Load tracking history
+        tracking_history = load_tracking_history()
+        
+        def compare_states_for_success(previous, current, history):
+            """Compare previous and current states to find completed items (Success Stories)."""
+            success_stories = []
+            
+            # Build sets of current IDs for quick lookup
+            current_ids = {
+                'opendev': set(r['id'] for r in current.get('opendev_reviews', [])),
+                'github': set(p['id'] for p in current.get('github_prs', [])),
+                'gitlab': set(m['id'] for m in current.get('gitlab_mrs', [])),
+                'jira': set(t['id'] for t in current.get('jira_tickets', [])),
+                'jira_watching': set(t['id'] for t in current.get('jira_watching', [])),
+                'opendev_review': set(r['id'] for r in current.get('awaiting_review', {}).get('opendev', [])),
+                'gitlab_review': set(m['id'] for m in current.get('awaiting_review', {}).get('gitlab', [])),
+                'github_review': set(p['id'] for p in current.get('awaiting_review', {}).get('github', [])),
+            }
+            
+            # Check OpenDev reviews that disappeared (merged/abandoned)
+            for review in previous.get('opendev_reviews', []):
+                if review['id'] not in current_ids['opendev']:
+                    days = get_days_tracked(history, 'opendev', review['id'])
+                    rating = calculate_success_rating(days)
+                    story = {
+                        'platform': '🟠 OpenDev',
+                        'type': 'opendev',
+                        'id': review['id'],
+                        'title': review.get('subject', 'N/A')[:50],
+                        'url': review.get('url', '#'),
+                        'reason': 'Merged/Closed',
+                        'is_mine': True,
+                        'icon': '🎉',
+                        'days_tracked': days,
+                        'rating': rating,
+                        'rating_emoji': get_rating_emoji(rating)
+                    }
+                    success_stories.append(story)
+                    record_completion(history, story, days, rating)
+            
+            # Check GitHub PRs that disappeared (merged/closed)
+            for pr in previous.get('github_prs', []):
+                if pr['id'] not in current_ids['github']:
+                    days = get_days_tracked(history, 'github', pr['id'])
+                    rating = calculate_success_rating(days)
+                    story = {
+                        'platform': '🔵 GitHub',
+                        'type': 'github',
+                        'id': f"#{pr['id']}",
+                        'title': pr.get('title', 'N/A')[:50],
+                        'url': pr.get('url', '#'),
+                        'reason': 'Merged/Closed',
+                        'is_mine': True,
+                        'icon': '🎉',
+                        'days_tracked': days,
+                        'rating': rating,
+                        'rating_emoji': get_rating_emoji(rating)
+                    }
+                    success_stories.append(story)
+                    record_completion(history, story, days, rating)
+            
+            # Check GitLab MRs that disappeared (merged/closed)
+            for mr in previous.get('gitlab_mrs', []):
+                if mr['id'] not in current_ids['gitlab']:
+                    days = get_days_tracked(history, 'gitlab', mr['id'])
+                    rating = calculate_success_rating(days)
+                    story = {
+                        'platform': '🦊 GitLab',
+                        'type': 'gitlab',
+                        'id': f"!{mr['id']}",
+                        'title': mr.get('title', 'N/A')[:50],
+                        'url': mr.get('url', '#'),
+                        'reason': 'Merged/Closed',
+                        'is_mine': True,
+                        'icon': '🎉',
+                        'days_tracked': days,
+                        'rating': rating,
+                        'rating_emoji': get_rating_emoji(rating)
+                    }
+                    success_stories.append(story)
+                    record_completion(history, story, days, rating)
+            
+            # Check Jira tickets that disappeared (closed/resolved)
+            for ticket in previous.get('jira_tickets', []):
+                if ticket['id'] not in current_ids['jira']:
+                    days = get_days_tracked(history, 'jira', ticket['id'])
+                    rating = calculate_success_rating(days)
+                    story = {
+                        'platform': '📋 Jira',
+                        'type': 'jira',
+                        'id': ticket['id'],
+                        'title': ticket.get('summary', 'N/A')[:50],
+                        'url': ticket.get('url', '#'),
+                        'reason': 'Closed/Resolved',
+                        'is_mine': True,
+                        'icon': '🎉',
+                        'days_tracked': days,
+                        'rating': rating,
+                        'rating_emoji': get_rating_emoji(rating)
+                    }
+                    success_stories.append(story)
+                    record_completion(history, story, days, rating)
+            
+            # Check watched Jira tickets that disappeared (someone else closed them)
+            for ticket in previous.get('jira_watching', []):
+                if ticket['id'] not in current_ids['jira_watching']:
+                    days = get_days_tracked(history, 'jira_watching', ticket['id'])
+                    rating = calculate_success_rating(days)
+                    story = {
+                        'platform': '📋 Jira (Watching)',
+                        'type': 'jira_watching',
+                        'id': ticket['id'],
+                        'title': ticket.get('summary', 'N/A')[:50],
+                        'url': ticket.get('url', '#'),
+                        'reason': f"Closed by {ticket.get('owner', 'someone')}",
+                        'is_mine': False,
+                        'icon': '⭐',
+                        'days_tracked': days,
+                        'rating': rating,
+                        'rating_emoji': get_rating_emoji(rating)
+                    }
+                    success_stories.append(story)
+                    record_completion(history, story, days, rating)
+            
+            # Check reviews awaiting my vote that disappeared (merged or I'm no longer reviewer)
+            for review in previous.get('awaiting_review', {}).get('opendev', []):
+                if review['id'] not in current_ids['opendev_review']:
+                    days = get_days_tracked(history, 'opendev_review', review['id'])
+                    rating = calculate_success_rating(days)
+                    story = {
+                        'platform': '🟠 OpenDev (Review)',
+                        'type': 'opendev_review',
+                        'id': review['id'],
+                        'title': review.get('subject', 'N/A')[:50],
+                        'url': review.get('url', '#'),
+                        'reason': f"Completed ({review.get('owner', 'owner')}'s review)",
+                        'is_mine': False,
+                        'icon': '⭐',
+                        'days_tracked': days,
+                        'rating': rating,
+                        'rating_emoji': get_rating_emoji(rating)
+                    }
+                    success_stories.append(story)
+                    record_completion(history, story, days, rating)
+            
+            for mr in previous.get('awaiting_review', {}).get('gitlab', []):
+                if mr['id'] not in current_ids['gitlab_review']:
+                    days = get_days_tracked(history, 'gitlab_review', mr['id'])
+                    rating = calculate_success_rating(days)
+                    story = {
+                        'platform': '🦊 GitLab (Review)',
+                        'type': 'gitlab_review',
+                        'id': f"!{mr['id']}",
+                        'title': mr.get('title', 'N/A')[:50],
+                        'url': mr.get('url', '#'),
+                        'reason': f"Completed ({mr.get('owner', 'owner')}'s MR)",
+                        'is_mine': False,
+                        'icon': '⭐',
+                        'days_tracked': days,
+                        'rating': rating,
+                        'rating_emoji': get_rating_emoji(rating)
+                    }
+                    success_stories.append(story)
+                    record_completion(history, story, days, rating)
+            
+            for pr in previous.get('awaiting_review', {}).get('github', []):
+                if pr['id'] not in current_ids['github_review']:
+                    days = get_days_tracked(history, 'github_review', pr['id'])
+                    rating = calculate_success_rating(days)
+                    story = {
+                        'platform': '🔵 GitHub (Review)',
+                        'type': 'github_review',
+                        'id': f"#{pr['id']}",
+                        'title': pr.get('title', 'N/A')[:50],
+                        'url': pr.get('url', '#'),
+                        'reason': f"Completed ({pr.get('owner', 'owner')}'s PR)",
+                        'is_mine': False,
+                        'icon': '⭐',
+                        'days_tracked': days,
+                        'rating': rating,
+                        'rating_emoji': get_rating_emoji(rating)
+                    }
+                    success_stories.append(story)
+                    record_completion(history, story, days, rating)
+            
+            return success_stories
+        
+        def generate_success_stories_section(success_stories, history):
+            """Generate markdown section for success stories with ratings."""
+            lines = []
+            lines.append("## 🏆 Success Stories")
+            lines.append("")
+            lines.append("_Items completed since last run_")
+            lines.append("")
+            
+            # Rating legend
+            lines.append("> **Rating System:** 🌟 A+ (<14 days) | ✅ A (<28 days) | ⚠️ B (<42 days) | 🔴 F (>42 days)")
+            lines.append("")
+            
+            if not success_stories:
+                # Show a fun placeholder when no victories yet
+                lines.append("### 🎉 Your Victories (0)")
+                lines.append("")
+                lines.append("_No completed items since last run... but here's what success will look like!_")
+                lines.append("")
+                lines.append("| Platform | ID | Title | Days | Rating | Reason |")
+                lines.append("|----------|-------|-------|------|--------|--------|")
+                lines.append("| 🟠 OpenDev | [999999](https://example.com) | 🦄 Fix the unfixable bug that... | 41 | ⚠️ B | Merged! |")
+                lines.append("| 📋 Jira | OSPRH-99999 | 🎯 Implement world peace in Ho... | 7 | 🌟 A+ | Closed |")
+                lines.append("")
+                lines.append("_^ Example placeholder - complete some items to see your real victories here!_")
+                lines.append("")
+                return "\n".join(lines)
+            
+            # Separate mine vs others
+            my_victories = [s for s in success_stories if s['is_mine']]
+            team_victories = [s for s in success_stories if not s['is_mine']]
+            
+            if my_victories:
+                lines.append(f"### 🎉 Your Victories ({len(my_victories)})")
+                lines.append("")
+                lines.append("| Platform | ID | Title | Days | Rating | Reason |")
+                lines.append("|----------|-------|-------|------|--------|--------|")
+                for story in my_victories:
+                    days_str = str(story.get('days_tracked', 'N/A'))
+                    rating_display = f"{story.get('rating_emoji', '')} {story.get('rating', 'N/A')}"
+                    lines.append(f"| {story['platform']} | [{story['id']}]({story['url']}) | {story['title']} | {days_str} | {rating_display} | {story['reason']} |")
+                lines.append("")
+            
+            if team_victories:
+                lines.append(f"### ⭐ Team Progress ({len(team_victories)})")
+                lines.append("")
+                lines.append("_Items you were watching/reviewing that are now complete_")
+                lines.append("")
+                lines.append("| Platform | ID | Title | Days | Rating | Reason |")
+                lines.append("|----------|-------|-------|------|--------|--------|")
+                for story in team_victories:
+                    days_str = str(story.get('days_tracked', 'N/A'))
+                    rating_display = f"{story.get('rating_emoji', '')} {story.get('rating', 'N/A')}"
+                    lines.append(f"| {story['platform']} | [{story['id']}]({story['url']}) | {story['title']} | {days_str} | {rating_display} | {story['reason']} |")
+                lines.append("")
+            
+            # Quarterly summary (if we have stats)
+            quarterly_stats = history.get('quarterly_stats', [])
+            if quarterly_stats:
+                # Get current quarter stats
+                today = datetime.now()
+                current_quarter = f"{today.year}-Q{(today.month - 1) // 3 + 1}"
+                quarter_items = [s for s in quarterly_stats if s.get('quarter') == current_quarter]
+                
+                if quarter_items:
+                    # Calculate rating distribution
+                    ratings = {'A+': 0, 'A': 0, 'B': 0, 'F': 0}
+                    for item in quarter_items:
+                        r = item.get('rating', 'F')
+                        if r in ratings:
+                            ratings[r] += 1
+                    
+                    total = len(quarter_items)
+                    lines.append(f"### 📊 Quarterly Progress ({current_quarter})")
+                    lines.append("")
+                    lines.append(f"**{total} items completed this quarter**")
+                    lines.append("")
+                    lines.append("| Rating | Count | Percentage |")
+                    lines.append("|--------|-------|------------|")
+                    for r in ['A+', 'A', 'B', 'F']:
+                        count = ratings[r]
+                        pct = (count / total * 100) if total > 0 else 0
+                        emoji = get_rating_emoji(r)
+                        lines.append(f"| {emoji} {r} | {count} | {pct:.1f}% |")
+                    lines.append("")
+            
+            return "\n".join(lines)
+        
         def get_status_icon(status):
             """Get appropriate status icon based on status text"""
             status_lower = status.lower()
@@ -1241,6 +1833,280 @@ def generate_in_progress_report() -> str:
             else:
                 return "🟢"  # Default to green
         
+        # Fetch reviews where I'm a reviewer (people waiting for my review)
+        # OpenDev: Query for reviews where I'm added as reviewer but haven't voted
+        print("Fetching reviews awaiting your review...", file=sys.stderr)
+        
+        opendev_awaiting_review = []
+        try:
+            base_url = "https://review.opendev.org"
+            # Query for open reviews where I'm a reviewer
+            reviewer_query = f"reviewer:{OPENDEV_USERNAME} status:open -owner:{OPENDEV_USERNAME}"
+            reviewer_response = requests.get(
+                f'{base_url}/changes/',
+                params={'q': reviewer_query, 'o': ['DETAILED_ACCOUNTS', 'LABELS']}
+            )
+            reviewer_response.raise_for_status()
+            
+            reviewer_data_text = reviewer_response.text
+            if reviewer_data_text.startswith(")]}'\n"):
+                reviewer_data_text = reviewer_data_text[5:]
+            reviewer_data = json.loads(reviewer_data_text)
+            
+            for change in reviewer_data:
+                # Check if user has already voted
+                labels = change.get('labels', {})
+                has_voted = False
+                for label_name, label_data in labels.items():
+                    for vote in label_data.get('all', []):
+                        if vote.get('username', '') == OPENDEV_USERNAME and vote.get('value', 0) != 0:
+                            has_voted = True
+                            break
+                    if has_voted:
+                        break
+                
+                # Include if not voted yet, or include all for visibility
+                owner_info = change.get('owner', {})
+                owner_name = owner_info.get('name', owner_info.get('username', 'Unknown'))
+                opendev_awaiting_review.append({
+                    'number': change.get('_number', 0),
+                    'subject': change.get('subject', ''),
+                    'project': change.get('project', ''),
+                    'status': change.get('status', ''),
+                    'created': change.get('created', ''),
+                    'updated': change.get('updated', ''),
+                    'owner': owner_name,
+                    'has_voted': has_voted,
+                    'url': f"{base_url}/c/{change.get('project', '')}/+/{change.get('_number', 0)}"
+                })
+        except Exception as e:
+            print(f"Warning: Could not fetch OpenDev reviews awaiting review: {e}", file=sys.stderr)
+        
+        # GitLab: Query for MRs where I'm a reviewer
+        # Note: GitLab CEE's global reviewer_id query doesn't work reliably,
+        # so we search across projects the user has recently interacted with
+        gitlab_awaiting_review = []
+        if GITLAB_TOKEN:
+            try:
+                headers = {'PRIVATE-TOKEN': GITLAB_TOKEN}
+                
+                # Get user ID first
+                user_response = requests.get(
+                    f'{GITLAB_URL}/api/v4/users',
+                    headers=headers,
+                    params={'username': GITLAB_USERNAME}
+                )
+                user_response.raise_for_status()
+                users = user_response.json()
+                
+                if users:
+                    user_id = users[0]['id']
+                    
+                    # First, try the global reviewer_id query (works on some GitLab instances)
+                    mrs_response = requests.get(
+                        f'{GITLAB_URL}/api/v4/merge_requests',
+                        headers=headers,
+                        params={
+                            'reviewer_id': user_id,
+                            'state': 'opened',
+                            'per_page': 50
+                        }
+                    )
+                    mrs_response.raise_for_status()
+                    global_mrs = mrs_response.json()
+                    
+                    # If global query returns nothing, search in projects user is member of
+                    if not global_mrs:
+                        # Get projects user is a member of (recently active)
+                        projects_response = requests.get(
+                            f'{GITLAB_URL}/api/v4/projects',
+                            headers=headers,
+                            params={
+                                'membership': 'true',
+                                'order_by': 'last_activity_at',
+                                'per_page': 20  # Check top 20 recently active projects
+                            }
+                        )
+                        if projects_response.status_code == 200:
+                            projects = projects_response.json()
+                            for project in projects:
+                                project_id = project.get('id')
+                                # Get open MRs in this project
+                                project_mrs_response = requests.get(
+                                    f'{GITLAB_URL}/api/v4/projects/{project_id}/merge_requests',
+                                    headers=headers,
+                                    params={'state': 'opened', 'per_page': 50}
+                                )
+                                if project_mrs_response.status_code == 200:
+                                    for mr in project_mrs_response.json():
+                                        # Check if user is in reviewers list
+                                        reviewers = mr.get('reviewers', [])
+                                        is_reviewer = any(r.get('id') == user_id or r.get('username') == GITLAB_USERNAME 
+                                                         for r in reviewers)
+                                        if is_reviewer:
+                                            # Avoid duplicates
+                                            if not any(m.get('id') == mr.get('id') for m in global_mrs):
+                                                global_mrs.append(mr)
+                    
+                    # Deduplicate MRs by URL
+                    seen_urls = set()
+                    unique_mrs = []
+                    for mr in global_mrs:
+                        url = mr.get('web_url', '')
+                        if url and url not in seen_urls:
+                            seen_urls.add(url)
+                            unique_mrs.append(mr)
+                    
+                    for mr in unique_mrs:
+                        # Check if I've already approved
+                        has_approved = False
+                        try:
+                            # Get approval state
+                            project_id = mr.get('project_id')
+                            mr_iid = mr.get('iid')
+                            approvals_response = requests.get(
+                                f'{GITLAB_URL}/api/v4/projects/{project_id}/merge_requests/{mr_iid}/approvals',
+                                headers=headers
+                            )
+                            if approvals_response.status_code == 200:
+                                approvals = approvals_response.json()
+                                for approver in approvals.get('approved_by', []):
+                                    if approver.get('user', {}).get('id') == user_id:
+                                        has_approved = True
+                                        break
+                        except:
+                            pass  # If we can't check approvals, assume not approved
+                        
+                        author = mr.get('author', {})
+                        gitlab_awaiting_review.append({
+                            'iid': mr.get('iid'),
+                            'title': mr.get('title', ''),
+                            'project': mr.get('references', {}).get('full', mr.get('web_url', '').split('/-/')[0].split('/')[-1]),
+                            'state': mr.get('state', ''),
+                            'created_at': mr.get('created_at', ''),
+                            'updated_at': mr.get('updated_at', ''),
+                            'owner': author.get('name', author.get('username', 'Unknown')),
+                            'has_approved': has_approved,
+                            'url': mr.get('web_url', '#')
+                        })
+            except Exception as e:
+                print(f"Warning: Could not fetch GitLab MRs awaiting review: {e}", file=sys.stderr)
+        
+        # GitHub: Query for PRs where I'm a requested reviewer
+        github_awaiting_review = []
+        if GITHUB_TOKEN:
+            try:
+                headers = {
+                    'Authorization': f'Bearer {GITHUB_TOKEN}',
+                    'Accept': 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': '2022-11-28'
+                }
+                
+                # GitHub Search API: PRs where I'm a requested reviewer
+                # This searches for open PRs that have requested my review
+                search_query = f"is:pr is:open review-requested:{GITHUB_USERNAME}"
+                prs_response = requests.get(
+                    'https://api.github.com/search/issues',
+                    headers=headers,
+                    params={'q': search_query, 'per_page': 50}
+                )
+                prs_response.raise_for_status()
+                
+                for pr in prs_response.json().get('items', []):
+                    # Extract repo info from URL
+                    # URL format: https://api.github.com/repos/owner/repo/issues/123
+                    html_url = pr.get('html_url', '')
+                    repo_full = '/'.join(html_url.split('/')[3:5]) if html_url else 'unknown'
+                    repo_name = repo_full.split('/')[-1] if repo_full else 'unknown'
+                    
+                    author = pr.get('user', {})
+                    github_awaiting_review.append({
+                        'number': pr.get('number'),
+                        'title': pr.get('title', ''),
+                        'repo': repo_name,
+                        'repo_full': repo_full,
+                        'state': pr.get('state', ''),
+                        'created_at': pr.get('created_at', ''),
+                        'updated_at': pr.get('updated_at', ''),
+                        'owner': author.get('login', 'Unknown'),
+                        'has_reviewed': False,  # If review-requested, we haven't reviewed yet
+                        'url': html_url
+                    })
+                
+                # Also check for PRs where I've been asked to review but already submitted a review
+                # (These show up differently - as "reviewed" but PR still open)
+                reviewed_query = f"is:pr is:open reviewed-by:{GITHUB_USERNAME}"
+                reviewed_response = requests.get(
+                    'https://api.github.com/search/issues',
+                    headers=headers,
+                    params={'q': reviewed_query, 'per_page': 50}
+                )
+                if reviewed_response.status_code == 200:
+                    for pr in reviewed_response.json().get('items', []):
+                        # Check if we already have this PR
+                        pr_number = pr.get('number')
+                        html_url = pr.get('html_url', '')
+                        if not any(p.get('url') == html_url for p in github_awaiting_review):
+                            repo_full = '/'.join(html_url.split('/')[3:5]) if html_url else 'unknown'
+                            repo_name = repo_full.split('/')[-1] if repo_full else 'unknown'
+                            author = pr.get('user', {})
+                            github_awaiting_review.append({
+                                'number': pr_number,
+                                'title': pr.get('title', ''),
+                                'repo': repo_name,
+                                'repo_full': repo_full,
+                                'state': pr.get('state', ''),
+                                'created_at': pr.get('created_at', ''),
+                                'updated_at': pr.get('updated_at', ''),
+                                'owner': author.get('login', 'Unknown'),
+                                'has_reviewed': True,  # We've already reviewed
+                                'url': html_url
+                            })
+            except Exception as e:
+                print(f"Warning: Could not fetch GitHub PRs awaiting review: {e}", file=sys.stderr)
+        
+        # Jira: Query for tickets where I'm a watcher (but not assignee)
+        # These are tickets someone wants me to be aware of / review
+        jira_watching = []
+        if JIRA_API_TOKEN and JIRA_URL:
+            try:
+                jira_client = JIRA(server=JIRA_URL, token_auth=JIRA_API_TOKEN)
+                
+                # Query for open tickets where I'm a watcher but NOT the assignee
+                # This finds tickets others want me to pay attention to
+                watcher_jql = f'watcher = "{JIRA_EMAIL}" AND assignee != "{JIRA_EMAIL}" AND status not in (Done, Closed, Resolved) ORDER BY updated DESC'
+                watched_issues = jira_client.search_issues(
+                    watcher_jql,
+                    maxResults=50,
+                    fields='key,summary,issuetype,status,priority,created,updated,assignee,reporter'
+                )
+                
+                for issue in watched_issues:
+                    # Get assignee name or reporter if no assignee
+                    assignee = issue.fields.assignee
+                    reporter = issue.fields.reporter
+                    owner = 'Unassigned'
+                    if assignee:
+                        owner = assignee.displayName if hasattr(assignee, 'displayName') else str(assignee)
+                    elif reporter:
+                        owner = reporter.displayName if hasattr(reporter, 'displayName') else str(reporter)
+                    
+                    jira_watching.append({
+                        'key': issue.key,
+                        'summary': issue.fields.summary,
+                        'type': str(issue.fields.issuetype),
+                        'status': str(issue.fields.status),
+                        'priority': str(issue.fields.priority) if issue.fields.priority else 'None',
+                        'created_at': issue.fields.created,
+                        'updated_at': issue.fields.updated,
+                        'created': issue.fields.created[:10] if issue.fields.created else 'N/A',
+                        'updated': issue.fields.updated[:10] if issue.fields.updated else 'N/A',
+                        'owner': owner,
+                        'url': f"{JIRA_URL}/browse/{issue.key}"
+                    })
+            except Exception as e:
+                print(f"Warning: Could not fetch Jira watched tickets: {e}", file=sys.stderr)
+        
         # Generate markdown report
         report_lines = []
         report_lines.append("# In Progress")
@@ -1249,6 +2115,167 @@ def generate_in_progress_report() -> str:
         report_lines.append("")
         report_lines.append("_Current ownership status across all platforms_")
         report_lines.append("")
+        report_lines.append("---")
+        report_lines.append("")
+        
+        # PRIORITY SECTION: People Waiting for Your Review
+        report_lines.append("## 🔔 People Waiting for Your Review")
+        report_lines.append("")
+        report_lines.append("_Reviews/PRs/MRs where you are listed as a reviewer_")
+        report_lines.append("")
+        
+        has_any_awaiting = False
+        
+        # OpenDev reviews awaiting my review
+        if opendev_awaiting_review:
+            has_any_awaiting = True
+            # Filter to only those not yet voted on
+            not_voted = [r for r in opendev_awaiting_review if not r.get('has_voted')]
+            already_voted = [r for r in opendev_awaiting_review if r.get('has_voted')]
+            
+            if not_voted:
+                report_lines.append(f"### 🟠 OpenDev: Needs Your Vote ({len(not_voted)})")
+                report_lines.append("")
+                report_lines.append("| Review | Owner | Project | Subject | Updated | Days | Link |")
+                report_lines.append("|--------|-------|---------|---------|---------|------|------|")
+                for review in not_voted:
+                    review_num = review.get('number', 'N/A')
+                    owner = review.get('owner', 'N/A')
+                    project = review.get('project', 'N/A').split('/')[-1] if review.get('project') else 'N/A'
+                    subject = review.get('subject', 'N/A')
+                    if len(subject) > 40:
+                        subject = subject[:37] + '...'
+                    updated = review.get('updated', 'N/A')[:10] if review.get('updated') else 'N/A'
+                    days_idle = days_since_update(review.get('updated'))
+                    url = review.get('url', '#')
+                    
+                    report_lines.append(f"| [{review_num}]({url}) | {owner} | {project} | {subject} | {updated} | {days_idle} | [Review]({url}) |")
+                report_lines.append("")
+            
+            if already_voted:
+                report_lines.append(f"### ✅ OpenDev: Already Voted ({len(already_voted)})")
+                report_lines.append("")
+                report_lines.append("_You've voted on these, but they're still open_")
+                report_lines.append("")
+                report_lines.append("| Review | Owner | Project | Subject | Updated | Link |")
+                report_lines.append("|--------|-------|---------|---------|---------|------|")
+                for review in already_voted[:5]:  # Limit to 5
+                    review_num = review.get('number', 'N/A')
+                    owner = review.get('owner', 'N/A')
+                    project = review.get('project', 'N/A').split('/')[-1] if review.get('project') else 'N/A'
+                    subject = review.get('subject', 'N/A')
+                    if len(subject) > 40:
+                        subject = subject[:37] + '...'
+                    updated = review.get('updated', 'N/A')[:10] if review.get('updated') else 'N/A'
+                    url = review.get('url', '#')
+                    
+                    report_lines.append(f"| [{review_num}]({url}) | {owner} | {project} | {subject} | {updated} | [View]({url}) |")
+                if len(already_voted) > 5:
+                    report_lines.append(f"| ... | | | _{len(already_voted) - 5} more_ | | |")
+                report_lines.append("")
+        
+        # GitLab MRs awaiting my review
+        if gitlab_awaiting_review:
+            has_any_awaiting = True
+            # Filter to only those not yet approved
+            not_approved = [r for r in gitlab_awaiting_review if not r.get('has_approved')]
+            already_approved = [r for r in gitlab_awaiting_review if r.get('has_approved')]
+            
+            if not_approved:
+                report_lines.append(f"### 🦊 GitLab: Needs Your Review ({len(not_approved)})")
+                report_lines.append("")
+                report_lines.append("| MR | Owner | Project | Title | Updated | Days | Link |")
+                report_lines.append("|----|-------|---------|-------|---------|------|------|")
+                for mr in not_approved:
+                    mr_iid = mr.get('iid', 'N/A')
+                    owner = mr.get('owner', 'N/A')
+                    project = mr.get('project', 'N/A').split('/')[-1] if mr.get('project') else 'N/A'
+                    title = mr.get('title', 'N/A')
+                    if len(title) > 40:
+                        title = title[:37] + '...'
+                    updated = mr.get('updated_at', 'N/A')[:10] if mr.get('updated_at') else 'N/A'
+                    days_idle = days_since_update(mr.get('updated_at'))
+                    url = mr.get('url', '#')
+                    
+                    report_lines.append(f"| [!{mr_iid}]({url}) | {owner} | {project} | {title} | {updated} | {days_idle} | [Review]({url}) |")
+                report_lines.append("")
+            
+            if already_approved:
+                report_lines.append(f"### ✅ GitLab: Already Approved ({len(already_approved)})")
+                report_lines.append("")
+                report_lines.append("_You've approved these, but they're still open_")
+                report_lines.append("")
+                report_lines.append("| MR | Owner | Project | Title | Updated | Link |")
+                report_lines.append("|----|-------|---------|-------|---------|------|")
+                for mr in already_approved[:5]:  # Limit to 5
+                    mr_iid = mr.get('iid', 'N/A')
+                    owner = mr.get('owner', 'N/A')
+                    project = mr.get('project', 'N/A').split('/')[-1] if mr.get('project') else 'N/A'
+                    title = mr.get('title', 'N/A')
+                    if len(title) > 40:
+                        title = title[:37] + '...'
+                    updated = mr.get('updated_at', 'N/A')[:10] if mr.get('updated_at') else 'N/A'
+                    url = mr.get('url', '#')
+                    
+                    report_lines.append(f"| [!{mr_iid}]({url}) | {owner} | {project} | {title} | {updated} | [View]({url}) |")
+                if len(already_approved) > 5:
+                    report_lines.append(f"| ... | | | _{len(already_approved) - 5} more_ | | |")
+                report_lines.append("")
+        
+        # GitHub PRs awaiting my review
+        if github_awaiting_review:
+            has_any_awaiting = True
+            # Filter to only those not yet reviewed
+            not_reviewed = [r for r in github_awaiting_review if not r.get('has_reviewed')]
+            already_reviewed = [r for r in github_awaiting_review if r.get('has_reviewed')]
+            
+            if not_reviewed:
+                report_lines.append(f"### 🔵 GitHub: Needs Your Review ({len(not_reviewed)})")
+                report_lines.append("")
+                report_lines.append("| PR | Owner | Repo | Title | Updated | Days | Link |")
+                report_lines.append("|----|-------|------|-------|---------|------|------|")
+                for pr in not_reviewed:
+                    pr_num = pr.get('number', 'N/A')
+                    owner = pr.get('owner', 'N/A')
+                    repo = pr.get('repo', 'N/A')
+                    title = pr.get('title', 'N/A')
+                    if len(title) > 40:
+                        title = title[:37] + '...'
+                    updated = pr.get('updated_at', 'N/A')[:10] if pr.get('updated_at') else 'N/A'
+                    days_idle = days_since_update(pr.get('updated_at'))
+                    url = pr.get('url', '#')
+                    
+                    report_lines.append(f"| [#{pr_num}]({url}) | {owner} | {repo} | {title} | {updated} | {days_idle} | [Review]({url}) |")
+                report_lines.append("")
+            
+            if already_reviewed:
+                report_lines.append(f"### ✅ GitHub: Already Reviewed ({len(already_reviewed)})")
+                report_lines.append("")
+                report_lines.append("_You've reviewed these, but they're still open_")
+                report_lines.append("")
+                report_lines.append("| PR | Owner | Repo | Title | Updated | Link |")
+                report_lines.append("|----|-------|------|-------|---------|------|")
+                for pr in already_reviewed[:5]:  # Limit to 5
+                    pr_num = pr.get('number', 'N/A')
+                    owner = pr.get('owner', 'N/A')
+                    repo = pr.get('repo', 'N/A')
+                    title = pr.get('title', 'N/A')
+                    if len(title) > 40:
+                        title = title[:37] + '...'
+                    updated = pr.get('updated_at', 'N/A')[:10] if pr.get('updated_at') else 'N/A'
+                    url = pr.get('url', '#')
+                    
+                    report_lines.append(f"| [#{pr_num}]({url}) | {owner} | {repo} | {title} | {updated} | [View]({url}) |")
+                if len(already_reviewed) > 5:
+                    report_lines.append(f"| ... | | | _{len(already_reviewed) - 5} more_ | | |")
+                report_lines.append("")
+        
+        # Note: Jira watching section moved to be with other Jira tables at the end
+        
+        if not has_any_awaiting:
+            report_lines.append("_No reviews awaiting your attention_")
+            report_lines.append("")
+        
         report_lines.append("---")
         report_lines.append("")
         
@@ -1264,22 +2291,30 @@ def generate_in_progress_report() -> str:
         if active_opendev_reviews:
             report_lines.append(f"**{len(active_opendev_reviews)} active review(s)**")
             report_lines.append("")
-            report_lines.append("| Review | Project | Subject | Status | Created | Last Updated | Days Idle | Link |")
-            report_lines.append("|--------|---------|---------|--------|---------|--------------|-----------|------|")
+            report_lines.append("| Review | Project | Subject | Status | First Seen | Days | Complexity | Link |")
+            report_lines.append("|--------|---------|---------|--------|------------|------|------------|------|")
             for review in active_opendev_reviews:
                 review_num = review.get('number', 'N/A')
                 project = review.get('project', 'N/A').split('/')[-1] if review.get('project') else 'N/A'
                 subject = review.get('subject', 'N/A')
-                if len(subject) > 50:
-                    subject = subject[:47] + '...'
+                if len(subject) > 35:
+                    subject = subject[:32] + '...'
                 status = review.get('status', 'N/A')
-                created = review.get('created', 'N/A')[:10] if review.get('created') else 'N/A'
-                updated = review.get('updated', 'N/A')[:10] if review.get('updated') else 'N/A'
-                days_idle = days_since_update(review.get('updated'))
                 url = review.get('url', '#')
                 
+                # Get tracking info
+                first_seen = get_first_seen(tracking_history, 'opendev', str(review_num))
+                days_tracked = get_days_tracked(tracking_history, 'opendev', str(review_num))
+                rating = calculate_success_rating(days_tracked)
+                rating_emoji = get_rating_emoji(rating)
+                
+                # Calculate complexity
+                complexity_score, _ = calculate_complexity_score(review, 'opendev', OPENDEV_USERNAME)
+                complexity_display = get_complexity_display(complexity_score)
+                
                 status_icon = "🟢" if status == "NEW" else "🟡"
-                report_lines.append(f"| [{review_num}]({url}) | {project} | {subject} | {status_icon} {status} | {created} | {updated} | {days_idle} | [View]({url}) |")
+                days_display = f"{days_tracked} {rating_emoji}" if days_tracked != 'N/A' else 'N/A'
+                report_lines.append(f"| [{review_num}]({url}) | {project} | {subject} | {status_icon} {status} | {first_seen} | {days_display} | {complexity_display} | [View]({url}) |")
             report_lines.append("")
         else:
             report_lines.append("_No active reviews_")
@@ -1297,21 +2332,29 @@ def generate_in_progress_report() -> str:
         if open_github_prs:
             report_lines.append(f"**{len(open_github_prs)} open PR(s)**")
             report_lines.append("")
-            report_lines.append("| PR | Repository | Title | Status | Created | Last Updated | Days Idle | Link |")
-            report_lines.append("|----|------------|-------|--------|---------|--------------|-----------|------|")
+            report_lines.append("| PR | Repository | Title | Status | First Seen | Days | Complexity | Link |")
+            report_lines.append("|----|------------|-------|--------|------------|------|------------|------|")
             for pr in open_github_prs:
                 pr_num = pr.get('number', 'N/A')
                 repo = pr.get('repo', 'N/A')
                 title = pr.get('title', 'N/A')
-                if len(title) > 50:
-                    title = title[:47] + '...'
+                if len(title) > 40:
+                    title = title[:37] + '...'
                 state = pr.get('state', 'N/A')
-                created = pr.get('created_at', 'N/A')[:10] if pr.get('created_at') else 'N/A'
-                updated = pr.get('updated_at', 'N/A')[:10] if pr.get('updated_at') else 'N/A'
-                days_idle = days_since_update(pr.get('updated_at'))
-                url = pr.get('html_url', '#')
+                url = pr.get('html_url', pr.get('url', '#'))
                 
-                report_lines.append(f"| [#{pr_num}]({url}) | {repo} | {title} | 🟢 {state.upper()} | {created} | {updated} | {days_idle} | [View]({url}) |")
+                # Get tracking info
+                first_seen = get_first_seen(tracking_history, 'github', str(pr_num))
+                days_tracked = get_days_tracked(tracking_history, 'github', str(pr_num))
+                rating = calculate_success_rating(days_tracked)
+                rating_emoji = get_rating_emoji(rating)
+                days_display = f"{days_tracked} {rating_emoji}" if days_tracked != 'N/A' else 'N/A'
+                
+                # Calculate complexity
+                complexity_score, _ = calculate_complexity_score(pr, 'github', GITHUB_USERNAME)
+                complexity_display = get_complexity_display(complexity_score)
+                
+                report_lines.append(f"| [#{pr_num}]({url}) | {repo} | {title} | 🟢 {state.upper()} | {first_seen} | {days_display} | {complexity_display} | [View]({url}) |")
             report_lines.append("")
         else:
             report_lines.append("_No open PRs_")
@@ -1329,21 +2372,29 @@ def generate_in_progress_report() -> str:
         if open_gitlab_mrs:
             report_lines.append(f"**{len(open_gitlab_mrs)} open MR(s)**")
             report_lines.append("")
-            report_lines.append("| MR | Project | Title | Status | Created | Last Updated | Days Idle | Link |")
-            report_lines.append("|----|---------|-------|--------|---------|--------------|-----------|------|")
+            report_lines.append("| MR | Project | Title | Status | First Seen | Days | Complexity | Link |")
+            report_lines.append("|----|---------|-------|--------|------------|------|------------|------|")
             for mr in open_gitlab_mrs:
-                mr_id = mr.get('id', 'N/A')
-                project = mr.get('project_name', 'N/A')
+                mr_iid = mr.get('iid', mr.get('id', 'N/A'))
+                project = mr.get('project_name', mr.get('project', 'N/A'))
                 title = mr.get('title', 'N/A')
-                if len(title) > 50:
-                    title = title[:47] + '...'
+                if len(title) > 40:
+                    title = title[:37] + '...'
                 state = mr.get('state', 'N/A')
-                created = mr.get('created_at', 'N/A')[:10] if mr.get('created_at') else 'N/A'
-                updated = mr.get('updated_at', 'N/A')[:10] if mr.get('updated_at') else 'N/A'
-                days_idle = days_since_update(mr.get('updated_at'))
                 url = mr.get('url', '#')
                 
-                report_lines.append(f"| [!{mr_id}]({url}) | {project} | {title} | 🟢 {state.upper()} | {created} | {updated} | {days_idle} | [View]({url}) |")
+                # Get tracking info
+                first_seen = get_first_seen(tracking_history, 'gitlab', str(mr_iid))
+                days_tracked = get_days_tracked(tracking_history, 'gitlab', str(mr_iid))
+                rating = calculate_success_rating(days_tracked)
+                rating_emoji = get_rating_emoji(rating)
+                days_display = f"{days_tracked} {rating_emoji}" if days_tracked != 'N/A' else 'N/A'
+                
+                # Calculate complexity
+                complexity_score, _ = calculate_complexity_score(mr, 'gitlab', GITLAB_USERNAME)
+                complexity_display = get_complexity_display(complexity_score)
+                
+                report_lines.append(f"| [!{mr_iid}]({url}) | {project} | {title} | 🟢 {state.upper()} | {first_seen} | {days_display} | {complexity_display} | [View]({url}) |")
             report_lines.append("")
         else:
             report_lines.append("_No open MRs_")
@@ -1361,23 +2412,28 @@ def generate_in_progress_report() -> str:
         if open_jira_issues:
             report_lines.append(f"**{len(open_jira_issues)} open ticket(s)**")
             report_lines.append("")
-            report_lines.append("| Ticket | Summary | Type | Status | Priority | Created | Last Updated | Days Idle | Link |")
-            report_lines.append("|--------|---------|------|--------|----------|---------|--------------|-----------|------|")
+            report_lines.append("| Ticket | Summary | Type | Status | First Seen | Days Tracked | Days Idle | Link |")
+            report_lines.append("|--------|---------|------|--------|------------|--------------|-----------|------|")
             for issue in open_jira_issues:
                 key = issue.get('key', 'N/A')
                 summary = issue.get('summary', 'N/A')
-                if len(summary) > 40:
-                    summary = summary[:37] + '...'
+                if len(summary) > 35:
+                    summary = summary[:32] + '...'
                 issue_type = issue.get('type', 'N/A')
                 status = issue.get('status', 'N/A')
-                priority = issue.get('priority', 'N/A')
-                created = issue.get('created_at', 'N/A')[:10] if issue.get('created_at') else 'N/A'
                 updated = issue.get('updated_at', 'N/A')[:10] if issue.get('updated_at') else 'N/A'
                 days_idle = days_since_update(issue.get('updated_at'))
                 url = issue.get('url', '#')
                 
+                # Get tracking info
+                first_seen = get_first_seen(tracking_history, 'jira', key)
+                days_tracked = get_days_tracked(tracking_history, 'jira', key)
+                rating = calculate_success_rating(days_tracked)
+                rating_emoji = get_rating_emoji(rating)
+                days_display = f"{days_tracked} {rating_emoji}" if days_tracked != 'N/A' else 'N/A'
+                
                 status_icon = get_status_icon(status)
-                report_lines.append(f"| [{key}]({url}) | {summary} | {issue_type} | {status_icon} {status} | {priority} | {created} | {updated} | {days_idle} | [View]({url}) |")
+                report_lines.append(f"| [{key}]({url}) | {summary} | {issue_type} | {status_icon} {status} | {first_seen} | {days_display} | {days_idle} | [View]({url}) |")
             report_lines.append("")
         else:
             report_lines.append("_No open tickets_")
@@ -1422,12 +2478,212 @@ def generate_in_progress_report() -> str:
             report_lines.append("_No tickets requiring immediate attention_")
             report_lines.append("")
         
+        # Jira tickets I'm watching (but not assigned to) - grouped with other Jira tables
+        report_lines.append("## 📋 Jira: Watching")
+        report_lines.append("")
+        report_lines.append("_Tickets you're watching but not assigned to_")
+        report_lines.append("")
+        
+        if jira_watching:
+            report_lines.append(f"**{len(jira_watching)} ticket(s)**")
+            report_lines.append("")
+            report_lines.append("| Ticket | Owner | Type | Summary | Status | Updated | Days Idle | Link |")
+            report_lines.append("|--------|-------|------|---------|--------|---------|-----------|------|")
+            for ticket in jira_watching[:10]:  # Limit to 10
+                key = ticket.get('key', 'N/A')
+                owner = ticket.get('owner', 'N/A')
+                ticket_type = ticket.get('type', 'N/A')
+                summary = ticket.get('summary', 'N/A')
+                if len(summary) > 35:
+                    summary = summary[:32] + '...'
+                status = ticket.get('status', 'N/A')
+                updated = ticket.get('updated', 'N/A')
+                days_idle = days_since_update(ticket.get('updated_at'))
+                url = ticket.get('url', '#')
+                
+                report_lines.append(f"| [{key}]({url}) | {owner} | {ticket_type} | {summary} | {status} | {updated} | {days_idle} | [View]({url}) |")
+            if len(jira_watching) > 10:
+                report_lines.append(f"| ... | | | _{len(jira_watching) - 10} more_ | | | | |")
+            report_lines.append("")
+        else:
+            report_lines.append("_Not watching any tickets_")
+            report_lines.append("")
+        
         report_lines.append("---")
         report_lines.append("")
         report_lines.append(f"_Generated by mymcp activity-tracker on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}_  ")
-        report_lines.append(f"_Always shows fresh data (not cached)_")
+        report_lines.append(f"_Compared against previous run for Success Stories_")
         
+        # Build current state for JSON caching
+        current_state = {
+            'generated': datetime.now().isoformat(),
+            'opendev_reviews': [
+                {
+                    'id': str(r.get('number', '')),
+                    'type': 'opendev',
+                    'project': r.get('project', ''),
+                    'subject': r.get('subject', ''),
+                    'status': r.get('status', ''),
+                    'owner': r.get('owner', ''),
+                    'url': r.get('url', ''),
+                    'updated': r.get('updated', ''),
+                    'is_mine': True
+                }
+                for r in opendev_data.get('reviews_posted', [])
+                if r.get('status') not in ['MERGED', 'ABANDONED']
+            ],
+            'github_prs': [
+                {
+                    'id': str(pr.get('number', '')),
+                    'type': 'github',
+                    'repo': pr.get('repo', ''),
+                    'title': pr.get('title', ''),
+                    'state': pr.get('state', ''),
+                    'owner': 'me',
+                    'url': pr.get('url', ''),
+                    'updated': pr.get('updated_at', ''),
+                    'is_mine': True
+                }
+                for pr in github_data.get('prs_created', [])
+                if pr.get('state') == 'open'
+            ],
+            'gitlab_mrs': [
+                {
+                    'id': str(mr.get('iid', '')),
+                    'type': 'gitlab',
+                    'project': mr.get('project', ''),
+                    'title': mr.get('title', ''),
+                    'state': mr.get('state', ''),
+                    'owner': 'me',
+                    'url': mr.get('url', ''),
+                    'updated': mr.get('updated_at', ''),
+                    'is_mine': True
+                }
+                for mr in gitlab_data.get('mrs_created', [])
+                if mr.get('state') == 'opened'
+            ],
+            'jira_tickets': [
+                {
+                    'id': issue.get('key', ''),
+                    'type': 'jira',
+                    'summary': issue.get('summary', ''),
+                    'status': issue.get('status', ''),
+                    'issue_type': issue.get('type', ''),
+                    'owner': 'me',
+                    'url': issue.get('url', ''),
+                    'updated': issue.get('updated_at', ''),
+                    'is_mine': True
+                }
+                for issue in jira_data.get('issues_assigned', [])
+                if issue.get('status') not in ['Done', 'Closed', 'Resolved']
+            ],
+            'jira_watching': [
+                {
+                    'id': t.get('key', ''),
+                    'type': 'jira_watching',
+                    'summary': t.get('summary', ''),
+                    'status': t.get('status', ''),
+                    'issue_type': t.get('type', ''),
+                    'owner': t.get('owner', ''),
+                    'url': t.get('url', ''),
+                    'updated': t.get('updated_at', ''),
+                    'is_mine': False
+                }
+                for t in jira_watching
+            ],
+            'awaiting_review': {
+                'opendev': [
+                    {
+                        'id': str(r.get('number', '')),
+                        'type': 'opendev_review',
+                        'owner': r.get('owner', ''),
+                        'subject': r.get('subject', ''),
+                        'url': r.get('url', ''),
+                        'is_mine': False
+                    }
+                    for r in opendev_awaiting_review
+                ],
+                'gitlab': [
+                    {
+                        'id': str(mr.get('iid', '')),
+                        'type': 'gitlab_review',
+                        'owner': mr.get('owner', ''),
+                        'title': mr.get('title', ''),
+                        'url': mr.get('url', ''),
+                        'is_mine': False
+                    }
+                    for mr in gitlab_awaiting_review
+                ],
+                'github': [
+                    {
+                        'id': str(pr.get('number', '')),
+                        'type': 'github_review',
+                        'owner': pr.get('owner', ''),
+                        'title': pr.get('title', ''),
+                        'url': pr.get('url', ''),
+                        'is_mine': False
+                    }
+                    for pr in github_awaiting_review
+                ]
+            }
+        }
+        
+        # Build flat list of all current items for tracking history
+        all_current_items = []
+        all_current_items.extend(current_state['opendev_reviews'])
+        all_current_items.extend(current_state['github_prs'])
+        all_current_items.extend(current_state['gitlab_mrs'])
+        all_current_items.extend(current_state['jira_tickets'])
+        all_current_items.extend(current_state['jira_watching'])
+        all_current_items.extend(current_state['awaiting_review']['opendev'])
+        all_current_items.extend(current_state['awaiting_review']['gitlab'])
+        all_current_items.extend(current_state['awaiting_review']['github'])
+        
+        # Update tracking history with current items (records first_seen for new items)
+        tracking_history = update_tracking_history(tracking_history, all_current_items)
+        
+        # Load previous state and compare for Success Stories
+        previous_file = os.path.join(ACTIVITY_DIR, "in_progress_previous.json")
+        current_file = os.path.join(ACTIVITY_DIR, "in_progress.json")
+        success_stories = []
+        
+        if os.path.exists(current_file):
+            try:
+                with open(current_file, 'r') as f:
+                    previous_state = json.load(f)
+                
+                # Compare and find items that disappeared (completed/closed/merged)
+                # This also records completions to quarterly stats
+                success_stories = compare_states_for_success(previous_state, current_state, tracking_history)
+                
+                # Archive current as previous before overwriting
+                import shutil
+                shutil.copy(current_file, previous_file)
+                
+            except (json.JSONDecodeError, IOError) as e:
+                print(f"Warning: Could not load previous state: {e}", file=sys.stderr)
+        
+        # Save current state
+        try:
+            with open(current_file, 'w') as f:
+                json.dump(current_state, f, indent=2, default=str)
+            print(f"State cached to {current_file}", file=sys.stderr)
+        except IOError as e:
+            print(f"Warning: Could not save state: {e}", file=sys.stderr)
+        
+        # Save tracking history (with first_seen dates and quarterly stats)
+        save_tracking_history(tracking_history)
+        
+        # Insert Success Stories section at the top (after header)
+        success_section = generate_success_stories_section(success_stories, tracking_history)
+        
+        # Find where to insert (after the header, before "People Waiting")
         report = "\n".join(report_lines)
+        if success_section:
+            # Insert after the first "---" separator
+            parts = report.split("---\n", 1)
+            if len(parts) == 2:
+                report = parts[0] + "---\n\n" + success_section + "\n---\n" + parts[1]
         
         # Save report to workspace
         report_file = os.path.join(ACTIVITY_DIR, "in_progress.md")
