@@ -21,16 +21,16 @@ Most broken links fall into three categories:
 ### 1. `analysis/analysis_direct_mode.md` (2 broken links)
 
 **Line ~25:**
-```
-[analysis_cors_security.md](analysis_cors_security.md)
+```text
+\[analysis_cors_security.md\](analysis_cors_security.md)
 ```
 - **Expected file**: `<mymcp-repo-path>/analysis/analysis_cors_security.md`
 - **Status**: File doesn't exist
 - **Action**: Either create this analysis file or remove the link
 
 **Line ~30:**
-```
-[analysis_large_file_uploads.md](analysis_large_file_uploads.md)
+```text
+\[analysis_large_file_uploads.md\](analysis_large_file_uploads.md)
 ```
 - **Expected file**: `<mymcp-repo-path>/analysis/analysis_large_file_uploads.md`
 - **Status**: File doesn't exist
@@ -43,11 +43,13 @@ Most broken links fall into three categories:
 This WIP document has many references to old workspace directories and files:
 
 **Workspace code references (12 links):**
-```
-[tables.py](../workspace/horizon-osprh-12803-working/.../tables.py)
-[_chevron_column.html](../workspace/horizon-osprh-12803-working/.../_chevron_column.html)
-[expandable_row.html](../workspace/horizon-osprh-12803-working/.../expandable_row.html)
-```
+
+| Link Text | Target Path |
+|-----------|-------------|
+| `tables.py` | `../workspace/horizon-osprh-12803-working/.../tables.py` |
+| `_chevron_column.html` | `../workspace/horizon-osprh-12803-working/.../_chevron_column.html` |
+| `expandable_row.html` | `../workspace/horizon-osprh-12803-working/.../expandable_row.html` |
+
 - **Expected**: Files in `workspace/horizon-osprh-12803-working/`
 - **Status**: This workspace directory no longer exists (was temporary)
 - **Action**: These are historical references. Options:
@@ -56,26 +58,30 @@ This WIP document has many references to old workspace directories and files:
   3. Update to point to the actual merged code in upstream Horizon repo
 
 **Phase summary references (4 links):**
-```
-[REFACTOR_SUMMARY_PHASE1.md](../workspace/REFACTOR_SUMMARY_PHASE1.md)
-[REFACTOR_SUMMARY_PHASE2.md](../workspace/REFACTOR_SUMMARY_PHASE2.md)
-[REFACTOR_SUMMARY_PHASE3.md](../workspace/REFACTOR_SUMMARY_PHASE3.md)
-[CLEANUP_SUMMARY_PHASE4.md](../workspace/CLEANUP_SUMMARY_PHASE4.md)
-```
+
+| Link Text | Target Path |
+|-----------|-------------|
+| `REFACTOR_SUMMARY_PHASE1.md` | `../workspace/REFACTOR_SUMMARY_PHASE1.md` |
+| `REFACTOR_SUMMARY_PHASE2.md` | `../workspace/REFACTOR_SUMMARY_PHASE2.md` |
+| `REFACTOR_SUMMARY_PHASE3.md` | `../workspace/REFACTOR_SUMMARY_PHASE3.md` |
+| `CLEANUP_SUMMARY_PHASE4.md` | `../workspace/CLEANUP_SUMMARY_PHASE4.md` |
+
 - **Expected**: Files in `workspace/`
 - **Status**: These temporary summary files don't exist
 - **Action**: Remove these links or note they were temporary working documents
 
 **Other WIP directory references (7 links):**
-```
-[Workspace README](../workspace/README.md)
-[analysis_peer_review_day_1.md](./analysis_peer_review_day_1.md)
-[analysis_peer_review_day_1_phase_1.md](./analysis_peer_review_day_1_phase_1.md)
-[analysis_template.md](./analysis_template.md)
-[analysis_random_topics.md](./analysis_random_topics.md)
-[analysis_review_966349_patchset_1.org](./analysis_review_966349_patchset_1.org)
-[results/README.md](../results/README.md)
-```
+
+| Link Text | Target Path |
+|-----------|-------------|
+| `Workspace README` | `../workspace/README.md` |
+| `analysis_peer_review_day_1.md` | `./analysis_peer_review_day_1.md` |
+| `analysis_peer_review_day_1_phase_1.md` | `./analysis_peer_review_day_1_phase_1.md` |
+| `analysis_template.md` | `./analysis_template.md` |
+| `analysis_random_topics.md` | `./analysis_random_topics.md` |
+| `analysis_review_966349_patchset_1.org` | `./analysis_review_966349_patchset_1.org` |
+| `results/README.md` | `../results/README.md` |
+
 - **Expected**: Files in `analysis_new_feature_966349_wip/` or `../workspace/`
 - **Status**: Most of these files are in parent directory, not WIP directory
 - **Action**: Update relative paths or remove links to non-existent files
@@ -85,8 +91,8 @@ This WIP document has many references to old workspace directories and files:
 ### 3. `opendev-review-agent/README.md` (1 broken link)
 
 **Line ~35:**
-```
-[OpenDev MCP Agent Setup Guide](opendev-mcp-agent-setup.org)
+```text
+\[OpenDev MCP Agent Setup Guide\](opendev-mcp-agent-setup.org)
 ```
 - **Expected file**: `<mymcp-repo-path>/opendev-review-agent/opendev-mcp-agent-setup.org`
 - **Status**: File doesn't exist
@@ -165,10 +171,8 @@ vim <mymcp-repo-path>/analysis/analysis_new_feature_966349_wip/PHASE_1_TO_4_COMP
 ```
 
 Add this note at the top:
-```
-> **Note**: This is an archived work-in-progress document. Some links reference temporary workspace 
-> directories and files that no longer exist. This is expected and preserved for historical context.
-```
+
+> **Note**: This is an archived work-in-progress document. Some links reference temporary workspace directories and files that no longer exist. This is expected and preserved for historical context.
 
 ---
 
@@ -191,11 +195,10 @@ python3 <mymcp-repo-path>/scripts/check-links.py
 | `analysis/analysis_new_feature_966349_wip/PHASE_1_TO_4_COMPLETE_SUMMARY.md` | 23 | Medium | Add note or keep as-is |
 | Template files (3 files) | 16 | None | Expected placeholders |
 
-**Total requiring action: 26 links across 3 files**
+**Total requiring action: 26 links across 3 files**  
 **Total that are acceptable: 16 links in template files**
 
 ---
 
 **Generated by**: `scripts/check-links.py`  
 **Date**: November 14, 2025
-
