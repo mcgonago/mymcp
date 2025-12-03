@@ -78,6 +78,33 @@ cp .env.example .env
 nano .env
 ```
 
+#### Incremental Platform Support
+
+**You don't need all platforms configured!** The activity tracker works with any subset:
+
+| Platform | Required Config | Without Config |
+|----------|-----------------|----------------|
+| **OpenDev** | `OPENDEV_USERNAME` | Skipped (no token needed) |
+| **GitHub** | `GITHUB_USERNAME` + `GITHUB_TOKEN` | Skipped |
+| **GitLab** | `GITLAB_USERNAME` + `GITLAB_TOKEN` | Skipped |
+| **Jira** | `JIRA_EMAIL` + `JIRA_API_TOKEN` + `JIRA_URL` | Skipped |
+
+**Start with one platform, add more later:**
+```bash
+# Start with just Jira
+JIRA_EMAIL=you@company.com
+JIRA_API_TOKEN=xxx
+JIRA_URL=https://issues.redhat.com
+
+# Later, add GitHub
+GITHUB_USERNAME=yourusername
+GITHUB_TOKEN=ghp_xxx
+
+# And so on...
+```
+
+Reports automatically include only configured platforms. Unconfigured platforms show "not configured" and are excluded from tracking.
+
 #### Required Configuration
 
 These environment variables must be set for the agent to function:
