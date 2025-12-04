@@ -1625,6 +1625,45 @@ def generate_in_progress_report() -> str:
                 return history['items'][key].get('first_seen', 'N/A')
             return 'N/A'
         
+        def is_new_this_sprint(first_seen_str, sprint_days=14):
+            """
+            Check if an item was added within the current sprint.
+            
+            Args:
+                first_seen_str: Date string in YYYY-MM-DD format
+                sprint_days: Number of days in a sprint (default 14)
+            
+            Returns:
+                True if item was added within the sprint period
+            """
+            try:
+                if not first_seen_str or first_seen_str == 'N/A':
+                    return True  # New items without history are considered new
+                first_seen = datetime.strptime(first_seen_str, '%Y-%m-%d')
+                days_since = (datetime.now() - first_seen).days
+                return days_since <= sprint_days
+            except:
+                return False
+        
+        def format_entered_date(first_seen_str, sprint_days=14):
+            """
+            Format the Entered date with a NEW indicator if within sprint.
+            
+            Args:
+                first_seen_str: Date string in YYYY-MM-DD format
+                sprint_days: Number of days in a sprint (default 14)
+            
+            Returns:
+                Formatted string with optional 🆕 indicator
+            """
+            if not first_seen_str or first_seen_str == 'N/A':
+                today = datetime.now().strftime('%Y-%m-%d')
+                return f"🆕 {today}"  # New item, mark with today
+            
+            if is_new_this_sprint(first_seen_str, sprint_days):
+                return f"🆕 {first_seen_str}"
+            return first_seen_str
+        
         # Load tracking history
         tracking_history = load_tracking_history()
         
@@ -1839,6 +1878,66 @@ def generate_in_progress_report() -> str:
                 return f"https://issues.redhat.com/browse/{item_id}"
             return "#"
         
+        def generate_sprint_flow_summary(history, current_items_count, sprint_days=14):
+            """
+            Generate a Sprint Flow Summary showing in/out rates.
+            
+            Args:
+                history: Tracking history with items and quarterly_stats
+                current_items_count: Total number of currently active items
+                sprint_days: Number of days in a sprint (default 14)
+            
+            Returns:
+                Markdown formatted sprint flow summary
+            """
+            lines = []
+            lines.append("## 📊 Sprint Flow Summary")
+            lines.append("")
+            
+            today = datetime.now()
+            sprint_start = today - timedelta(days=sprint_days)
+            sprint_start_str = sprint_start.strftime('%Y-%m-%d')
+            
+            # Count items that ENTERED this sprint (first_seen within sprint_days)
+            items_entered = 0
+            for key, item_data in history.get('items', {}).items():
+                first_seen = item_data.get('first_seen', '')
+                if first_seen and first_seen >= sprint_start_str:
+                    items_entered += 1
+            
+            # Count items that EXITED this sprint (completed within sprint_days)
+            items_exited = 0
+            for completion in history.get('quarterly_stats', []):
+                completed_date = completion.get('date', '')
+                if completed_date and completed_date >= sprint_start_str:
+                    items_exited += 1
+            
+            # Calculate net change
+            net_change = items_entered - items_exited
+            net_icon = "📈" if net_change > 0 else "📉" if net_change < 0 else "➡️"
+            net_display = f"+{net_change}" if net_change > 0 else str(net_change)
+            
+            lines.append(f"**Sprint Period**: {sprint_start_str} to {today.strftime('%Y-%m-%d')} ({sprint_days} days)")
+            lines.append("")
+            lines.append("| Metric | Count | Description |")
+            lines.append("|--------|-------|-------------|")
+            lines.append(f"| 🆕 **Entered** | {items_entered} | New items added this sprint |")
+            lines.append(f"| ✅ **Exited** | {items_exited} | Items completed this sprint |")
+            lines.append(f"| {net_icon} **Net Change** | {net_display} | In rate minus out rate |")
+            lines.append(f"| 📋 **Current Total** | {current_items_count} | Active items in backlog |")
+            lines.append("")
+            
+            # Add insight
+            if net_change > 2:
+                lines.append("> ⚠️ **Backlog growing** - More items entering than exiting. Consider capacity planning.")
+            elif net_change < -2:
+                lines.append("> 🎉 **Great progress!** - Completing more than adding. Backlog is shrinking!")
+            else:
+                lines.append("> ✅ **Balanced flow** - Intake roughly matches completion rate.")
+            lines.append("")
+            
+            return "\n".join(lines)
+        
         def generate_success_stories_section(success_stories, history, unplanned_done=None):
             """Generate markdown section for success stories with ratings.
             
@@ -1885,10 +1984,10 @@ def generate_in_progress_report() -> str:
                 lines.append("")
                 lines.append("_No completed items this quarter... but here's what success will look like!_")
                 lines.append("")
-                lines.append("| Platform | Item | Completed | Days | Rating |")
-                lines.append("|----------|------|-----------|------|--------|")
-                lines.append("| 🟠 OpenDev | [999999](https://example.com) 🦄 Fix the unfixable bug that... | 2025-12-01 | 41 | ⚠️ B |")
-                lines.append("| 📋 Jira | [OSPRH-99999](https://example.com) 🎯 Implement world peace in Ho... | 2025-12-02 | 7 | 🌟 A+ |")
+                lines.append("| Platform | Item | Entered | Exited | Days | Rating |")
+                lines.append("|----------|------|---------|--------|------|--------|")
+                lines.append("| 🟠 OpenDev | [999999](https://example.com) 🦄 Fix the unfixable bug that... | 2025-10-21 | 2025-12-01 | 41 | ⚠️ B |")
+                lines.append("| 📋 Jira | [OSPRH-99999](https://example.com) 🎯 Implement world peace in Ho... | 2025-11-25 | 2025-12-02 | 7 | 🌟 A+ |")
                 lines.append("")
                 lines.append("_^ Example placeholder - complete some items to see your real victories here!_")
                 lines.append("")
@@ -1900,15 +1999,25 @@ def generate_in_progress_report() -> str:
                 lines.append("")
                 lines.append("_Items you owned that are now complete_")
                 lines.append("")
-                lines.append("| Platform | Item | Completed | Days | Rating |")
-                lines.append("|----------|------|-----------|------|--------|")
+                lines.append("| Platform | Item | Entered | Exited | Days | Rating |")
+                lines.append("|----------|------|---------|--------|------|--------|")
                 for item in sorted(my_victories, key=lambda x: x.get('date', x.get('completed', '')), reverse=True):
                     platform = get_platform_icon(item.get('type', ''))
                     item_id = str(item.get('id', 'N/A')).lstrip('!')  # Remove ! prefix from GitLab MR IDs
                     title = item.get('title', 'N/A')[:40] + ('...' if len(item.get('title', '')) > 40 else '')
                     url = item.get('url', build_item_url(item.get('type', ''), item_id))
-                    completed = item.get('date', item.get('completed', 'N/A'))[:10] if item.get('date') or item.get('completed') else 'N/A'
+                    exited = item.get('date', item.get('completed', 'N/A'))[:10] if item.get('date') or item.get('completed') else 'N/A'
+                    # Calculate entered date from exited - days_tracked
                     days = item.get('days_tracked', 'N/A')
+                    try:
+                        if exited != 'N/A' and days != 'N/A':
+                            exited_dt = datetime.strptime(exited, '%Y-%m-%d')
+                            entered_dt = exited_dt - timedelta(days=int(days))
+                            entered = entered_dt.strftime('%Y-%m-%d')
+                        else:
+                            entered = 'N/A'
+                    except:
+                        entered = 'N/A'
                     rating = item.get('rating', 'N/A')
                     rating_emoji = get_rating_emoji(rating)
                     
@@ -1921,7 +2030,7 @@ def generate_in_progress_report() -> str:
                         display_id = item_id
                     
                     item_display = f"[{display_id}]({url}) {title}"
-                    lines.append(f"| {platform} | {item_display} | {completed} | {days} | {rating_emoji} {rating} |")
+                    lines.append(f"| {platform} | {item_display} | {entered} | {exited} | {days} | {rating_emoji} {rating} |")
                 lines.append("")
             
             # Team Progress (items you were watching/reviewing) - NOW PERSISTENT!
@@ -1930,18 +2039,26 @@ def generate_in_progress_report() -> str:
                 lines.append("")
                 lines.append("_Items you were watching/reviewing that are now complete (persistent this quarter)_")
                 lines.append("")
-                lines.append("| Platform | Item | Owner | Credit Is Due | Completed | Rating |")
-                lines.append("|----------|------|-------|---------------|-----------|--------|")
+                lines.append("| Platform | Item | Owner | Entered | Exited | Days | Rating |")
+                lines.append("|----------|------|-------|---------|--------|------|--------|")
                 for item in sorted(team_progress, key=lambda x: x.get('date', x.get('completed', '')), reverse=True):
                     platform = get_platform_icon(item.get('type', ''))
                     item_id = str(item.get('id', 'N/A')).lstrip('!')  # Remove ! prefix from GitLab MR IDs
                     title = item.get('title', 'N/A')[:30] + ('...' if len(item.get('title', '')) > 30 else '')
                     url = item.get('url', build_item_url(item.get('type', ''), item_id))
                     owner = item.get('owner', 'N/A')
-                    credit_due = item.get('credit_due', '')
-                    if not credit_due:
-                        credit_due = '—'
-                    completed = item.get('date', item.get('completed', 'N/A'))[:10] if item.get('date') or item.get('completed') else 'N/A'
+                    exited = item.get('date', item.get('completed', 'N/A'))[:10] if item.get('date') or item.get('completed') else 'N/A'
+                    # Calculate entered date from exited - days_tracked
+                    days = item.get('days_tracked', 'N/A')
+                    try:
+                        if exited != 'N/A' and days != 'N/A':
+                            exited_dt = datetime.strptime(exited, '%Y-%m-%d')
+                            entered_dt = exited_dt - timedelta(days=int(days))
+                            entered = entered_dt.strftime('%Y-%m-%d')
+                        else:
+                            entered = 'N/A'
+                    except:
+                        entered = 'N/A'
                     rating = item.get('rating', 'N/A')
                     rating_emoji = get_rating_emoji(rating)
                     
@@ -1954,7 +2071,7 @@ def generate_in_progress_report() -> str:
                         display_id = item_id
                     
                     item_display = f"[{display_id}]({url}) {title}"
-                    lines.append(f"| {platform} | {item_display} | {owner} | {credit_due} | {completed} | {rating_emoji} {rating} |")
+                    lines.append(f"| {platform} | {item_display} | {owner} | {entered} | {exited} | {days} | {rating_emoji} {rating} |")
                 lines.append("")
             
             # Completed Unplanned Work (from unplanned_done.txt)
@@ -2701,6 +2818,8 @@ def generate_in_progress_report() -> str:
         report_lines.append("")
         report_lines.append("_Current ownership status across all platforms_")
         report_lines.append("")
+        report_lines.append("> **Legend:** 🆕 = New this sprint (≤14 days) | Entered = When item was first tracked | Exited = When item was completed")
+        report_lines.append("")
         report_lines.append("---")
         report_lines.append("")
         
@@ -2885,8 +3004,8 @@ def generate_in_progress_report() -> str:
         if active_opendev_reviews:
             report_lines.append(f"**{len(active_opendev_reviews)} active review(s)**")
             report_lines.append("")
-            report_lines.append("| Review | Project | Subject | Status | First Seen | Days | Complexity | Link |")
-            report_lines.append("|--------|---------|---------|--------|------------|------|------------|------|")
+            report_lines.append("| Review | Project | Subject | Status | Entered | Days | Complexity | Link |")
+            report_lines.append("|--------|---------|---------|--------|---------|------|------------|------|")
             for review in active_opendev_reviews:
                 review_num = review.get('number', 'N/A')
                 project = review.get('project', 'N/A').split('/')[-1] if review.get('project') else 'N/A'
@@ -2898,6 +3017,7 @@ def generate_in_progress_report() -> str:
                 
                 # Get tracking info
                 first_seen = get_first_seen(tracking_history, 'opendev', str(review_num))
+                entered_display = format_entered_date(first_seen)
                 days_tracked = get_days_tracked(tracking_history, 'opendev', str(review_num))
                 rating = calculate_success_rating(days_tracked)
                 rating_emoji = get_rating_emoji(rating)
@@ -2908,7 +3028,7 @@ def generate_in_progress_report() -> str:
                 
                 status_icon = "🟢" if status == "NEW" else "🟡"
                 days_display = f"{days_tracked} {rating_emoji}" if days_tracked != 'N/A' else 'N/A'
-                report_lines.append(f"| [{review_num}]({url}) | {project} | {subject} | {status_icon} {status} | {first_seen} | {days_display} | {complexity_display} | [View]({url}) |")
+                report_lines.append(f"| [{review_num}]({url}) | {project} | {subject} | {status_icon} {status} | {entered_display} | {days_display} | {complexity_display} | [View]({url}) |")
             report_lines.append("")
         else:
             report_lines.append("_No active reviews_")
@@ -2926,8 +3046,8 @@ def generate_in_progress_report() -> str:
         if open_github_prs:
             report_lines.append(f"**{len(open_github_prs)} open PR(s)**")
             report_lines.append("")
-            report_lines.append("| PR | Repository | Title | Status | First Seen | Days | Complexity | Link |")
-            report_lines.append("|----|------------|-------|--------|------------|------|------------|------|")
+            report_lines.append("| PR | Repository | Title | Status | Entered | Days | Complexity | Link |")
+            report_lines.append("|----|------------|-------|--------|---------|------|------------|------|")
             for pr in open_github_prs:
                 pr_num = pr.get('number', 'N/A')
                 repo = pr.get('repo', 'N/A')
@@ -2939,6 +3059,7 @@ def generate_in_progress_report() -> str:
                 
                 # Get tracking info
                 first_seen = get_first_seen(tracking_history, 'github', str(pr_num))
+                entered_display = format_entered_date(first_seen)
                 days_tracked = get_days_tracked(tracking_history, 'github', str(pr_num))
                 rating = calculate_success_rating(days_tracked)
                 rating_emoji = get_rating_emoji(rating)
@@ -2948,7 +3069,7 @@ def generate_in_progress_report() -> str:
                 complexity_score, _ = calculate_complexity_score(pr, 'github', GITHUB_USERNAME)
                 complexity_display = get_complexity_display(complexity_score)
                 
-                report_lines.append(f"| [#{pr_num}]({url}) | {repo} | {title} | 🟢 {state.upper()} | {first_seen} | {days_display} | {complexity_display} | [View]({url}) |")
+                report_lines.append(f"| [#{pr_num}]({url}) | {repo} | {title} | 🟢 {state.upper()} | {entered_display} | {days_display} | {complexity_display} | [View]({url}) |")
             report_lines.append("")
         else:
             report_lines.append("_No open PRs_")
@@ -2966,8 +3087,8 @@ def generate_in_progress_report() -> str:
         if open_gitlab_mrs:
             report_lines.append(f"**{len(open_gitlab_mrs)} open MR(s)**")
             report_lines.append("")
-            report_lines.append("| MR | Project | Title | Status | First Seen | Days | Complexity | Link |")
-            report_lines.append("|----|---------|-------|--------|------------|------|------------|------|")
+            report_lines.append("| MR | Project | Title | Status | Entered | Days | Complexity | Link |")
+            report_lines.append("|----|---------|-------|--------|---------|------|------------|------|")
             for mr in open_gitlab_mrs:
                 mr_iid = mr.get('iid', mr.get('id', 'N/A'))
                 project = mr.get('project_name', mr.get('project', 'N/A'))
@@ -2982,6 +3103,7 @@ def generate_in_progress_report() -> str:
                 
                 # Get tracking info
                 first_seen = get_first_seen(tracking_history, 'gitlab', str(mr_iid))
+                entered_display = format_entered_date(first_seen)
                 days_tracked = get_days_tracked(tracking_history, 'gitlab', str(mr_iid))
                 rating = calculate_success_rating(days_tracked)
                 rating_emoji = get_rating_emoji(rating)
@@ -2991,7 +3113,7 @@ def generate_in_progress_report() -> str:
                 complexity_score, _ = calculate_complexity_score(mr, 'gitlab', GITLAB_USERNAME)
                 complexity_display = get_complexity_display(complexity_score)
                 
-                report_lines.append(f"| [MR-{mr_iid}]({url}) | {project} | {title} | 🟢 {state.upper()} | {first_seen} | {days_display} | {complexity_display} | [View]({url}) |")
+                report_lines.append(f"| [MR-{mr_iid}]({url}) | {project} | {title} | 🟢 {state.upper()} | {entered_display} | {days_display} | {complexity_display} | [View]({url}) |")
             report_lines.append("")
         else:
             report_lines.append("_No open MRs_")
@@ -3109,8 +3231,8 @@ def generate_in_progress_report() -> str:
         if open_jira_issues:
             report_lines.append(f"**{len(open_jira_issues)} open ticket(s)**")
             report_lines.append("")
-            report_lines.append("| Ticket | Summary | Type | Status | First Seen | Days Tracked | Days Idle | Link |")
-            report_lines.append("|--------|---------|------|--------|------------|--------------|-----------|------|")
+            report_lines.append("| Ticket | Summary | Type | Status | Entered | Days Tracked | Days Idle | Link |")
+            report_lines.append("|--------|---------|------|--------|---------|--------------|-----------|------|")
             for issue in open_jira_issues:
                 key = issue.get('key', 'N/A')
                 summary = issue.get('summary', 'N/A')
@@ -3124,13 +3246,14 @@ def generate_in_progress_report() -> str:
                 
                 # Get tracking info
                 first_seen = get_first_seen(tracking_history, 'jira', key)
+                entered_display = format_entered_date(first_seen)
                 days_tracked = get_days_tracked(tracking_history, 'jira', key)
                 rating = calculate_success_rating(days_tracked)
                 rating_emoji = get_rating_emoji(rating)
                 days_display = f"{days_tracked} {rating_emoji}" if days_tracked != 'N/A' else 'N/A'
                 
                 status_icon = get_status_icon(status)
-                report_lines.append(f"| [{key}]({url}) | {summary} | {issue_type} | {status_icon} {status} | {first_seen} | {days_display} | {days_idle} | [View]({url}) |")
+                report_lines.append(f"| [{key}]({url}) | {summary} | {issue_type} | {status_icon} {status} | {entered_display} | {days_display} | {days_idle} | [View]({url}) |")
             report_lines.append("")
         else:
             report_lines.append("_No open tickets_")
@@ -3382,6 +3505,17 @@ def generate_in_progress_report() -> str:
         # Save tracking history (with first_seen dates and quarterly stats)
         save_tracking_history(tracking_history)
         
+        # Count current active items for sprint flow summary
+        current_items_count = (
+            len(active_opendev_reviews) +
+            len(open_github_prs) +
+            len(open_gitlab_mrs) +
+            len(open_jira_issues)
+        )
+        
+        # Generate Sprint Flow Summary
+        sprint_flow_section = generate_sprint_flow_summary(tracking_history, current_items_count)
+        
         # Insert Success Stories section at the top (after header)
         success_section = generate_success_stories_section(success_stories, tracking_history, unplanned_done_items)
         
@@ -3488,6 +3622,8 @@ def generate_in_progress_report() -> str:
                 parts = report.split(insertion_marker, 1)
                 if len(parts) == 2:
                     sections_to_insert = ""
+                    if sprint_flow_section:
+                        sections_to_insert += sprint_flow_section + "\n\n---\n\n"
                     if success_section:
                         sections_to_insert += success_section + "\n\n---\n\n"
                     if timeline_section:
