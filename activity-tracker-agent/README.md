@@ -495,6 +495,9 @@ workspace/iproject/activity/
 ├── in_progress.json           # Current state (for diff comparison)
 ├── in_progress_previous.json  # Previous state (for Success Stories)
 ├── tracking_history.json      # Persistent first_seen dates + quarterly stats
+├── tracking_backups/          # Timestamped backups for verification
+│   ├── tracking_history_2025-12-04_103000.json
+│   └── ...                    # Auto-cleaned after 14 days
 ├── unplanned.txt              # Active unplanned work items
 ├── unplanned_done.txt         # Completed unplanned work
 └── ...

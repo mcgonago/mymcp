@@ -1544,11 +1544,59 @@ def generate_in_progress_report() -> str:
             return {'items': {}, 'quarterly_stats': [], 'last_quarter': None}
         
         def save_tracking_history(history):
-            """Save the tracking history file."""
+            """Save the tracking history file with timestamped backup for verification."""
             history_file = os.path.join(ACTIVITY_DIR, "tracking_history.json")
+            backup_dir = os.path.join(ACTIVITY_DIR, "tracking_backups")
+            
             try:
+                # Create backup directory if it doesn't exist
+                os.makedirs(backup_dir, exist_ok=True)
+                
+                # Create timestamped backup of current file before overwriting
+                if os.path.exists(history_file):
+                    timestamp = datetime.now().strftime('%Y-%m-%d_%H%M%S')
+                    backup_file = os.path.join(backup_dir, f"tracking_history_{timestamp}.json")
+                    
+                    # Copy current file to backup
+                    import shutil
+                    shutil.copy2(history_file, backup_file)
+                    print(f"Backup created: {backup_file}", file=sys.stderr)
+                    
+                    # Quick diff check: compare item counts
+                    try:
+                        with open(history_file, 'r') as f:
+                            old_history = json.load(f)
+                        old_items = len(old_history.get('items', {}))
+                        new_items = len(history.get('items', {}))
+                        old_completions = len(old_history.get('quarterly_stats', []))
+                        new_completions = len(history.get('quarterly_stats', []))
+                        
+                        if old_items != new_items or old_completions != new_completions:
+                            print(f"📊 Tracking changes: Items {old_items}→{new_items}, Completions {old_completions}→{new_completions}", file=sys.stderr)
+                    except:
+                        pass  # Don't fail if diff check fails
+                    
+                    # Cleanup old backups (keep last 14 days worth)
+                    try:
+                        cutoff_date = datetime.now() - timedelta(days=14)
+                        for backup in os.listdir(backup_dir):
+                            if backup.startswith('tracking_history_') and backup.endswith('.json'):
+                                # Extract date from filename: tracking_history_2025-12-04_103000.json
+                                date_str = backup.replace('tracking_history_', '').replace('.json', '').split('_')[0]
+                                try:
+                                    backup_date = datetime.strptime(date_str, '%Y-%m-%d')
+                                    if backup_date < cutoff_date:
+                                        os.remove(os.path.join(backup_dir, backup))
+                                        print(f"Cleaned up old backup: {backup}", file=sys.stderr)
+                                except:
+                                    pass  # Skip files with unexpected naming
+                    except Exception as e:
+                        print(f"Warning: Could not cleanup old backups: {e}", file=sys.stderr)
+                
+                # Save the new history
                 with open(history_file, 'w') as f:
                     json.dump(history, f, indent=2, default=str)
+                    
             except IOError as e:
                 print(f"Warning: Could not save tracking history: {e}", file=sys.stderr)
         
